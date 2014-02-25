@@ -309,6 +309,12 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
+  <Target Name="AfterBuild">
+    <ItemGroup>
+      <CmsDatabaseSchema Include="$(SolutionDir)\packages\**\EPiServer.Cms.Core.sql" />
+    </ItemGroup>
+    <Copy SourceFiles="@(CmsDatabaseSchema)" DestinationFolder="$(SolutionDir)$(ProjectName)\bin\$(Configuration)\sql" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
