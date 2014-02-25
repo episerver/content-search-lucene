@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <configSections>
+    <section name="episerver.search.indexingservice" type="EPiServer.Search.IndexingService.Configuration.IndexingServiceSection, EPiServer.Search.IndexingService" />
+  </configSections>
+  <appSettings>
+    <add key="ClientSettingsProvider.ServiceUri" value="" />
+  </appSettings>
+  <connectionStrings configSource="connectionStrings.config"/>
+
+  <episerver.search.indexingservice>
+    <clients>
+      <add name="accesskey1" description="local" readonly="false" allowLocal="true" ipAddress="172.17.0.0/16,10.1.74.0/24" />
+      <add name="accesskey2" description="remote" readonly="false" allowLocal="true" />
+    </clients>	
+    <namedIndexes defaultIndex="default">
+      <indexes>
+        <add name="default" directoryPath="/tmp/testindex" readonly="false" />
+        <add name="testindex2" directoryPath="/tmp/testindex2" readonly="false" />
+        <add name="testindex3" directoryPath="/tmp/testindex3" readonly="false" />
+        <add name="otherlanguage1" directoryPath="/tmp/otherlang1" readonly="false" />
+        <add name="otherlanguage2" directoryPath="/tmp/otherlang2" readonly="false" />
+        <add name="otherlanguage3" directoryPath="/tmp/otherlang3" readonly="true" />
+      </indexes>
+    </namedIndexes>
+  </episerver.search.indexingservice>
+
+  <system.web>
+    <membership defaultProvider="ClientAuthenticationMembershipProvider">
+      <providers>
+        <add name="ClientAuthenticationMembershipProvider" type="System.Web.ClientServices.Providers.ClientFormsAuthenticationMembershipProvider, System.Web.Extensions, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" serviceUri="" />
+      </providers>
+    </membership>
+    <roleManager defaultProvider="ClientRoleProvider" enabled="true">
+      <providers>
+        <add name="ClientRoleProvider" type="System.Web.ClientServices.Providers.ClientRoleProvider, System.Web.Extensions, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" serviceUri="" cacheTimeout="86400" />
+      </providers>
+    </roleManager>
+  </system.web>
+
+  <system.serviceModel>
+    <behaviors>
+      <endpointBehaviors>
+        <behavior name="webHttp">
+          <webHttp/>
+        </behavior>
+      </endpointBehaviors>
+      <serviceBehaviors>
+        <behavior name="credentialConfig">
+          <serviceCredentials>
+            <clientCertificate>
+              <authentication certificateValidationMode="PeerTrust"/>
+            </clientCertificate>
+          </serviceCredentials>
+        </behavior>
+        <behavior name="IndexingServiceBehavior">
+          <!-- WARNING: Setting includeExceptionDetailInFaults = "True" could result in leaking secured server information to the client.-->
+          <!-- Please set this to false when deploying -->
+          <serviceDebug includeExceptionDetailInFaults="True" httpHelpPageEnabled="True"/>
+        </behavior>
+      </serviceBehaviors>
+    </behaviors>
+    <services>
+      <service name="EPiServer.Search.IndexingService.IndexingService" behaviorConfiguration="IndexingServiceBehavior">
+        <endpoint address="" binding="webHttpBinding" contract="EPiServer.Search.IndexingService.IIndexingService">
+        </endpoint>
+        <host>
+          <baseAddresses>
+            <add baseAddress="http://localhost:8072/IndexingService/" />
+          </baseAddresses>
+        </host>
+      </service>
+    </services>
+  </system.serviceModel>
+</configuration>
