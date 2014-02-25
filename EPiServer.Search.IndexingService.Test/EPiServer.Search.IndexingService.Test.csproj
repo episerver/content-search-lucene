@@ -228,9 +228,6 @@
     <Compile Include="..\AssemblyVersionAuto.cs">
       <Link>AssemblyVersionAuto.cs</Link>
     </Compile>
-    <None Include="EPiServerFramework.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="IndexingServiceHandlerTest.cs" />
     <Compile Include="AssemblyInitializer.cs" />
     <Compile Include="IPRangeTest.cs" />
@@ -262,9 +259,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="ConnectionStrings.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="EPiServerProduct_PublicKey.snk" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
