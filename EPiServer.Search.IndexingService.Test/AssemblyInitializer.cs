@@ -18,7 +18,7 @@ namespace EPiServer.Search.IndexingService.Test
             var packagesFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\", "packages");
             var packageRepository = new NuGet.LocalPackageRepository(packagesFolder);
 
-            var cmsPackage = packageRepository.FindPackagesById("EPiServer.CMS.Core").Where(p => p.IsAbsoluteLatestVersion).FirstOrDefault();
+            var cmsPackage = packageRepository.FindPackagesById("EPiServer.CMS.Core").FirstOrDefault();
             var dbSchema = cmsPackage.GetFiles().Where(f => f.Path.EndsWith("EPiServer.Cms.Core.sql", StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
 
             var sqlFilePath = Path.Combine(packageRepository.Source, String.Format("{0}.{1}", cmsPackage.Id, cmsPackage.Version.ToString()), dbSchema.Path);
