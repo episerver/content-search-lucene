@@ -484,6 +484,7 @@ namespace EPiServer.Search.IndexingService.Test
         }
 
         [TestMethod]
+        [TestCategory("PDF")]
         public void SH_DataUriUpdateTest()
         {
             string id0 = "id0";
@@ -570,6 +571,7 @@ namespace EPiServer.Search.IndexingService.Test
         }
 
         [TestMethod]
+        [TestCategory("PDF")]
         public void SH_DataUriAddPDFTest()
         {
             string id0 = "id0";
@@ -623,6 +625,7 @@ namespace EPiServer.Search.IndexingService.Test
         }
 
         [TestMethod]
+        [TestCategory("PDF")]
         public void SH_DataUriAddBigPDFTest()
         {
             string id0 = "id0";
@@ -836,6 +839,7 @@ namespace EPiServer.Search.IndexingService.Test
         }
 
         [TestMethod]
+        [TestCategory("PDF")]
         public void SH_DataUriWithReferenceTest()
         {
             string id0 = "id0";
@@ -915,6 +919,7 @@ namespace EPiServer.Search.IndexingService.Test
         }
 
         [TestMethod]
+        [TestCategory("PDF")]
         public void SH_DataUriAsReferenceTest()
         {
             string id0 = "id0";
