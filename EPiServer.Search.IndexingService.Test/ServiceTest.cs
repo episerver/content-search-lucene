@@ -20,12 +20,21 @@ using EPiServer.Framework.Initialization;
 using EPiServer.Framework;
 using EPiServer.Data;
 using EPiServer.ServiceLocation;
+using EPiServer.TestTools.IntegrationTesting;
 
 namespace EPiServer.Search.IndexingService.Test
 {
     /// <summary>
     /// Summary description for SearchHandlerTest
     /// </summary>
+    [DeploymentItem(@"test big.pdf")]
+    [DeploymentItem(@"test.doc")]
+    [DeploymentItem(@"test.docx")]
+    [DeploymentItem(@"test.pdf")]
+    [DeploymentItem(@"TestDocument.txt")]
+    [DeploymentItem(@"TestFile.txt")]
+    [DeploymentItem(@"EPiServer.Cms.Core.sql", IntegrationTestFiles.SqlOutput)]
+    [DeploymentItem(@"EPiServer.Data.Cache.dll")]
     [TestClass]
     public class ServiceTest
     {
