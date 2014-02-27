@@ -20,12 +20,21 @@ using EPiServer.Framework.Initialization;
 using EPiServer.Framework;
 using EPiServer.Data;
 using EPiServer.ServiceLocation;
+using EPiServer.TestTools.IntegrationTesting;
 
 namespace EPiServer.Search.IndexingService.Test
 {
     /// <summary>
     /// Summary description for SearchHandlerTest
     /// </summary>
+    [DeploymentItem(@"test big.pdf")]
+    [DeploymentItem(@"test.doc")]
+    [DeploymentItem(@"test.docx")]
+    [DeploymentItem(@"test.pdf")]
+    [DeploymentItem(@"TestDocument.txt")]
+    [DeploymentItem(@"TestFile.txt")]
+    [DeploymentItem(@"EPiServer.Cms.Core.sql", IntegrationTestFiles.SqlOutput)]
+    [DeploymentItem(@"EPiServer.Data.Cache.dll")]
     [TestClass]
     public class ServiceTest
     {
@@ -475,6 +484,7 @@ namespace EPiServer.Search.IndexingService.Test
         }
 
         [TestMethod]
+        [TestCategory("PDF")]
         public void SH_DataUriUpdateTest()
         {
             string id0 = "id0";
@@ -561,6 +571,7 @@ namespace EPiServer.Search.IndexingService.Test
         }
 
         [TestMethod]
+        [TestCategory("PDF")]
         public void SH_DataUriAddPDFTest()
         {
             string id0 = "id0";
@@ -614,6 +625,7 @@ namespace EPiServer.Search.IndexingService.Test
         }
 
         [TestMethod]
+        [TestCategory("PDF")]
         public void SH_DataUriAddBigPDFTest()
         {
             string id0 = "id0";
@@ -827,6 +839,7 @@ namespace EPiServer.Search.IndexingService.Test
         }
 
         [TestMethod]
+        [TestCategory("PDF")]
         public void SH_DataUriWithReferenceTest()
         {
             string id0 = "id0";
@@ -906,6 +919,7 @@ namespace EPiServer.Search.IndexingService.Test
         }
 
         [TestMethod]
+        [TestCategory("PDF")]
         public void SH_DataUriAsReferenceTest()
         {
             string id0 = "id0";

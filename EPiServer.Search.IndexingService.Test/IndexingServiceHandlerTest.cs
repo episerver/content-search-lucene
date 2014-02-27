@@ -25,6 +25,7 @@ namespace EPiServer.Search.IndexingService.Test
     ///to contain all IndexingServiceHandlerTest Unit Tests
     ///</summary>
     [TestClass()]
+    [DeploymentItem(@"EPiServer.Cms.Core.sql", IntegrationTestFiles.SqlOutput)]
     public class IndexingServiceHandlerTest
     {
         string accessKey = "accessKey1";

@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Collections.Generic;
+using EPiServer.TestTools.IntegrationTesting;
 
 namespace EPiServer.Search.IndexingService.Test
 {
@@ -15,6 +16,7 @@ namespace EPiServer.Search.IndexingService.Test
     ///to contain all IPRangeTest Unit Tests
     ///</summary>
     [TestClass()]
+    [DeploymentItem(@"EPiServer.Cms.Core.sql", IntegrationTestFiles.SqlOutput)]
     public class IPRangeTest
     {
 
