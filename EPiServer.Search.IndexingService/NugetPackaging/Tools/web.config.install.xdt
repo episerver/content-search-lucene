@@ -23,7 +23,7 @@
       </indexes>
     </namedIndexes>
   </episerver.search.indexingservice>
-  <location path="IndexingService.svc"  xdt:Transform="InsertIfMissing" xdt:Locator="Match(path)" >
+  <location path="IndexingService/IndexingService.svc"  xdt:Transform="InsertIfMissing" xdt:Locator="Match(path)" >
     <system.web>
       <httpRuntime maxQueryStringLength="65536" />
     </system.web>
