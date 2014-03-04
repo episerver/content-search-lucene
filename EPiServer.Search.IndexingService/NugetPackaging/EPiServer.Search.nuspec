@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>EPiServer.Search</id>
+    <version>$version$</version>
+    <title>EPiServer Search</title>
+    <authors>EPiServer AB</authors>
+    <owners>EPiServer</owners>
+    <licenseUrl>http://www.episerver.com/eula/</licenseUrl>
+    <projectUrl>http://www.episerver.com/web-content-management/</projectUrl>
+    <iconUrl>http://www.episerver.com/Framework/Styles/Images/Products/Integration.png</iconUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>EPiServer Search.</description>
+    <copyright>Copyright EPiServer AB 2014</copyright>
+    <tags>Search</tags>
+    <frameworkAssemblies/>
+    <dependencies>
+      <dependency id="Lucene.Net" version="[3.0.3, 4)" />
+      <dependency id="log4net" version="[1.2.10]" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="EPiServer.Search.IndexingService\NugetPackaging\Tools\install.ps1" target="tools\install.ps1" />
+    <file src="EPiServer.Search.IndexingService\NugetPackaging\Tools\web.config.install.xdt" target="content\web.config.install.xdt" />
+    <file src="EPiServer.Search.IndexingService\IndexingService.svc" target="content\IndexingService\IndexingService.svc" />
+    <file src="EPiServer.Search.IndexingService\bin\$Configuration$\EPiServer.Search.IndexingService.dll" target="lib\net40\EPiServer.Search.IndexingService.dll" />
+    <file src="EPiServer.Search.IndexingService\bin\$Configuration$\EPiServer.Search.IndexingService.pdb" target="lib\net40\EPiServer.Search.IndexingService.pdb" />
+  </files>
+</package>
