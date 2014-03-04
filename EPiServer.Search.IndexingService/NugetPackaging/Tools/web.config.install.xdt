@@ -15,7 +15,7 @@
   </system.serviceModel>
   <episerver.search.indexingservice xdt:Transform="InsertIfMissing">
     <clients>
-      <add name="local" description="local" allowLocal="true"/>
+      <add name="local" description="local" allowLocal="true" readonly="false" />
     </clients>
     <namedIndexes defaultIndex="default">
       <indexes>
