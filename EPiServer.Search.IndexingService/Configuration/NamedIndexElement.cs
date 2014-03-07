@@ -10,6 +10,11 @@ namespace EPiServer.Search.IndexingService.Configuration
 {
     public class NamedIndexElement : ConfigurationElement
     {
+        public NamedIndexElement()
+        {
+            GetFrameworkAppDataPath = () => GetAppDataBasePath();
+        }
+
         [ConfigurationProperty("name", IsRequired = true, IsKey = true)]
         public string Name
         {
@@ -24,6 +29,8 @@ namespace EPiServer.Search.IndexingService.Configuration
             set { base["directoryPath"] = value; }
         }
 
+        public Func<string> GetFrameworkAppDataPath;
+
         public const String AppDataPathKey = "[appDataPath]";
 
         public String GetDirectoryPath()
@@ -32,10 +39,10 @@ namespace EPiServer.Search.IndexingService.Configuration
 
             if (path.StartsWith(AppDataPathKey, StringComparison.OrdinalIgnoreCase))
             {
-                string basePath = GetAppDataBasePath();
+                string basePath = GetFrameworkAppDataPath();
                 if (String.IsNullOrEmpty(basePath))
                 {
-                    throw new ArgumentException("Missing basePath attribute for the appData in the EPiServer Framework config");
+                    basePath = "App_Data";
                 }
                 path = Path.Combine(basePath, path.Substring(AppDataPathKey.Length).TrimStart('\\', '/'));
             }
