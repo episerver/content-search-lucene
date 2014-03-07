@@ -1,8 +1,10 @@
 ﻿<?xml version="1.0"?>
 <configuration xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
-  <configSections>
+  <configSections xdt:Transform="InsertBefore(/configuration/*[1])" />
+  <configSections xdt:Locator="XPath(/configuration/configSections[last()])">
     <section name="episerver.search.indexingservice" type="EPiServer.Search.IndexingService.Configuration.IndexingServiceSection, EPiServer.Search.IndexingService" xdt:Transform="InsertIfMissing" xdt:Locator="Match(name)"/>
   </configSections>
+  <configSections xdt:Transform="RemoveAll" xdt:Locator="Condition(count(*)=0)" />
   <system.serviceModel xdt:Transform="InsertIfMissing">
     <bindings>
       <webHttpBinding xdt:Transform="InsertIfMissing">
@@ -15,7 +17,7 @@
   </system.serviceModel>
   <episerver.search.indexingservice xdt:Transform="InsertIfMissing">
     <clients>
-      <add name="local" description="local" allowLocal="true"/>
+      <add name="local" description="local" allowLocal="true" readonly="false" />
     </clients>
     <namedIndexes defaultIndex="default">
       <indexes>
@@ -23,7 +25,7 @@
       </indexes>
     </namedIndexes>
   </episerver.search.indexingservice>
-  <location path="IndexingService.svc"  xdt:Transform="InsertIfMissing" xdt:Locator="Match(path)" >
+  <location path="IndexingService/IndexingService.svc"  xdt:Transform="InsertIfMissing" xdt:Locator="Match(path)" >
     <system.web>
       <httpRuntime maxQueryStringLength="65536" />
     </system.web>
