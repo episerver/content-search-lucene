@@ -134,7 +134,7 @@ Function GetIIsUrl($project)
 		$project = Get-Project
 	}
 
-	$baseAddress = ''
+	$baseAddress = 'IndexingService/IndexingService.svc'
 	try
 	{
 		$iisUrlProperty = $project.Properties.Item("WebApplication.IISUrl")
@@ -143,7 +143,7 @@ Function GetIIsUrl($project)
 
 	if ($iisUrlProperty -ne $null)
 	{
-		$baseAddress = $iisUrlProperty.Value
+		$baseAddress =  $iisUrlProperty.Value + $baseAddress
 	}
 	return $baseAddress
 }
