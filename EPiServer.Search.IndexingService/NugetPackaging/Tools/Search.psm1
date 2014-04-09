@@ -165,7 +165,8 @@ Function Set-EPiBaseUri($project)
 		{
 			$defaultServiceName = $webConfig.configuration.'episerver.search'.namedIndexingServices.defaultService
  			$defaultService = $webConfig.configuration.'episerver.search'.namedIndexingServices.services.SelectSingleNode("add[@name='$defaultServiceName']")
- 			if ($defaultService -ne $null) {
+
+ 			if ($defaultService -ne $null -and (IsValidURL $defaultService.baseUri) -eq $false) {
 				$defaultService.baseUri =  GetIIsUrl($project)
 				Write-Host "Adding EPiServer Serach Base Url  '$($defaultService.baseUri)'"
 				$webConfig.Save($configPath)
@@ -173,3 +174,9 @@ Function Set-EPiBaseUri($project)
 		}
 	}
 }
+
+Function IsValidURL($address) 
+{
+	$uri = $address -as [System.URI] 
+	$uri.AbsoluteURI -ne $null -and $uri.Scheme -match '[http|https]' 
+} 
