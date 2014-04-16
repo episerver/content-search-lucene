@@ -137,15 +137,58 @@ Function GetIIsUrl($project)
 	$baseAddress = 'IndexingService/IndexingService.svc'
 	try
 	{
-		$iisUrlProperty = $project.Properties.Item("WebApplication.IISUrl")
+		$iisUrlProperty = $null
+		$useIIS = ReadProjectProperty $project "WebApplication.UseIIS"
+		if ($useIIS -ne $null -and $useIIS.value -eq $true)
+		{
+			$iisUrlProperty = ReadProjectProperty $project "WebApplication.IISUrl"
+		}
+		
+		if ($iisUrlProperty -eq $null)
+		{
+			$useIIS = ReadProjectProperty $project "WebApplication.IsUsingCustomServer"
+			if ($useIIS -ne $null -and $useIIS.value -eq $true)
+			{
+				$iisUrlProperty = ReadProjectProperty $project "WebApplication.CurrentDebugUrl"
+			}
+		}
 	}
 	catch{}
 
-	if ($iisUrlProperty -ne $null)
+	if ($iisUrlProperty -ne $null -and $iisUrlProperty.Value -ne "")
 	{
-		$baseAddress =  $iisUrlProperty.Value + $baseAddress
+ 		If (!($iisUrlProperty.Value.SubString($iisUrlProperty.Value.Length-1,1) -eq "/")) 
+		{
+			$baseAddress =  $iisUrlProperty.Value + "/" + $baseAddress
+		}
+		else
+		{
+			$baseAddress =  $iisUrlProperty.Value + $baseAddress
+		}
 	}
-	return $baseAddress
+
+	$baseAddress
+}
+
+Function ReadProjectProperty($project, $propertyName)
+{
+	if ($project -eq $null)
+	{
+		$project = Get-Project
+	}
+
+	$propValue = $null
+	try
+	{
+		$propValue = $project.Properties.Item($propertyName)
+	}
+	catch
+	{
+		$propValue = $null
+	}
+
+	$propValue
+
 }
 
 Function Set-EPiBaseUri($project)
@@ -168,9 +211,21 @@ Function Set-EPiBaseUri($project)
 
  			if ($defaultService -ne $null -and (IsValidURL $defaultService.baseUri) -eq $false) {
 				$defaultService.baseUri =  GetIIsUrl($project)
-				Write-Host "Adding EPiServer Serach Base Url  '$($defaultService.baseUri)'"
+				Write-Output  "Adding EPiServer Serach Base Url  '$($defaultService.baseUri)'"
 				$webConfig.Save($configPath)
 			}
+
+			if ($defaultService -eq $null -and $defaultServiceName -eq "")
+			{
+				$webConfig.configuration.'episerver.search'.namedIndexingServices.defaultService = "serviceName"
+				$baseUri = GetIIsUrl $project
+				$serviceElement = $webConfig.CreateElement('add')
+				$serviceElement.SetAttribute('name','serviceName')
+				$serviceElement.SetAttribute('baseUri',$baseUri)
+				$serviceElement.SetAttribute('accessKey','local')
+				[void]$webConfig.configuration.'episerver.search'.namedIndexingServices.services.AppendChild($serviceElement)
+				$webConfig.Save($configPath)
+			} 
 		}
 	}
 }
