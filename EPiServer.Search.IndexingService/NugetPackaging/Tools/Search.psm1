@@ -211,7 +211,7 @@ Function Set-EPiBaseUri($project)
 
  			if ($defaultService -ne $null -and (IsValidURL $defaultService.baseUri) -eq $false) {
 				$defaultService.baseUri =  GetIIsUrl($project)
-				Write-Output  "Adding EPiServer Serach Base Url  '$($defaultService.baseUri)'"
+				Write-Output  "Adding EPiServer Search Base Url  '$($defaultService.baseUri)'"
 				$webConfig.Save($configPath)
 			}
 
