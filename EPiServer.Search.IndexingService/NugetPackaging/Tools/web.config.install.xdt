@@ -6,7 +6,7 @@
   </configSections>
   <configSections xdt:Transform="RemoveAll" xdt:Locator="Condition(count(*)=0)" />
   <system.serviceModel xdt:Transform="InsertIfMissing">
-    <bindings>
+    <bindings xdt:Transform="InsertIfMissing">
       <webHttpBinding xdt:Transform="InsertIfMissing">
         <binding name="IndexingServiceCustomBinding" maxBufferPoolSize="1073741824" maxReceivedMessageSize="2147483647"
              maxBufferSize="2147483647" xdt:Transform="InsertIfMissing" xdt:Locator="Match(name)">
