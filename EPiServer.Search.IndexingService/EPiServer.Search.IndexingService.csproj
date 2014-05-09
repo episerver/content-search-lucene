@@ -124,6 +124,7 @@
     <Content Include="NugetPackaging\Tools\install.ps1" />
     <Content Include="NugetPackaging\Tools\web.config.install.xdt" />
     <Content Include="NugetPackaging\EPiServer.Search.nuspec" />
+    <Content Include="NugetPackaging\Tools\Search.psm1" />
     <None Include="web.config" />
   </ItemGroup>
   <ItemGroup>
