@@ -4,8 +4,8 @@ using System.Net;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.Threading;
+using EPiServer.Logging.Compatibility;
 using EPiServer.Search.IndexingService.Configuration;
-using log4net;
 using Lucene.Net.Analysis;
 using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Documents;
@@ -92,7 +92,7 @@ namespace EPiServer.Search.IndexingService
         private static void Init()
         {
             //Start logging
-            IndexingServiceServiceLog = log4net.LogManager.GetLogger(typeof(IndexingService).Name);
+            IndexingServiceServiceLog = LogManager.GetLogger(typeof(IndexingService));
 
             //Must check breaking changes and database format compatibility before 'upgrading' this
             LuceneVersion = Lucene.Net.Util.Version.LUCENE_29;
@@ -157,6 +157,7 @@ namespace EPiServer.Search.IndexingService
             private set;
         }
 
+        /// <summary>
         /// Gets the default Lucene reference Directory
         /// </summary>
         internal static Directory DefaultReferenceDirectory

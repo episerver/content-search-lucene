@@ -8,7 +8,6 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("EPiServer.Search.IndexingService")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyProduct("EPiServer.Search.IndexingService")]
-[assembly: log4net.Config.XmlConfigurator(ConfigFile = "episerverlog.config", Watch = true)]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
 // to COM components.  If you need to access a type in this assembly from 
