@@ -1,111 +1,37 @@
-﻿using System;
-using System.Web;
-using System.Collections.Generic;
-using System.ServiceModel;
-using System.Threading;
-using EPiServer.Search.Queries.Lucene;
-using EPiServer.Search;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.IO;
-using System.Xml;
-using System.ServiceModel.Syndication;
-using System.Collections.ObjectModel;
-using System.ServiceModel.Web;
-using System.ServiceModel.Description;
-using EPiServer.Data.Dynamic;
-using System.Text;
-using System.Linq;
-using EPiServer.Search.Queries;
-using EPiServer.Framework.Initialization;
+﻿using EPiServer.Data;
 using EPiServer.Framework;
-using EPiServer.Data;
+using EPiServer.Framework.Initialization;
+using EPiServer.Search.Internal;
+using EPiServer.Search.Queries;
+using EPiServer.Search.Queries.Lucene;
 using EPiServer.ServiceLocation;
-using EPiServer.TestTools.IntegrationTesting;
+using System;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
+using System.ServiceModel;
+using System.ServiceModel.Description;
+using System.ServiceModel.Web;
+using System.Text;
+using System.Threading;
+using Xunit;
 
-namespace EPiServer.Search.IndexingService.Test
+
+namespace EPiServer.Search.IndexingService
 {
-    /// <summary>
-    /// Summary description for SearchHandlerTest
-    /// </summary>
-    [DeploymentItem(@"test big.pdf")]
-    [DeploymentItem(@"test.doc")]
-    [DeploymentItem(@"test.docx")]
-    [DeploymentItem(@"test.pdf")]
-    [DeploymentItem(@"TestDocument.txt")]
-    [DeploymentItem(@"TestFile.txt")]
-    [DeploymentItem(@"EPiServer.Cms.Core.sql", IntegrationTestFiles.SqlOutput)]
-    [DeploymentItem(@"EPiServer.Data.Cache.dll")]
-    [TestClass]
-    public class ServiceTest
+    [Collection(IntegrationTestCollection.Name)]
+    public class ServiceTest : IDisposable
     {
         public ServiceTest()
         {
-            //
-            // TODO: Add constructor logic here
-            //
         }
 
-        private TestContext testContextInstance;
-
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
-
-        private void FlushRequestQueue()
-        {
-            RequestQueueHandler.ProcessQueue();
-        }
-
-        [ClassInitialize()]
-        public static void ClassInitialize(TestContext testContext)
-        {
-            InitializationEngine engine = new InitializationEngine();
-            engine.Modules = new IInitializableModule[] { new DataInitialization(), new SearchInitialization(), new ServiceContainerInitialization() };
-            engine.Initialize(HostType.TestFramework);
-        }
-
-        [TestCleanup]
-        public virtual void TestCleanup()
+        public void Dispose()
         {
             RequestQueueHandler.TruncateQueue();
-            //ResetAllIndexes();
         }
 
-        //#region Additional test attributes
-        ////
-        //// You can use the following additional attributes as you write your tests:
-        ////
-        //// Use ClassInitialize to run code before running the first test in the class
-        //// [ClassInitialize()]
-        //// public static void MyClassInitialize(TestContext testContext) { }
-        ////
-        //// Use ClassCleanup to run code after all tests in a class have run
-        //// [ClassCleanup()]
-        //// public static void MyClassCleanup() { }
-        ////
-        //// Use TestInitialize to run code before running each test 
-        //// [TestInitialize()]
-        //// public void MyTestInitialize() { }
-        ////
-        //// Use TestCleanup to run code after each test has run
-        //// [TestCleanup()]
-        //// public void MyTestCleanup() { }
-        ////
-        //#endregion
-
-        [TestMethod]
+        [Fact]
         public void SH_DisplayTextMaxLengthTest()
         {
             string id1 = "1";
@@ -139,13 +65,13 @@ namespace EPiServer.Search.IndexingService.Test
 
                 SearchHandler.Instance.UpdateIndex(item);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 FieldQuery fq = new FieldQuery("\"searchable metadata\"");
                 SearchResults res = SearchHandler.Instance.GetSearchResults(fq, 1, 10);
-                Assert.AreEqual(1, res.TotalHits);
-                Assert.AreEqual(500, res.IndexResponseItems[0].DisplayText.Length);
-                Assert.IsFalse(res.IndexResponseItems[0].DisplayText.Contains("searchable metadata"));
+                Assert.Equal(1, res.TotalHits);
+                Assert.Equal(500, res.IndexResponseItems[0].DisplayText.Length);
+                Assert.False(res.IndexResponseItems[0].DisplayText.Contains("searchable metadata"));
 
                 RequestQueueHandler.TruncateQueue();
 
@@ -156,7 +82,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_RequestResponseItemEqualityTest()
         {
             string id1 = "1";
@@ -192,7 +118,7 @@ namespace EPiServer.Search.IndexingService.Test
 
                 SearchHandler.Instance.UpdateIndex(item);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 AssertEqualToSearchResult(item, null);
 
@@ -218,7 +144,7 @@ namespace EPiServer.Search.IndexingService.Test
 
                 SearchHandler.Instance.UpdateIndex(item);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 AssertEqualToSearchResult(item, "testindex2");
 
@@ -226,7 +152,7 @@ namespace EPiServer.Search.IndexingService.Test
                 item = new IndexRequestItem(id2, IndexAction.Add);
                 SearchHandler.Instance.UpdateIndex(item);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 AssertEqualToSearchResult(item, null);
 
@@ -235,7 +161,7 @@ namespace EPiServer.Search.IndexingService.Test
                 item.NamedIndex = "testindex2";
                 SearchHandler.Instance.UpdateIndex(item);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 AssertEqualToSearchResult(item, "testindex2");
 
@@ -246,7 +172,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_AllFieldMatchTest()
         {
             string id1 = "1";
@@ -274,7 +200,7 @@ namespace EPiServer.Search.IndexingService.Test
 
                 SearchHandler.Instance.UpdateIndex(item);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 FieldQuery q1 = new FieldQuery("Header test", Field.Title);
                 FieldQuery q2 = new FieldQuery("Body test", Field.DisplayText);
@@ -288,7 +214,7 @@ namespace EPiServer.Search.IndexingService.Test
                 gq.QueryExpressions.Add(q4);
 
                 SearchResults res = SearchHandler.Instance.GetSearchResults(gq, 1, 10);
-                Assert.AreEqual(1, res.TotalHits);
+                Assert.Equal(1, res.TotalHits);
 
                 gq = new GroupQuery(LuceneOperator.OR);
                 gq.QueryExpressions.Add(q1);
@@ -297,7 +223,7 @@ namespace EPiServer.Search.IndexingService.Test
                 gq.QueryExpressions.Add(q4);
 
                 res = SearchHandler.Instance.GetSearchResults(gq, 1, 10);
-                Assert.AreEqual(1, res.TotalHits);
+                Assert.Equal(1, res.TotalHits);
 
                 AssertEqualToSearchResult(item, null);
 
@@ -306,7 +232,7 @@ namespace EPiServer.Search.IndexingService.Test
                 item.NamedIndex = "testindex2";
                 SearchHandler.Instance.UpdateIndex(item);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 AssertEqualToSearchResult(item, "testindex2");
 
@@ -317,7 +243,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_RangeSearchTest()
         {
             string id1 = "1";
@@ -355,23 +281,23 @@ namespace EPiServer.Search.IndexingService.Test
                 item3.Modified = new DateTime(2009, 7, 8);
                 SearchHandler.Instance.UpdateIndex(item3);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 RangeQuery r1 = new RangeQuery("20100101000000", "20100601000000", Field.Created, false);
                 SearchResults res = SearchHandler.Instance.GetSearchResults(r1, 1, 10);
-                Assert.AreEqual(1, res.TotalHits);
+                Assert.Equal(1, res.TotalHits);
 
                 r1 = new RangeQuery("20090101000000", "20100601000000", Field.Created, false);
                 res = SearchHandler.Instance.GetSearchResults(r1, 1, 10);
-                Assert.AreEqual(3, res.TotalHits);
+                Assert.Equal(3, res.TotalHits);
 
                 r1 = new RangeQuery("20100203000000", "20100402000000", Field.Created, true);
                 res = SearchHandler.Instance.GetSearchResults(r1, 1, 10);
-                Assert.AreEqual(1, res.TotalHits);
+                Assert.Equal(1, res.TotalHits);
 
                 r1 = new RangeQuery("20100203000000", "20100402000000", Field.Created, false);
                 res = SearchHandler.Instance.GetSearchResults(r1, 1, 10);
-                Assert.AreEqual(0, res.TotalHits);
+                Assert.Equal(0, res.TotalHits);
             }
             finally
             {
@@ -379,7 +305,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_ReferenceDataSearchTest()
         {
             string id1 = "1";
@@ -412,7 +338,7 @@ namespace EPiServer.Search.IndexingService.Test
                 item2.Metadata = "This is metadata for id2";
                 SearchHandler.Instance.UpdateIndex(item2);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 // Search default field
                 FieldQuery expr1 = new FieldQuery("\"header for id1\"");
@@ -423,7 +349,7 @@ namespace EPiServer.Search.IndexingService.Test
                 gq.QueryExpressions.Add(expr2);
                 gq.QueryExpressions.Add(expr3);
                 SearchResults results = SearchHandler.Instance.GetSearchResults(gq, 1, 20);
-                Assert.AreEqual(1, results.IndexResponseItems.Count);
+                Assert.Equal(1, results.IndexResponseItems.Count);
 
                 AssertIndexItemEquality(item, results.IndexResponseItems[0]);
 
@@ -438,7 +364,7 @@ namespace EPiServer.Search.IndexingService.Test
                 gq.QueryExpressions.Add(expr3);
                 gq.QueryExpressions.Add(expr5);
                 results = SearchHandler.Instance.GetSearchResults(gq, 1, 20);
-                Assert.AreEqual(0, results.IndexResponseItems.Count);
+                Assert.Equal(0, results.IndexResponseItems.Count);
 
                 // Add reference data to item
                 IndexRequestItem refItem = new IndexRequestItem(id2, IndexAction.Add);
@@ -449,7 +375,7 @@ namespace EPiServer.Search.IndexingService.Test
                 refItem.ReferenceId = id1;
                 SearchHandler.Instance.UpdateIndex(refItem);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 Thread.Sleep(2000); // let reference data be merged in service
 
@@ -471,8 +397,8 @@ namespace EPiServer.Search.IndexingService.Test
                 gq.QueryExpressions.Add(expr8);
                 results = SearchHandler.Instance.GetSearchResults(gq, 1, 20);
 
-                Assert.AreEqual(1, results.IndexResponseItems.Count);
-                Assert.AreEqual("1", results.IndexResponseItems[0].Id);
+                Assert.Equal(1, results.IndexResponseItems.Count);
+                Assert.Equal("1", results.IndexResponseItems[0].Id);
 
                 AssertIndexItemEquality(item, results.IndexResponseItems[0]);
 
@@ -483,8 +409,8 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
-        [TestCategory("PDF")]
+        [Fact]
+        [Trait("Category", "PDF")]
         public void SH_DataUriUpdateTest()
         {
             string id0 = "id0";
@@ -502,11 +428,11 @@ namespace EPiServer.Search.IndexingService.Test
                 appPath = System.Web.Hosting.HostingEnvironment.ApplicationPhysicalPath;
             }
 
-            string testDocumentPath0 = Path.Combine(appPath, "TestFile.txt");
-            string testDocumentPath1 = Path.Combine(appPath, "test.pdf");
-            string testDocumentPath2 = Path.Combine(appPath, "test.doc");
-            string testDocumentPath3 = Path.Combine(appPath, "test.docx");
-            string testDocumentPath4 = Path.Combine(appPath, "test big.pdf");
+            string testDocumentPath0 = Path.Combine(appPath, @"Resources\TestFile.txt");
+            string testDocumentPath1 = Path.Combine(appPath, @"Resources\test.pdf");
+            string testDocumentPath2 = Path.Combine(appPath, @"Resources\test.doc");
+            string testDocumentPath3 = Path.Combine(appPath, @"Resources\test.docx");
+            string testDocumentPath4 = Path.Combine(appPath, @"Resources\test big.pdf");
 
 
             try
@@ -522,13 +448,13 @@ namespace EPiServer.Search.IndexingService.Test
 
                 SearchHandler.Instance.UpdateIndex(item);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 Thread.Sleep(7000); //Wait for task queue in indexing service to finish
 
                 FieldQuery fe = new FieldQuery("\"simple text file\"");
                 SearchResults results = SearchHandler.Instance.GetSearchResults(fe, 1, 20);
-                Assert.AreEqual(1, results.IndexResponseItems.Count, "Found no or too many search results, expected exactly one");
+                Assert.Equal(1, results.IndexResponseItems.Count);
                 IndexResponseItem resultItem = results.IndexResponseItems[0];
 
                 // Update the item with another data uri
@@ -539,29 +465,29 @@ namespace EPiServer.Search.IndexingService.Test
 
                 SearchHandler.Instance.UpdateIndex(item);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 Thread.Sleep(5000); //Wait for task queue in indexing service to finish
 
                 fe = new FieldQuery("\"plain and simple text file that we try to index\"");
                 results = SearchHandler.Instance.GetSearchResults(fe, 1, 20);
-                Assert.AreEqual(0, results.IndexResponseItems.Count, "Found no or too many search results, expected exactly one");
+                Assert.Equal(0, results.IndexResponseItems.Count);
 
                 fe = new FieldQuery("\"test pdf document\"");
                 results = SearchHandler.Instance.GetSearchResults(fe, 1, 20);
-                Assert.AreEqual(1, results.IndexResponseItems.Count, "Found no or too many search results, expected exactly one");
+                Assert.Equal(1, results.IndexResponseItems.Count);
 
                 // Update the item with no data uri
                 item = new IndexRequestItem(id0, IndexAction.Update);
                 SearchHandler.Instance.UpdateIndex(item);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 Thread.Sleep(5000); //Wait for task queue in indexing service to finish
 
                 fe = new FieldQuery("\"test pdf document\"");
                 results = SearchHandler.Instance.GetSearchResults(fe, 1, 20);
-                Assert.AreEqual(0, results.IndexResponseItems.Count, "Found no or too many search results, expected exactly one");
+                Assert.Equal(0, results.IndexResponseItems.Count);
 
             }
             finally
@@ -570,8 +496,8 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
-        [TestCategory("PDF")]
+        [Fact]
+        [Trait("Category", "PDF")]
         public void SH_DataUriAddPDFTest()
         {
             string id0 = "id0";
@@ -588,7 +514,7 @@ namespace EPiServer.Search.IndexingService.Test
                 appPath = System.Web.Hosting.HostingEnvironment.ApplicationPhysicalPath;
             }
 
-            string testDocumentPath0 = Path.Combine(appPath, "test.pdf");
+            string testDocumentPath0 = Path.Combine(appPath, @"Resources\test.pdf");
 
             try
             {
@@ -610,13 +536,13 @@ namespace EPiServer.Search.IndexingService.Test
 
                 SearchHandler.Instance.UpdateIndex(item);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 Thread.Sleep(5000); //Wait for task queue in indexing service to finish
 
                 FieldQuery fe = new FieldQuery("\"test pdf document\"");
                 SearchResults results = SearchHandler.Instance.GetSearchResults(fe, 1, 20);
-                Assert.AreEqual(1, results.IndexResponseItems.Count, "Found no or too many search results, expected exactly one");
+                Assert.Equal(1, results.IndexResponseItems.Count);
             }
             finally
             {
@@ -624,8 +550,8 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
-        [TestCategory("PDF")]
+        [Fact]
+        [Trait("Category", "PDF")]
         public void SH_DataUriAddBigPDFTest()
         {
             string id0 = "id0";
@@ -642,7 +568,7 @@ namespace EPiServer.Search.IndexingService.Test
                 appPath = System.Web.Hosting.HostingEnvironment.ApplicationPhysicalPath;
             }
 
-            string testDocumentPath0 = Path.Combine(appPath, "test big.pdf");
+            string testDocumentPath0 = Path.Combine(appPath, @"Resources\test big.pdf");
 
             try
             {
@@ -664,13 +590,13 @@ namespace EPiServer.Search.IndexingService.Test
 
                 SearchHandler.Instance.UpdateIndex(item);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 Thread.Sleep(20000); //Wait for task queue in indexing service to finish
 
                 FieldQuery fe = new FieldQuery("\"StarCommunity is actually a module of Required Framework Components\"");
                 SearchResults results = SearchHandler.Instance.GetSearchResults(fe, 1, 20);
-                Assert.AreEqual(1, results.IndexResponseItems.Count, "Found no or too many search results, expected exactly one");
+                Assert.Equal(1, results.IndexResponseItems.Count);
             }
             finally
             {
@@ -678,7 +604,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_DataUriAddWordDocXTest()
         {
             string id0 = "id0";
@@ -695,7 +621,7 @@ namespace EPiServer.Search.IndexingService.Test
                 appPath = System.Web.Hosting.HostingEnvironment.ApplicationPhysicalPath;
             }
 
-            string testDocumentPath0 = Path.Combine(appPath, "test.docx");
+            string testDocumentPath0 = Path.Combine(appPath, @"Resources\test.docx");
 
             try
             {
@@ -717,13 +643,13 @@ namespace EPiServer.Search.IndexingService.Test
 
                 SearchHandler.Instance.UpdateIndex(item);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 Thread.Sleep(5000); //Wait for task queue in indexing service to finish
 
                 FieldQuery fe = new FieldQuery("\"This is a test word document\"");
                 SearchResults results = SearchHandler.Instance.GetSearchResults(fe, 1, 20);
-                Assert.AreEqual(1, results.IndexResponseItems.Count, "Found no or too many search results, expected exactly one");
+                Assert.Equal(1, results.IndexResponseItems.Count);
             }
             finally
             {
@@ -731,7 +657,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_DataUriAddWordDocTest()
         {
             string id0 = "id0";
@@ -748,7 +674,7 @@ namespace EPiServer.Search.IndexingService.Test
                 appPath = System.Web.Hosting.HostingEnvironment.ApplicationPhysicalPath;
             }
 
-            string testDocumentPath0 = Path.Combine(appPath, "test.doc");
+            string testDocumentPath0 = Path.Combine(appPath, @"Resources\test.doc");
 
             try
             {
@@ -770,13 +696,13 @@ namespace EPiServer.Search.IndexingService.Test
 
                 SearchHandler.Instance.UpdateIndex(item);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 Thread.Sleep(5000); //Wait for task queue in indexing service to finish
 
                 FieldQuery fe = new FieldQuery("\"test word 2007\"");
                 SearchResults results = SearchHandler.Instance.GetSearchResults(fe, 1, 20);
-                Assert.AreEqual(1, results.IndexResponseItems.Count, "Found no or too many search results, expected exactly one");
+                Assert.Equal(1, results.IndexResponseItems.Count);
             }
             finally
             {
@@ -784,7 +710,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_DataUriAddTextFileTest()
         {
             string id0 = "id0";
@@ -801,7 +727,7 @@ namespace EPiServer.Search.IndexingService.Test
                 appPath = System.Web.Hosting.HostingEnvironment.ApplicationPhysicalPath;
             }
 
-            string testDocumentPath0 = Path.Combine(appPath, "TestFile.txt");
+            string testDocumentPath0 = Path.Combine(appPath, @"Resources\TestFile.txt");
 
             try
             {
@@ -823,13 +749,13 @@ namespace EPiServer.Search.IndexingService.Test
 
                 SearchHandler.Instance.UpdateIndex(item);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 Thread.Sleep(5000); //Wait for task queue in indexing service to finish
 
                 FieldQuery fe = new FieldQuery("\"plain and simple text file that we try to index\"");
                 SearchResults results = SearchHandler.Instance.GetSearchResults(fe, 1, 20);
-                Assert.AreEqual(1, results.IndexResponseItems.Count, "Found no or too many search results, expected exactly one");
+                Assert.Equal(1, results.IndexResponseItems.Count);
                 IndexResponseItem resultItem = results.IndexResponseItems[0];
             }
             finally
@@ -838,8 +764,8 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
-        [TestCategory("PDF")]
+        [Fact]
+        [Trait("Category", "PDF")]
         public void SH_DataUriWithReferenceTest()
         {
             string id0 = "id0";
@@ -857,7 +783,7 @@ namespace EPiServer.Search.IndexingService.Test
                 appPath = System.Web.Hosting.HostingEnvironment.ApplicationPhysicalPath;
             }
 
-            string testDocumentPath0 = Path.Combine(appPath, "test.pdf");
+            string testDocumentPath0 = Path.Combine(appPath, @"Resources\test.pdf");
 
             try
             {
@@ -882,19 +808,19 @@ namespace EPiServer.Search.IndexingService.Test
 
                 SearchHandler.Instance.UpdateIndex(item2);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 Thread.Sleep(5000); //Wait for task queue in indexing service to finish
 
                 FieldQuery fe = new FieldQuery("\"test pdf document\"");
                 SearchResults results = SearchHandler.Instance.GetSearchResults(fe, 1, 20);
-                Assert.AreEqual(1, results.IndexResponseItems.Count, "Found no or too many search results, expected exactly one");
-                Assert.AreEqual(id0, results.IndexResponseItems[0].Id);
+                Assert.Equal(1, results.IndexResponseItems.Count);
+                Assert.Equal(id0, results.IndexResponseItems[0].Id);
 
                 fe = new FieldQuery("\"test reference item\"");
                 results = SearchHandler.Instance.GetSearchResults(fe, 1, 20);
-                Assert.AreEqual(1, results.IndexResponseItems.Count, "Found no or too many search results, expected exactly one");
-                Assert.AreEqual(id0, results.IndexResponseItems[0].Id);
+                Assert.Equal(1, results.IndexResponseItems.Count);
+                Assert.Equal(id0, results.IndexResponseItems[0].Id);
 
                 // Update reference item
                 IndexRequestItem item3 = new IndexRequestItem(id1, IndexAction.Update);
@@ -904,12 +830,12 @@ namespace EPiServer.Search.IndexingService.Test
 
                 SearchHandler.Instance.UpdateIndex(item3);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 fe = new FieldQuery("\"test reference item update\"");
                 results = SearchHandler.Instance.GetSearchResults(fe, 1, 20);
-                Assert.AreEqual(1, results.IndexResponseItems.Count, "Found no or too many search results, expected exactly one");
-                Assert.AreEqual(id0, results.IndexResponseItems[0].Id);
+                Assert.Equal(1, results.IndexResponseItems.Count);
+                Assert.Equal(id0, results.IndexResponseItems[0].Id);
 
             }
             finally
@@ -918,8 +844,8 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
-        [TestCategory("PDF")]
+        [Fact]
+        [Trait("Category", "PDF")]
         public void SH_DataUriAsReferenceTest()
         {
             string id0 = "id0";
@@ -937,7 +863,7 @@ namespace EPiServer.Search.IndexingService.Test
                 appPath = System.Web.Hosting.HostingEnvironment.ApplicationPhysicalPath;
             }
 
-            string testDocumentPath0 = Path.Combine(appPath, "test.pdf");
+            string testDocumentPath0 = Path.Combine(appPath, @"Resources\test.pdf");
 
             try
             {
@@ -962,19 +888,19 @@ namespace EPiServer.Search.IndexingService.Test
 
                 SearchHandler.Instance.UpdateIndex(item2);
                 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 Thread.Sleep(5000); //Wait for task queue in indexing service to finish
 
                 FieldQuery fe = new FieldQuery("\"title main item\"");
                 SearchResults results = SearchHandler.Instance.GetSearchResults(fe, 1, 20);
-                Assert.AreEqual(1, results.IndexResponseItems.Count, "Found no or too many search results, expected exactly one");
-                Assert.AreEqual(id0, results.IndexResponseItems[0].Id);
+                Assert.Equal(1, results.IndexResponseItems.Count);
+                Assert.Equal(id0, results.IndexResponseItems[0].Id);
 
                 fe = new FieldQuery("\"test pdf document\"");
                 results = SearchHandler.Instance.GetSearchResults(fe, 1, 20);
-                Assert.AreEqual(1, results.IndexResponseItems.Count, "Found no or too many search results, expected exactly one");
-                Assert.AreEqual(id0, results.IndexResponseItems[0].Id);
+                Assert.Equal(1, results.IndexResponseItems.Count);
+                Assert.Equal(id0, results.IndexResponseItems[0].Id);
 
                 // Update reference item
                 IndexRequestItem item3 = new IndexRequestItem(id1, IndexAction.Update);
@@ -985,14 +911,14 @@ namespace EPiServer.Search.IndexingService.Test
 
                 SearchHandler.Instance.UpdateIndex(item3);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 Thread.Sleep(5000); //Wait for task queue in indexing service to finish
 
                 fe = new FieldQuery("\"test reference item update\"");
                 results = SearchHandler.Instance.GetSearchResults(fe, 1, 20);
-                Assert.AreEqual(1, results.IndexResponseItems.Count, "Found no or too many search results, expected exactly one");
-                Assert.AreEqual(id0, results.IndexResponseItems[0].Id);
+                Assert.Equal(1, results.IndexResponseItems.Count);
+                Assert.Equal(id0, results.IndexResponseItems[0].Id);
             }
             finally
             {
@@ -1000,7 +926,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_ACLTest()
         {
             string id1 = "1";
@@ -1031,7 +957,7 @@ namespace EPiServer.Search.IndexingService.Test
 
                 SearchHandler.Instance.UpdateIndex(item);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 FieldQuery fe = new FieldQuery(item.Id, Field.Id);
 
@@ -1043,7 +969,7 @@ namespace EPiServer.Search.IndexingService.Test
                 gq1.QueryExpressions.Add(aclQuery);
 
                 SearchResults results = SearchHandler.Instance.GetSearchResults(gq1, 1, 20);
-                Assert.AreEqual(1, results.IndexResponseItems.Count, "Found no or too many search results, expected exactly one");
+                Assert.Equal(1, results.IndexResponseItems.Count);
                 IndexResponseItem resultItem = results.IndexResponseItems[0];
 
                 AssertIndexItemEquality(item, resultItem);
@@ -1058,7 +984,7 @@ namespace EPiServer.Search.IndexingService.Test
                 gq2.QueryExpressions.Add(aclQuery2);
 
                 results = SearchHandler.Instance.GetSearchResults(gq2, 1, 20);
-                Assert.AreEqual(1, results.IndexResponseItems.Count, "Found no or too many search results, expected exactly one");
+                Assert.Equal(1, results.IndexResponseItems.Count);
                 resultItem = results.IndexResponseItems[0];
                 AssertIndexItemEquality(item, resultItem);
 
@@ -1074,7 +1000,7 @@ namespace EPiServer.Search.IndexingService.Test
                 gq3.QueryExpressions.Add(aclQuery3);
 
                 results = SearchHandler.Instance.GetSearchResults(gq3, 1, 20);
-                Assert.AreEqual(1, results.IndexResponseItems.Count, "Found no or too many search results, expected exactly one");
+                Assert.Equal(1, results.IndexResponseItems.Count);
                 resultItem = results.IndexResponseItems[0];
 
                 AssertEqualToSearchResult(item, null);
@@ -1089,7 +1015,7 @@ namespace EPiServer.Search.IndexingService.Test
                 gq4.QueryExpressions.Add(aclQuery4);
 
                 results = SearchHandler.Instance.GetSearchResults(gq4, 1, 20);
-                Assert.AreEqual(0, results.IndexResponseItems.Count, "Found no or too many search results, expected exactly one");
+                Assert.Empty(results.IndexResponseItems);
 
                 //Update the item
                 item = new IndexRequestItem(id1, IndexAction.Update);
@@ -1105,7 +1031,7 @@ namespace EPiServer.Search.IndexingService.Test
 
                 SearchHandler.Instance.UpdateIndex(item);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 // Check that "and irene" dont have access after update
                 AccessControlListQuery aclQuery5 = new AccessControlListQuery();
@@ -1115,14 +1041,14 @@ namespace EPiServer.Search.IndexingService.Test
                 gq5.QueryExpressions.Add(fe5);
                 gq5.QueryExpressions.Add(aclQuery5);
                 results = SearchHandler.Instance.GetSearchResults(gq2, 1, 20);
-                Assert.AreEqual(0, results.IndexResponseItems.Count, "Found no or too many search results, expected exactly one");
+                Assert.Empty(results.IndexResponseItems);
 
                 // Check inner operator "AND"
                 AccessControlListQuery aclQuery6 = new AccessControlListQuery(LuceneOperator.AND);
                 aclQuery6.Items.Add("G:me");
                 aclQuery6.Items.Add("U:myself");
                 results = SearchHandler.Instance.GetSearchResults(aclQuery6, 1, 20);
-                Assert.AreEqual(1, results.IndexResponseItems.Count);
+                Assert.Equal(1, results.IndexResponseItems.Count);
             }
             finally
             {
@@ -1130,7 +1056,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_RemoveTest()
         {
             string id = Guid.NewGuid().ToString();
@@ -1154,7 +1080,7 @@ namespace EPiServer.Search.IndexingService.Test
                 item2.NamedIndex = "testindex2";
                 SearchHandler.Instance.UpdateIndex(item2);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 AssertEqualToSearchResult(item1, null);
                 AssertEqualToSearchResult(item2, "testindex2");
@@ -1163,12 +1089,12 @@ namespace EPiServer.Search.IndexingService.Test
                 IndexRequestItem item3 = new IndexRequestItem(id, IndexAction.Remove);
                 SearchHandler.Instance.UpdateIndex(item3);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 //The item should be removed
                 EscapedFieldQuery fe = new EscapedFieldQuery(id, Field.Id);
                 SearchResults results = SearchHandler.Instance.GetSearchResults(fe, 1, 20);
-                Assert.AreEqual(0, results.IndexResponseItems.Count);
+                Assert.Equal(0, results.IndexResponseItems.Count);
 
 
                 //Remove item from named index index
@@ -1176,13 +1102,13 @@ namespace EPiServer.Search.IndexingService.Test
                 item4.NamedIndex = "testindex2";
                 SearchHandler.Instance.UpdateIndex(item4);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 //The item should be removed
                 Collection<string> namedIndexes = new Collection<string>();
                 fe = new EscapedFieldQuery(id, Field.Id);
                 results = SearchHandler.Instance.GetSearchResults(fe, null, namedIndexes, 1, 20);
-                Assert.AreEqual(0, results.IndexResponseItems.Count);
+                Assert.Equal(0, results.IndexResponseItems.Count);
             }
             finally
             {
@@ -1190,7 +1116,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_ReservedCharactersInIdTest()
         {
             string id = "~" + Guid.NewGuid().ToString() + "(";
@@ -1214,7 +1140,7 @@ namespace EPiServer.Search.IndexingService.Test
                 item2.NamedIndex = "testindex2";
                 SearchHandler.Instance.UpdateIndex(item2);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 AssertEqualToSearchResult(item1, null);
                 AssertEqualToSearchResult(item2, "testindex2");
@@ -1223,12 +1149,12 @@ namespace EPiServer.Search.IndexingService.Test
                 IndexRequestItem item3 = new IndexRequestItem(id, IndexAction.Remove);
                 SearchHandler.Instance.UpdateIndex(item3);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 //The item should be removed
                 EscapedFieldQuery fe = new EscapedFieldQuery(id, Field.Id);
                 SearchResults results = SearchHandler.Instance.GetSearchResults(fe, 1, 20);
-                Assert.AreEqual(0, results.IndexResponseItems.Count);
+                Assert.Equal(0, results.IndexResponseItems.Count);
 
 
                 //Remove item from named index index
@@ -1236,13 +1162,13 @@ namespace EPiServer.Search.IndexingService.Test
                 item4.NamedIndex = "testindex2";
                 SearchHandler.Instance.UpdateIndex(item4);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 //The item should be removed
                 Collection<string> namedIndexes = new Collection<string>();
                 fe = new EscapedFieldQuery(id, Field.Id);
                 results = SearchHandler.Instance.GetSearchResults(fe, null, namedIndexes, 1, 20);
-                Assert.AreEqual(0, results.IndexResponseItems.Count);
+                Assert.Equal(0, results.IndexResponseItems.Count);
             }
             finally
             {
@@ -1250,7 +1176,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_UpdateTest()
         {
             string id = Guid.NewGuid().ToString();
@@ -1270,7 +1196,7 @@ namespace EPiServer.Search.IndexingService.Test
                 item1.Title = "header test";
                 SearchHandler.Instance.UpdateIndex(item1);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 AssertEqualToSearchResult(item1, null);
 
@@ -1279,7 +1205,7 @@ namespace EPiServer.Search.IndexingService.Test
                 item2.Title = "header test updated";
                 SearchHandler.Instance.UpdateIndex(item2);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 AssertEqualToSearchResult(item2, null);
             }
@@ -1289,7 +1215,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_UpdateNamedIndexTest()
         {
             string id = Guid.NewGuid().ToString();
@@ -1311,7 +1237,7 @@ namespace EPiServer.Search.IndexingService.Test
                 item1.NamedIndex = "testindex3";
                 SearchHandler.Instance.UpdateIndex(item1);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 AssertEqualToSearchResult(item1, "testindex3");
 
@@ -1322,7 +1248,7 @@ namespace EPiServer.Search.IndexingService.Test
                 item2.NamedIndex = "testindex3";
                 SearchHandler.Instance.UpdateIndex(item2);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 AssertEqualToSearchResult(item2, "testindex3");
 
@@ -1333,7 +1259,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_PagingTest()
         {
             //Setup services
@@ -1342,7 +1268,7 @@ namespace EPiServer.Search.IndexingService.Test
             SetupIndexingServiceHost(out baseAddress1, out sh1);
             sh1.Open();
 
-            SearchSettings.Config.UseIndexingServicePaging = true;
+            SearchSettings.Options.UseIndexingServicePaging = true;
 
             try
             {
@@ -1351,30 +1277,30 @@ namespace EPiServer.Search.IndexingService.Test
 
                 CreateMultipleRequests();
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 SearchResults results = null;
 
                 //Get all items where any of the words exist in field: default and index: default
                 FieldQuery expr = new FieldQuery("header");
                 results = SearchHandler.Instance.GetSearchResults(expr, 1, 7);
-                Assert.AreEqual(7, results.TotalHits);
-                Assert.AreEqual(7, results.IndexResponseItems.Count);
+                Assert.Equal(7, results.TotalHits);
+                Assert.Equal(7, results.IndexResponseItems.Count);
 
                 expr = new FieldQuery("header");
                 results = SearchHandler.Instance.GetSearchResults(expr, 1, 3);
-                Assert.AreEqual(7, results.TotalHits);
-                Assert.AreEqual(3, results.IndexResponseItems.Count);
+                Assert.Equal(7, results.TotalHits);
+                Assert.Equal(3, results.IndexResponseItems.Count);
 
                 expr = new FieldQuery("header");
                 results = SearchHandler.Instance.GetSearchResults(expr, 2, 3);
-                Assert.AreEqual(7, results.TotalHits);
-                Assert.AreEqual(3, results.IndexResponseItems.Count);
+                Assert.Equal(7, results.TotalHits);
+                Assert.Equal(3, results.IndexResponseItems.Count);
 
                 expr = new FieldQuery("header");
                 results = SearchHandler.Instance.GetSearchResults(expr, 3, 3);
-                Assert.AreEqual(7, results.TotalHits);
-                Assert.AreEqual(1, results.IndexResponseItems.Count);
+                Assert.Equal(7, results.TotalHits);
+                Assert.Equal(1, results.IndexResponseItems.Count);
             }
             finally
             {
@@ -1383,7 +1309,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_DefaultFieldTest()
         {
             //Setup services
@@ -1411,15 +1337,15 @@ namespace EPiServer.Search.IndexingService.Test
                 item.Metadata = "metadata med svårt innehåll";
                 SearchHandler.Instance.UpdateIndex(item);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 FieldQuery q = new FieldQuery("testing");
                 SearchResults res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
-                Assert.AreEqual(2, res.IndexResponseItems.Count);
+                Assert.Equal(2, res.IndexResponseItems.Count);
 
                 q = new FieldQuery("svårt");
                 res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
-                Assert.AreEqual(3, res.IndexResponseItems.Count);
+                Assert.Equal(3, res.IndexResponseItems.Count);
             }
             finally
             {
@@ -1427,7 +1353,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_UpdateNonExistingItemShouldAdd()
         {
             //Setup services
@@ -1444,11 +1370,11 @@ namespace EPiServer.Search.IndexingService.Test
                 item.DisplayText = "testing introtext";
                 SearchHandler.Instance.UpdateIndex(item);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 FieldQuery q = new FieldQuery("testing");
                 SearchResults res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
-                Assert.AreEqual(1, res.IndexResponseItems.Count);
+                Assert.Equal(1, res.IndexResponseItems.Count);
             }
             finally
             {
@@ -1457,7 +1383,7 @@ namespace EPiServer.Search.IndexingService.Test
         }
 
 
-        [TestMethod]
+        [Fact]
         public void SH_FieldExpressionsTest()
         {
             //Setup services
@@ -1474,14 +1400,14 @@ namespace EPiServer.Search.IndexingService.Test
                 ResetAllIndexes();
 
                 CreateMultipleRequests();
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 SearchResults results = null;
 
                 //Get all items where any of the words exist in field: default and index: default
                 FieldQuery expr = new FieldQuery("\"header for\"");
                 results = SearchHandler.Instance.GetSearchResults(expr, 1, 20);
-                Assert.AreEqual(7, results.IndexResponseItems.Count);
+                Assert.Equal(7, results.IndexResponseItems.Count);
 
                 GroupQuery gq = new GroupQuery(LuceneOperator.AND);
                 FieldQuery fq1 = new FieldQuery("\"this is\"");
@@ -1489,7 +1415,7 @@ namespace EPiServer.Search.IndexingService.Test
                 gq.QueryExpressions.Add(fq1);
                 gq.QueryExpressions.Add(fq2);
                 results = SearchHandler.Instance.GetSearchResults(gq, 1, 20);
-                Assert.AreEqual(1, results.IndexResponseItems.Count);
+                Assert.Equal(1, results.IndexResponseItems.Count);
 
                 gq = new GroupQuery(LuceneOperator.OR);
                 fq1 = new FieldQuery("\"this is\"");
@@ -1497,88 +1423,88 @@ namespace EPiServer.Search.IndexingService.Test
                 gq.QueryExpressions.Add(fq1);
                 gq.QueryExpressions.Add(fq2);
                 results = SearchHandler.Instance.GetSearchResults(gq, 1, 20);
-                Assert.AreEqual(7, results.IndexResponseItems.Count);
+                Assert.Equal(7, results.IndexResponseItems.Count);
 
                 expr = new FieldQuery("\"är data i body\"");
                 results = SearchHandler.Instance.GetSearchResults(expr, 1, 20);
-                Assert.AreEqual(1, results.IndexResponseItems.Count);
+                Assert.Equal(1, results.IndexResponseItems.Count);
 
                 expr = new FieldQuery("\"är Data i Body\"");
                 results = SearchHandler.Instance.GetSearchResults(expr, 1, 20);
-                Assert.AreEqual(1, results.IndexResponseItems.Count);
+                Assert.Equal(1, results.IndexResponseItems.Count);
 
                 expr = new FieldQuery("\"är Data i Body*\"");
                 results = SearchHandler.Instance.GetSearchResults(expr, 1, 20);
-                Assert.AreEqual(1, results.IndexResponseItems.Count);
+                Assert.Equal(1, results.IndexResponseItems.Count);
 
                 expr = new FieldQuery("\"är data i meta\"");
                 results = SearchHandler.Instance.GetSearchResults(expr, 1, 20);
-                Assert.AreEqual(1, results.IndexResponseItems.Count);
+                Assert.Equal(1, results.IndexResponseItems.Count);
 
                 expr = new FieldQuery("\"testas lite svårt\"");
                 results = SearchHandler.Instance.GetSearchResults(expr, 1, 20);
-                Assert.AreEqual(1, results.IndexResponseItems.Count);
+                Assert.Equal(1, results.IndexResponseItems.Count);
 
                 expr = new FieldQuery("\"testas lite svart\"");
                 results = SearchHandler.Instance.GetSearchResults(expr, 1, 20);
-                Assert.AreEqual(0, results.IndexResponseItems.Count);
+                Assert.Equal(0, results.IndexResponseItems.Count);
 
                 expr = new FieldQuery("svårt");
                 results = SearchHandler.Instance.GetSearchResults(expr, 1, 20);
-                Assert.AreEqual(1, results.IndexResponseItems.Count);
+                Assert.Equal(1, results.IndexResponseItems.Count);
 
                 //Get top 5 items where any of the words exist in field: default and index: default
                 expr = new FieldQuery("\"header for\"");
                 results = SearchHandler.Instance.GetSearchResults(expr, 1, 5);
-                Assert.AreEqual(5, results.IndexResponseItems.Count);
+                Assert.Equal(5, results.IndexResponseItems.Count);
 
                 //Get all items where the exact phrase exist in field: default and index: default
                 expr = new FieldQuery("\"header for id1\"");
                 results = SearchHandler.Instance.GetSearchResults(expr, 1, 20);
-                Assert.AreEqual(1, results.IndexResponseItems.Count);
+                Assert.Equal(1, results.IndexResponseItems.Count);
 
                 //Get all items where the exact phrase exist in field: header and index: default
                 expr = new FieldQuery("\"header for id1\"", Field.Title);
                 results = SearchHandler.Instance.GetSearchResults(expr, 1, 20);
-                Assert.AreEqual(1, results.IndexResponseItems.Count);
+                Assert.Equal(1, results.IndexResponseItems.Count);
 
                 //Get all items where the exact phrase exist in field: body and index: default
                 expr = new FieldQuery("\"header for\"", Field.DisplayText);
                 results = SearchHandler.Instance.GetSearchResults(expr, 1, 20);
-                Assert.AreEqual(0, results.IndexResponseItems.Count);
+                Assert.Equal(0, results.IndexResponseItems.Count);
 
                 //Get all items where any of the words exist in field: header and index: testindex2
                 expr = new FieldQuery("\"header for\"", Field.Title);
                 Collection<string> indexes1 = new Collection<string>();
                 indexes1.Add("testindex2");
                 results = SearchHandler.Instance.GetSearchResults(expr, null, indexes1, 1, 20);
-                Assert.AreEqual(3, results.IndexResponseItems.Count);
+                Assert.Equal(3, results.IndexResponseItems.Count);
 
                 //Get all items where any of the words exist in field: default and index: testindex3
                 expr = new FieldQuery("\"header for\"");
                 Collection<string> indexes2 = new Collection<string>();
                 indexes2.Add("testindex3");
                 results = SearchHandler.Instance.GetSearchResults(expr, null, indexes2, 1, 20);
-                Assert.AreEqual(4, results.IndexResponseItems.Count);
+                Assert.Equal(4, results.IndexResponseItems.Count);
 
                 expr = new FieldQuery("\"header for\"");
                 Collection<string> indexes3 = new Collection<string>();
                 indexes3.Add("testindex2");
                 indexes3.Add("testindex3");
                 results = SearchHandler.Instance.GetSearchResults(expr, null, indexes3, 1, 20);
-                Assert.AreEqual(7, results.IndexResponseItems.Count);
+                Assert.Equal(7, results.IndexResponseItems.Count);
 
                 expr = new FieldQuery("Cms", Field.ItemType);
                 results = SearchHandler.Instance.GetSearchResults(expr, 1, 100);
-                Assert.AreEqual(1, results.IndexResponseItems.Count);
+                Assert.Equal(1, results.IndexResponseItems.Count);
 
                 //expr = new FieldQuery("Cm*", Field.Type);
                 //results = SearchHandler.Instance.GetSearchResults(expr, 1, 100);
-                //Assert.AreEqual(1, results.IndexResponseItems.Count);
+                //Assert.Equal(1, results.IndexResponseItems.Count);
 
                 //expr = new FieldQuery("EPiServer.Common*", Field.Type);
                 //results = SearchHandler.Instance.GetSearchResults(expr, 1, 100);
-                //Assert.AreEqual(1, results.IndexResponseItems.Count);
+                //Assert.Equal(1, results.IndexResponseItems.Count);
             }
             finally
             {
@@ -1586,7 +1512,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_TypeFieldSearchTest()
         {
             string id1 = "e00c464d-2d3c-4ad0-a4ad-356364313321";
@@ -1616,25 +1542,25 @@ namespace EPiServer.Search.IndexingService.Test
                 item3.ItemType = "Car.carpool";
                 SearchHandler.Instance.UpdateIndex(item3);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 SearchResults results = null;
 
                 FieldQuery expr = new FieldQuery("CmsPage", Field.ItemType);
                 results = SearchHandler.Instance.GetSearchResults(expr, 1, 20);
-                Assert.AreEqual(1, results.IndexResponseItems.Count);
+                Assert.Equal(1, results.IndexResponseItems.Count);
 
                 expr = new FieldQuery("Car.car*", Field.ItemType);
                 results = SearchHandler.Instance.GetSearchResults(expr, 1, 20);
-                Assert.AreEqual(1, results.IndexResponseItems.Count);
+                Assert.Equal(1, results.IndexResponseItems.Count);
 
                 expr = new FieldQuery("EPiServer.Common*", Field.ItemType);
                 results = SearchHandler.Instance.GetSearchResults(expr, 1, 20);
-                Assert.AreEqual(1, results.IndexResponseItems.Count);
+                Assert.Equal(1, results.IndexResponseItems.Count);
 
                 expr = new FieldQuery("EPiServer.Common", Field.ItemType);
                 results = SearchHandler.Instance.GetSearchResults(expr, 1, 20);
-                Assert.AreEqual(1, results.IndexResponseItems.Count);
+                Assert.Equal(1, results.IndexResponseItems.Count);
             }
             finally
             {
@@ -1643,7 +1569,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_FuzzySearchTest()
         {
             string id1 = "e00c464d-2d3c-4ad0-a4ad-356364313321";
@@ -1670,13 +1596,13 @@ namespace EPiServer.Search.IndexingService.Test
                 item2.NamedIndex = "testindex2";
                 SearchHandler.Instance.UpdateIndex(item2);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 SearchResults results = null;
 
                 FieldQuery expr = new FieldQuery("reconcider");
                 results = SearchHandler.Instance.GetSearchResults(expr, 1, 20);
-                Assert.AreEqual(1, results.IndexResponseItems.Count);
+                Assert.Equal(1, results.IndexResponseItems.Count);
 
                 Collection<string> namedIndexes = new Collection<string>();
                 namedIndexes.Add("default");
@@ -1685,11 +1611,11 @@ namespace EPiServer.Search.IndexingService.Test
                 //Get all items where any of the words exist in field: default and index: default
                 expr = new FuzzyQuery("reconcider", Field.Default, 0.9f);
                 results = SearchHandler.Instance.GetSearchResults(expr, null, namedIndexes, 1, 20);
-                Assert.AreEqual(1, results.IndexResponseItems.Count);
+                Assert.Equal(1, results.IndexResponseItems.Count);
 
                 expr = new FuzzyQuery("reconcider", Field.Default, 0.1f);
                 results = SearchHandler.Instance.GetSearchResults(expr, null, namedIndexes, 1, 20);
-                Assert.AreEqual(2, results.IndexResponseItems.Count);
+                Assert.Equal(2, results.IndexResponseItems.Count);
 
             }
             finally
@@ -1699,7 +1625,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_ProximitySearchTest()
         {
             string id1 = "e00c464d-2d3c-4ad0-a4ad-356364313321";
@@ -1732,7 +1658,7 @@ namespace EPiServer.Search.IndexingService.Test
                 item3.NamedIndex = "testindex2";
                 SearchHandler.Instance.UpdateIndex(item3);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 //Assert.IsTrue(wh.WaitOne(10000)); //Timeout due to that the queue was never processed
 
@@ -1740,23 +1666,23 @@ namespace EPiServer.Search.IndexingService.Test
 
                 FieldQuery expr = new ProximityQuery("\"body index\"", Field.Default, 1);
                 results = SearchHandler.Instance.GetSearchResults(expr, 1, 20);
-                Assert.AreEqual(0, results.IndexResponseItems.Count);
+                Assert.Equal(0, results.IndexResponseItems.Count);
 
                 expr = new ProximityQuery("\"body index\"", Field.Default, 4);
                 results = SearchHandler.Instance.GetSearchResults(expr, 1, 20);
-                Assert.AreEqual(2, results.IndexResponseItems.Count);
+                Assert.Equal(2, results.IndexResponseItems.Count);
 
                 Collection<string> namedIndexes = new Collection<string>();
                 namedIndexes.Add("testindex2");
 
                 expr = new ProximityQuery("\"body index\"", Field.Default, 4);
                 results = SearchHandler.Instance.GetSearchResults(expr, null, namedIndexes, 1, 20);
-                Assert.AreEqual(1, results.IndexResponseItems.Count);
+                Assert.Equal(1, results.IndexResponseItems.Count);
 
                 namedIndexes.Add("default");
                 expr = new ProximityQuery("\"body index\"", Field.Default, 4);
                 results = SearchHandler.Instance.GetSearchResults(expr, null, namedIndexes, 1, 20);
-                Assert.AreEqual(3, results.IndexResponseItems.Count);
+                Assert.Equal(3, results.IndexResponseItems.Count);
             }
             finally
             {
@@ -1765,7 +1691,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_TermBoostSearchTest()
         {
             string id1 = "e00c464d-2d3c-4ad0-a4ad-356364313321";
@@ -1799,7 +1725,7 @@ namespace EPiServer.Search.IndexingService.Test
                 item3.DisplayText = "test body for id3 in default index";
                 SearchHandler.Instance.UpdateIndex(item3);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 //Assert.IsTrue(wh.WaitOne(10000)); //Timeout due to that the queue was never processed
 
@@ -1817,10 +1743,10 @@ namespace EPiServer.Search.IndexingService.Test
                 g.QueryExpressions.Add(f1);
 
                 results = SearchHandler.Instance.GetSearchResults(g, 1, 20);
-                Assert.AreEqual(3, results.TotalHits);
-                Assert.AreEqual(id2, results.IndexResponseItems[0].Id);
-                Assert.AreEqual(id3, results.IndexResponseItems[1].Id);
-                Assert.AreEqual(id1, results.IndexResponseItems[2].Id);
+                Assert.Equal(3, results.TotalHits);
+                Assert.Equal(id2, results.IndexResponseItems[0].Id);
+                Assert.Equal(id3, results.IndexResponseItems[1].Id);
+                Assert.Equal(id1, results.IndexResponseItems[2].Id);
 
                 t1 = new TermBoostQuery("\"for id2\"", 3);
 
@@ -1834,10 +1760,10 @@ namespace EPiServer.Search.IndexingService.Test
                 g.QueryExpressions.Add(f1);
 
                 results = SearchHandler.Instance.GetSearchResults(g, 1, 20);
-                Assert.AreEqual(3, results.TotalHits);
-                Assert.AreEqual(id3, results.IndexResponseItems[0].Id);
-                Assert.AreEqual(id2, results.IndexResponseItems[1].Id);
-                Assert.AreEqual(id1, results.IndexResponseItems[2].Id);
+                Assert.Equal(3, results.TotalHits);
+                Assert.Equal(id3, results.IndexResponseItems[0].Id);
+                Assert.Equal(id2, results.IndexResponseItems[1].Id);
+                Assert.Equal(id1, results.IndexResponseItems[2].Id);
 
 
             }
@@ -1848,7 +1774,7 @@ namespace EPiServer.Search.IndexingService.Test
         }
 
 
-        [TestMethod]
+        [Fact]
         public void SH_CategoriesSearchTest()
         {
             string id1 = "e00c464d-2d3c-4ad0-a4ad-356364313321";
@@ -1876,7 +1802,7 @@ namespace EPiServer.Search.IndexingService.Test
                 item2.Categories.Add("tag1");
                 SearchHandler.Instance.UpdateIndex(item2);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 //Assert.IsTrue(wh.WaitOne(10000)); //Timeout due to that the queue was never processed
 
@@ -1888,26 +1814,26 @@ namespace EPiServer.Search.IndexingService.Test
                 categoriesQuery1.Items.Add("tag1");
 
                 results = SearchHandler.Instance.GetSearchResults(categoriesQuery1, 1, 20);
-                Assert.AreEqual(2, results.TotalHits);
+                Assert.Equal(2, results.TotalHits);
 
                 CategoryQuery categoriesQuery2 = new CategoryQuery(LuceneOperator.AND);
                 categoriesQuery2.Items.Add("tag2");
                 results = SearchHandler.Instance.GetSearchResults(categoriesQuery2, 1, 20);
-                Assert.AreEqual(1, results.TotalHits);
+                Assert.Equal(1, results.TotalHits);
 
                 CategoryQuery categoriesQuery3 = new CategoryQuery(LuceneOperator.AND);
                 categoriesQuery3.Items.Add("tag1 tag2");
                 results = SearchHandler.Instance.GetSearchResults(categoriesQuery3, 1, 20);
-                Assert.AreEqual(1, results.TotalHits);
+                Assert.Equal(1, results.TotalHits);
 
                 GroupQuery group = new GroupQuery(LuceneOperator.OR);
                 group.QueryExpressions.Add(categoriesQuery1);
                 results = SearchHandler.Instance.GetSearchResults(group, 1, 20);
-                Assert.AreEqual(2, results.TotalHits);
+                Assert.Equal(2, results.TotalHits);
 
                 group.QueryExpressions.Add(categoriesQuery3);
                 results = SearchHandler.Instance.GetSearchResults(group, 1, 20);
-                Assert.AreEqual(2, results.TotalHits);
+                Assert.Equal(2, results.TotalHits);
             }
             finally
             {
@@ -1916,7 +1842,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_VirtualPathSearchTest()
         {
             string id1 = Guid.NewGuid().ToString();
@@ -1983,7 +1909,7 @@ namespace EPiServer.Search.IndexingService.Test
                 item6.VirtualPathNodes.Add(node2);
                 SearchHandler.Instance.UpdateIndex(item6);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 SearchResults results = null;
 
@@ -1996,7 +1922,7 @@ namespace EPiServer.Search.IndexingService.Test
                 gq1.QueryExpressions.Add(vpq1);
 
                 results = SearchHandler.Instance.GetSearchResults(gq1, 1, 20);
-                Assert.AreEqual(2, results.TotalHits);
+                Assert.Equal(2, results.TotalHits);
 
                 // Make sure we get 2 hits for "node 1/node 1_1"
                 VirtualPathQuery vpq2 = new VirtualPathQuery();
@@ -2008,7 +1934,7 @@ namespace EPiServer.Search.IndexingService.Test
                 gq2.QueryExpressions.Add(vpq2);
 
                 results = SearchHandler.Instance.GetSearchResults(gq2, 1, 20);
-                Assert.AreEqual(1, results.TotalHits);
+                Assert.Equal(1, results.TotalHits);
 
                 // Make sure we get 1 hit for "node 1/node 1_1/node 1_2"
                 VirtualPathQuery vpq3 = new VirtualPathQuery();
@@ -2021,7 +1947,7 @@ namespace EPiServer.Search.IndexingService.Test
                 gq3.QueryExpressions.Add(vpq3);
 
                 results = SearchHandler.Instance.GetSearchResults(gq3, 1, 20);
-                Assert.AreEqual(1, results.TotalHits);
+                Assert.Equal(1, results.TotalHits);
                 IndexItemBase resultItem = results.IndexResponseItems[0];
                 AssertIndexItemEquality(item1, resultItem);
 
@@ -2032,14 +1958,14 @@ namespace EPiServer.Search.IndexingService.Test
                 vpq4.VirtualPathNodes.Add("node 1_4");
 
                 results = SearchHandler.Instance.GetSearchResults(vpq4, 1, 20);
-                Assert.AreEqual(2, results.TotalHits);
+                Assert.Equal(2, results.TotalHits);
 
                 // Make sure we get 0 hits for "node 1_1" because its not a starting node
                 VirtualPathQuery vpq5 = new VirtualPathQuery();
                 vpq5.VirtualPathNodes.Add("node 1_1");
 
                 results = SearchHandler.Instance.GetSearchResults(vpq5, 1, 20);
-                Assert.AreEqual(0, results.TotalHits);
+                Assert.Equal(0, results.TotalHits);
 
                 // Make sure we get 3 hits for "node 1/node 1_3/"
                 VirtualPathQuery vpq6 = new VirtualPathQuery();
@@ -2047,14 +1973,14 @@ namespace EPiServer.Search.IndexingService.Test
                 vpq6.VirtualPathNodes.Add("node 1_3");
 
                 results = SearchHandler.Instance.GetSearchResults(vpq6, 1, 20);
-                Assert.AreEqual(3, results.TotalHits);
+                Assert.Equal(3, results.TotalHits);
 
                 // Make sure we get 1 hit for guid formatted nodes (id6)
                 VirtualPathQuery vpq7 = new VirtualPathQuery();
                 vpq7.VirtualPathNodes.Add(node1);
 
                 results = SearchHandler.Instance.GetSearchResults(vpq7, 1, 20);
-                Assert.AreEqual(1, results.TotalHits);
+                Assert.Equal(1, results.TotalHits);
 
             }
             finally
@@ -2064,7 +1990,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_VirtualPathUpdateTest()
         {
             string id1 = Guid.NewGuid().ToString();
@@ -2139,7 +2065,7 @@ namespace EPiServer.Search.IndexingService.Test
                 item.VirtualPathNodes.Add(id5);
                 SearchHandler.Instance.UpdateIndex(item);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 // id1/id3/id4
                 VirtualPathQuery vpq = new VirtualPathQuery();
@@ -2148,7 +2074,7 @@ namespace EPiServer.Search.IndexingService.Test
                 vpq.VirtualPathNodes.Add(id4);
 
                 SearchResults results = SearchHandler.Instance.GetSearchResults(vpq, 1, 20);
-                Assert.AreEqual(2, results.TotalHits);
+                Assert.Equal(2, results.TotalHits);
 
                 // Test OR and AND
                 VirtualPathQuery vpqOr1 = new VirtualPathQuery();
@@ -2164,14 +2090,14 @@ namespace EPiServer.Search.IndexingService.Test
                 gVpqOr.QueryExpressions.Add(vpqOr2);
 
                 results = SearchHandler.Instance.GetSearchResults(gVpqOr, 1, 20);
-                Assert.AreEqual(2, results.TotalHits);
+                Assert.Equal(2, results.TotalHits);
 
                 gVpqOr = new GroupQuery(LuceneOperator.AND);
                 gVpqOr.QueryExpressions.Add(vpqOr1);
                 gVpqOr.QueryExpressions.Add(vpqOr2);
 
                 results = SearchHandler.Instance.GetSearchResults(gVpqOr, 1, 20);
-                Assert.AreEqual(0, results.TotalHits);
+                Assert.Equal(0, results.TotalHits);
 
                 //UPDATE id3 from id1/id3 -> id1/id2/id3
                 item = new IndexRequestItem(id3, IndexAction.Update);
@@ -2183,7 +2109,7 @@ namespace EPiServer.Search.IndexingService.Test
                 item.VirtualPathNodes.Add(id3);
                 SearchHandler.Instance.UpdateIndex(item);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 // id1/id3/id4. No results for the old path
                 vpq = new VirtualPathQuery();
@@ -2192,7 +2118,7 @@ namespace EPiServer.Search.IndexingService.Test
                 vpq.VirtualPathNodes.Add(id4);
 
                 results = SearchHandler.Instance.GetSearchResults(vpq, 1, 20);
-                Assert.AreEqual(0, results.TotalHits);
+                Assert.Equal(0, results.TotalHits);
 
                 // id1/id2/id3/id4. Should get results for the new path
                 vpq = new VirtualPathQuery();
@@ -2205,7 +2131,7 @@ namespace EPiServer.Search.IndexingService.Test
                 namedIndexes.Add("default");
                 namedIndexes.Add("testindex2");
                 results = SearchHandler.Instance.GetSearchResults(vpq, null, namedIndexes, 1, 20);
-                Assert.AreEqual(3, results.TotalHits);
+                Assert.Equal(3, results.TotalHits);
 
                 //Check that autoupdated content is still searchable. 
                 FieldQuery fq = new FieldQuery("\"metadata for id5\"");
@@ -2213,7 +2139,7 @@ namespace EPiServer.Search.IndexingService.Test
                 gq.QueryExpressions.Add(fq);
                 gq.QueryExpressions.Add(vpq);
                 results = SearchHandler.Instance.GetSearchResults(gq, 1, 20);
-                Assert.AreEqual(1, results.TotalHits);
+                Assert.Equal(1, results.TotalHits);
 
             }
             finally
@@ -2223,7 +2149,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_AddUpdateReadWriteMultipleThreadTest()
         {
             //Setup services
@@ -2251,7 +2177,7 @@ namespace EPiServer.Search.IndexingService.Test
                     for (int i = 0; i < numItems; i++)
                     {
                         SearchHandler.Instance.UpdateIndex(new IndexRequestItem(ids[i], IndexAction.Add));
-                        FlushRequestQueue();
+                        RequestQueueHandler.ProcessQueue();
                     }
                 }));
 
@@ -2263,7 +2189,7 @@ namespace EPiServer.Search.IndexingService.Test
                     for (int i = 0; i < numItems; i++)
                     {
                         SearchHandler.Instance.UpdateIndex(new IndexRequestItem(ids[i], IndexAction.Update));
-                        FlushRequestQueue();
+                        RequestQueueHandler.ProcessQueue();
                     }
                 }));
 
@@ -2293,7 +2219,7 @@ namespace EPiServer.Search.IndexingService.Test
                 {
                     FieldQuery fq = new FieldQuery(ids[i], Field.Id);
                     SearchResults results = SearchHandler.Instance.GetSearchResults(fq, 1, 20);
-                    Assert.AreEqual(1, results.IndexResponseItems.Count);
+                    Assert.Equal(1, results.IndexResponseItems.Count);
                 }
 
             }
@@ -2303,7 +2229,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_AlotOfAddUpdateAndRemovesTest()
         {
             //Setup services
@@ -2340,20 +2266,20 @@ namespace EPiServer.Search.IndexingService.Test
                     SearchHandler.Instance.UpdateIndex(item);
                 }
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 // Assert that items are removed
                 FieldQuery fe = new FieldQuery(item1.Id, Field.Id);
                 SearchResults results = SearchHandler.Instance.GetSearchResults(fe, 1, 20);
-                Assert.AreEqual(0, results.IndexResponseItems.Count);
+                Assert.Equal(0, results.IndexResponseItems.Count);
 
                 fe = new FieldQuery(item2.Id, Field.Id);
                 results = SearchHandler.Instance.GetSearchResults(fe, 1, 20);
-                Assert.AreEqual(0, results.IndexResponseItems.Count);
+                Assert.Equal(0, results.IndexResponseItems.Count);
                 fe = new FieldQuery(item3.Id, Field.Id);
 
                 results = SearchHandler.Instance.GetSearchResults(fe, 1, 20);
-                Assert.AreEqual(0, results.IndexResponseItems.Count); 
+                Assert.Equal(0, results.IndexResponseItems.Count); 
 
             }
             finally
@@ -2362,7 +2288,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_AddTest()
         {
             //Setup services
@@ -2388,7 +2314,7 @@ namespace EPiServer.Search.IndexingService.Test
                 item2.DisplayText = "Hello\x1bTest";
                 SearchHandler.Instance.UpdateIndex(item2);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 AssertEqualToSearchResult(item1, null);
                 AssertEqualToSearchResult(item2, null);
@@ -2399,7 +2325,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_AlotOfAddTest()
         {
             //Setup services
@@ -2434,7 +2360,7 @@ namespace EPiServer.Search.IndexingService.Test
                     SearchHandler.Instance.UpdateIndex(item);
                 }
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 AssertEqualToSearchResult(item1, null);
                 AssertEqualToSearchResult(item2, null);
@@ -2447,7 +2373,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_TypeFieldTest()
         {
             string id = "1";
@@ -2468,12 +2394,12 @@ namespace EPiServer.Search.IndexingService.Test
                 item.ItemType = "EPiServer.Common.Comment, EPiServer.Common";
                 SearchHandler.Instance.UpdateIndex(item);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 FieldQuery q = new FieldQuery("EPiServer.Common*", Field.ItemType);
                 SearchResults res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
 
-                Assert.AreEqual(1, res.IndexResponseItems.Count);
+                Assert.Equal(1, res.IndexResponseItems.Count);
             }
             finally
             {
@@ -2481,7 +2407,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_CultureFieldTest()
         {
             string id = "1";
@@ -2504,15 +2430,15 @@ namespace EPiServer.Search.IndexingService.Test
                 item.Culture = "sv-SE";
                 SearchHandler.Instance.UpdateIndex(item);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 FieldQuery q = new FieldQuery("sv-SE", Field.Culture);
                 SearchResults res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
-                Assert.AreEqual(1, res.IndexResponseItems.Count);
+                Assert.Equal(1, res.IndexResponseItems.Count);
 
                 q = new FieldQuery("sv*", Field.Culture);
                 res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
-                Assert.AreEqual(1, res.IndexResponseItems.Count);
+                Assert.Equal(1, res.IndexResponseItems.Count);
             }
             finally
             {
@@ -2520,7 +2446,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_AccessDeniedTest()
         {
             string id = "1";
@@ -2538,11 +2464,11 @@ namespace EPiServer.Search.IndexingService.Test
                 IndexRequestItem item = new IndexRequestItem(id, IndexAction.Add);
                 SearchHandler.Instance.UpdateIndex(item, "deniedService");
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 FieldQuery q = new FieldQuery(id, Field.Id);
                 SearchResults res = SearchHandler.Instance.GetSearchResults(q, "deniedService", null, 1, 100);
-                Assert.AreEqual(0, res.IndexResponseItems.Count);
+                Assert.Equal(0, res.IndexResponseItems.Count);
             }
             finally
             {
@@ -2550,7 +2476,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_DefaultFieldSearchAfterAdd()
         {
             string id = "1";
@@ -2572,19 +2498,19 @@ namespace EPiServer.Search.IndexingService.Test
 
                 SearchHandler.Instance.UpdateIndex(item);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 FieldQuery q = new FieldQuery("title");
                 SearchResults res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
-                Assert.AreEqual(1, res.IndexResponseItems.Count);
+                Assert.Equal(1, res.IndexResponseItems.Count);
 
                 q = new FieldQuery("display");
                 res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
-                Assert.AreEqual(1, res.IndexResponseItems.Count);
+                Assert.Equal(1, res.IndexResponseItems.Count);
 
                 q = new FieldQuery("metadata");
                 res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
-                Assert.AreEqual(1, res.IndexResponseItems.Count);
+                Assert.Equal(1, res.IndexResponseItems.Count);
             }
             finally
             {
@@ -2592,7 +2518,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_DefaultFieldSearchAfterVirtualPathUpdate()
         {
             string id = "1";
@@ -2615,19 +2541,19 @@ namespace EPiServer.Search.IndexingService.Test
 
                 SearchHandler.Instance.UpdateIndex(item);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 FieldQuery q = new FieldQuery("title");
                 SearchResults res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
-                Assert.AreEqual(1, res.IndexResponseItems.Count);
+                Assert.Equal(1, res.IndexResponseItems.Count);
 
                 q = new FieldQuery("display");
                 res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
-                Assert.AreEqual(1, res.IndexResponseItems.Count);
+                Assert.Equal(1, res.IndexResponseItems.Count);
 
                 q = new FieldQuery("metadata");
                 res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
-                Assert.AreEqual(1, res.IndexResponseItems.Count);
+                Assert.Equal(1, res.IndexResponseItems.Count);
 
                 //Update
                 item = new IndexRequestItem(id, IndexAction.Update);
@@ -2638,19 +2564,19 @@ namespace EPiServer.Search.IndexingService.Test
 
                 SearchHandler.Instance.UpdateIndex(item);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 q = new FieldQuery("title");
                 res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
-                Assert.AreEqual(1, res.IndexResponseItems.Count);
+                Assert.Equal(1, res.IndexResponseItems.Count);
 
                 q = new FieldQuery("display");
                 res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
-                Assert.AreEqual(1, res.IndexResponseItems.Count);
+                Assert.Equal(1, res.IndexResponseItems.Count);
 
                 q = new FieldQuery("metadata");
                 res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
-                Assert.AreEqual(1, res.IndexResponseItems.Count);
+                Assert.Equal(1, res.IndexResponseItems.Count);
 
             }
             finally
@@ -2659,7 +2585,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_AddReferenceTest()
         {
             string id1 = "1";
@@ -2686,11 +2612,11 @@ namespace EPiServer.Search.IndexingService.Test
 
                 SearchHandler.Instance.UpdateIndex(item);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 FieldQuery q = new FieldQuery("title AND display AND metadata");
                 SearchResults res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
-                Assert.AreEqual(1, res.IndexResponseItems.Count);
+                Assert.Equal(1, res.IndexResponseItems.Count);
 
                 // Add a reference item to main item
                 IndexRequestItem refItem = new IndexRequestItem(id2, IndexAction.Add);
@@ -2701,19 +2627,19 @@ namespace EPiServer.Search.IndexingService.Test
 
                 SearchHandler.Instance.UpdateIndex(refItem);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 // Make sure the old test still works
                 q = new FieldQuery("title AND display AND metadata");
                 res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
-                Assert.AreEqual(1, res.IndexResponseItems.Count);
-                Assert.AreEqual(id1, res.IndexResponseItems[0].Id);
+                Assert.Equal(1, res.IndexResponseItems.Count);
+                Assert.Equal(id1, res.IndexResponseItems[0].Id);
 
                 // Make sure that we can search reference data and get the main item back
                 q = new FieldQuery("referencetitle AND referencedisplay AND referencemetadata");
                 res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
-                Assert.AreEqual(1, res.IndexResponseItems.Count);
-                Assert.AreEqual(id1, res.IndexResponseItems[0].Id);
+                Assert.Equal(1, res.IndexResponseItems.Count);
+                Assert.Equal(id1, res.IndexResponseItems[0].Id);
 
                 // Add another reference item to main item
                 IndexRequestItem refItem2 = new IndexRequestItem(id3, IndexAction.Add);
@@ -2724,25 +2650,25 @@ namespace EPiServer.Search.IndexingService.Test
 
                 SearchHandler.Instance.UpdateIndex(refItem2);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 // Make sure the old test still works
                 q = new FieldQuery("title AND display AND metadata");
                 res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
-                Assert.AreEqual(1, res.IndexResponseItems.Count);
-                Assert.AreEqual(id1, res.IndexResponseItems[0].Id);
+                Assert.Equal(1, res.IndexResponseItems.Count);
+                Assert.Equal(id1, res.IndexResponseItems[0].Id);
 
                 // Make sure that we still can search the first reference data and get the main item back
                 q = new FieldQuery("referencetitle AND referencedisplay AND referencemetadata");
                 res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
-                Assert.AreEqual(1, res.IndexResponseItems.Count);
-                Assert.AreEqual(id1, res.IndexResponseItems[0].Id);
+                Assert.Equal(1, res.IndexResponseItems.Count);
+                Assert.Equal(id1, res.IndexResponseItems[0].Id);
 
                 // Make sure that we can search second reference data and get the main item back
                 q = new FieldQuery("\"referencetitle second\" AND \"referencedisplay second\" AND \"referencemetadata second\"");
                 res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
-                Assert.AreEqual(1, res.IndexResponseItems.Count);
-                Assert.AreEqual(id1, res.IndexResponseItems[0].Id);
+                Assert.Equal(1, res.IndexResponseItems.Count);
+                Assert.Equal(id1, res.IndexResponseItems[0].Id);
             }
             finally
             {
@@ -2750,7 +2676,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_AddReferenceWithMissingMainItemTest()
         {
             string id1 = "1";
@@ -2778,7 +2704,7 @@ namespace EPiServer.Search.IndexingService.Test
 
                 SearchHandler.Instance.UpdateIndex(refItem);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 // THEN, add the main item
                 IndexRequestItem item = new IndexRequestItem(id1, IndexAction.Add);
@@ -2788,23 +2714,23 @@ namespace EPiServer.Search.IndexingService.Test
 
                 SearchHandler.Instance.UpdateIndex(item);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 FieldQuery q = new FieldQuery("title AND display AND metadata");
                 SearchResults res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
-                Assert.AreEqual(1, res.IndexResponseItems.Count);
+                Assert.Equal(1, res.IndexResponseItems.Count);
 
                 // Make sure the old test still works
                 q = new FieldQuery("title AND display AND metadata");
                 res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
-                Assert.AreEqual(1, res.IndexResponseItems.Count);
-                Assert.AreEqual(id1, res.IndexResponseItems[0].Id);
+                Assert.Equal(1, res.IndexResponseItems.Count);
+                Assert.Equal(id1, res.IndexResponseItems[0].Id);
 
                 // Make sure that we can search reference data and get the main item back
                 q = new FieldQuery("referencetitle AND referencedisplay AND referencemetadata");
                 res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
-                Assert.AreEqual(1, res.IndexResponseItems.Count);
-                Assert.AreEqual(id1, res.IndexResponseItems[0].Id);
+                Assert.Equal(1, res.IndexResponseItems.Count);
+                Assert.Equal(id1, res.IndexResponseItems[0].Id);
 
                 // Add another reference item to main item
                 IndexRequestItem refItem2 = new IndexRequestItem(id3, IndexAction.Add);
@@ -2815,25 +2741,25 @@ namespace EPiServer.Search.IndexingService.Test
 
                 SearchHandler.Instance.UpdateIndex(refItem2);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 // Make sure the old test still works
                 q = new FieldQuery("title AND display AND metadata");
                 res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
-                Assert.AreEqual(1, res.IndexResponseItems.Count);
-                Assert.AreEqual(id1, res.IndexResponseItems[0].Id);
+                Assert.Equal(1, res.IndexResponseItems.Count);
+                Assert.Equal(id1, res.IndexResponseItems[0].Id);
 
                 // Make sure that we still can search the first reference data and get the main item back
                 q = new FieldQuery("referencetitle AND referencedisplay AND referencemetadata");
                 res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
-                Assert.AreEqual(1, res.IndexResponseItems.Count);
-                Assert.AreEqual(id1, res.IndexResponseItems[0].Id);
+                Assert.Equal(1, res.IndexResponseItems.Count);
+                Assert.Equal(id1, res.IndexResponseItems[0].Id);
 
                 // Make sure that we can search second reference data and get the main item back
                 q = new FieldQuery("\"referencetitle second\" AND \"referencedisplay second\" AND \"referencemetadata second\"");
                 res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
-                Assert.AreEqual(1, res.IndexResponseItems.Count);
-                Assert.AreEqual(id1, res.IndexResponseItems[0].Id);
+                Assert.Equal(1, res.IndexResponseItems.Count);
+                Assert.Equal(id1, res.IndexResponseItems[0].Id);
             }
             finally
             {
@@ -2841,7 +2767,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_AssertReferenceDataUpdate()
         {
             string id1 = "1";
@@ -2884,7 +2810,7 @@ namespace EPiServer.Search.IndexingService.Test
                 SearchHandler.Instance.UpdateIndex(item2);
                 SearchHandler.Instance.UpdateIndex(item3);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 // Update first reference
                 item2 = new IndexRequestItem(id2, IndexAction.Update);
@@ -2895,20 +2821,20 @@ namespace EPiServer.Search.IndexingService.Test
 
                 SearchHandler.Instance.UpdateIndex(item2);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 // Make sure that id1 and id3 is still searchable
                 FieldQuery q = new FieldQuery("maintitle AND \"second reference\"");
                 SearchResults r = SearchHandler.Instance.GetSearchResults(q, 1, 10);
-                Assert.AreEqual(1, r.TotalHits);
-                Assert.AreEqual(1, r.IndexResponseItems.Count);
+                Assert.Equal(1, r.TotalHits);
+                Assert.Equal(1, r.IndexResponseItems.Count);
 
                 // Make sure that id2 has been updated
                 q = new FieldQuery("\"first updated reference\"");
                 r = SearchHandler.Instance.GetSearchResults(q, 1, 10);
-                Assert.AreEqual(1, r.TotalHits);
-                Assert.AreEqual(1, r.IndexResponseItems.Count);
-                Assert.AreEqual(id1, r.IndexResponseItems[0].Id);
+                Assert.Equal(1, r.TotalHits);
+                Assert.Equal(1, r.IndexResponseItems.Count);
+                Assert.Equal(id1, r.IndexResponseItems[0].Id);
             }
             finally
             {
@@ -2916,7 +2842,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_AssertReferenceDataRemoval()
         {
             string id1 = "1";
@@ -2959,38 +2885,38 @@ namespace EPiServer.Search.IndexingService.Test
                 SearchHandler.Instance.UpdateIndex(item2);
                 SearchHandler.Instance.UpdateIndex(item3);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 // Remove second reference
                 IndexRequestItem delItem = new IndexRequestItem(id2, IndexAction.Remove);
                 //delItem.ReferenceId = id1;
                 SearchHandler.Instance.UpdateIndex(delItem);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 // Make sure that id1 and id3 is still searchable
                 FieldQuery q = new FieldQuery("maintitle AND \"second reference\"");
                 SearchResults r = SearchHandler.Instance.GetSearchResults(q, 1, 10);
-                Assert.AreEqual(1, r.TotalHits);
-                Assert.AreEqual(1, r.IndexResponseItems.Count);
+                Assert.Equal(1, r.TotalHits);
+                Assert.Equal(1, r.IndexResponseItems.Count);
 
                 // Make sure that id2 is not searchable
                 q = new FieldQuery("\"first reference\"");
                 r = SearchHandler.Instance.GetSearchResults(q, 1, 10);
-                Assert.AreEqual(0, r.TotalHits);
-                Assert.AreEqual(0, r.IndexResponseItems.Count);
+                Assert.Equal(0, r.TotalHits);
+                Assert.Equal(0, r.IndexResponseItems.Count);
 
                 // Remove main item
                 IndexRequestItem mainItem = new IndexRequestItem(id1, IndexAction.Remove);
                 SearchHandler.Instance.UpdateIndex(mainItem);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 // Make sure that id3 is not searchable
                 q = new FieldQuery("\"second reference\"");
                 r = SearchHandler.Instance.GetSearchResults(q, 1, 10);
-                Assert.AreEqual(0, r.TotalHits);
-                Assert.AreEqual(0, r.IndexResponseItems.Count);
+                Assert.Equal(0, r.TotalHits);
+                Assert.Equal(0, r.IndexResponseItems.Count);
 
             }
             finally
@@ -2999,7 +2925,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_PublicationEndFieldTest()
         {
             //Setup services
@@ -3030,13 +2956,13 @@ namespace EPiServer.Search.IndexingService.Test
                 item.DisplayText = "testing introtext3";
                 SearchHandler.Instance.UpdateIndex(item);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
 
                 FieldQuery q = new FieldQuery("testing", Field.Title);
                 SearchResults res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
-                Assert.AreEqual(2, res.IndexResponseItems.Count);
-                Assert.AreEqual(2, res.IndexResponseItems.Count<IndexResponseItem>(iri => (iri.Id == "2" || iri.Id == "3") &&
+                Assert.Equal(2, res.IndexResponseItems.Count);
+                Assert.Equal(2, res.IndexResponseItems.Count<IndexResponseItem>(iri => (iri.Id == "2" || iri.Id == "3") &&
                                                                  (iri.PublicationEnd == null || iri.PublicationEnd > DateTime.Now)));
             }
             finally
@@ -3045,7 +2971,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_PublicationStartFieldTest()
         {
             //Setup services
@@ -3065,7 +2991,7 @@ namespace EPiServer.Search.IndexingService.Test
                 item.PublicationStart = DateTime.Now.AddMinutes(5);
 
                 // Check that difference is less than a second (10 million ticks)
-                Assert.IsTrue(Math.Abs(DateTime.Now.AddMinutes(5).Ticks-item.PublicationStart.Value.Ticks) < 10000*1000); 
+                Assert.True(Math.Abs(DateTime.Now.AddMinutes(5).Ticks-item.PublicationStart.Value.Ticks) < 10000*1000); 
 
                 SearchHandler.Instance.UpdateIndex(item);
 
@@ -3080,13 +3006,13 @@ namespace EPiServer.Search.IndexingService.Test
                 item.DisplayText = "testing introtext3";
                 SearchHandler.Instance.UpdateIndex(item);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
 
                 FieldQuery q = new FieldQuery("testing", Field.Title);
                 SearchResults res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
-                Assert.AreEqual(2, res.IndexResponseItems.Count);
-                Assert.AreEqual(2, res.IndexResponseItems.Count<IndexResponseItem>(iri => (iri.Id == "2" || iri.Id == "3") &&
+                Assert.Equal(2, res.IndexResponseItems.Count);
+                Assert.Equal(2, res.IndexResponseItems.Count<IndexResponseItem>(iri => (iri.Id == "2" || iri.Id == "3") &&
                                                                                     (iri.PublicationStart == null || iri.PublicationStart <= DateTime.Now)));
             }
             finally
@@ -3095,7 +3021,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_PublicationStartAndEndFieldTest()
         {
             //Setup services
@@ -3130,13 +3056,13 @@ namespace EPiServer.Search.IndexingService.Test
                 item.PublicationEnd = DateTime.Now.AddMinutes(5);
                 SearchHandler.Instance.UpdateIndex(item);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
 
                 FieldQuery q = new FieldQuery("testing", Field.Title);
                 SearchResults res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
-                Assert.AreEqual(1, res.IndexResponseItems.Count);
-                Assert.AreEqual("3", res.IndexResponseItems[0].Id);
+                Assert.Equal(1, res.IndexResponseItems.Count);
+                Assert.Equal("3", res.IndexResponseItems[0].Id);
             }
             finally
             {
@@ -3144,7 +3070,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_ItemStatusTest()
         {
             //Setup services
@@ -3181,27 +3107,27 @@ namespace EPiServer.Search.IndexingService.Test
                 item.DisplayText = "testing introtext4";
                 SearchHandler.Instance.UpdateIndex(item);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
                 IQueryExpression q = new ItemStatusQuery(ItemStatus.Approved);
                 SearchResults res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
-                Assert.AreEqual(2, res.IndexResponseItems.Count);
-                Assert.AreEqual(2, res.IndexResponseItems.Count<IndexResponseItem>(iri => (iri.Id == "1" || iri.Id == "4")));
+                Assert.Equal(2, res.IndexResponseItems.Count);
+                Assert.Equal(2, res.IndexResponseItems.Count<IndexResponseItem>(iri => (iri.Id == "1" || iri.Id == "4")));
 
                 q = new ItemStatusQuery(ItemStatus.Pending);
                 res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
-                Assert.AreEqual(1, res.IndexResponseItems.Count);
-                Assert.AreEqual("2", res.IndexResponseItems[0].Id);
+                Assert.Equal(1, res.IndexResponseItems.Count);
+                Assert.Equal("2", res.IndexResponseItems[0].Id);
 
                 q = new ItemStatusQuery(ItemStatus.Removed);
                 res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
-                Assert.AreEqual(1, res.IndexResponseItems.Count);
-                Assert.AreEqual("3", res.IndexResponseItems[0].Id);
+                Assert.Equal(1, res.IndexResponseItems.Count);
+                Assert.Equal("3", res.IndexResponseItems[0].Id);
 
                 q = new ItemStatusQuery(ItemStatus.Approved | ItemStatus.Pending);
                 res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
-                Assert.AreEqual(3, res.IndexResponseItems.Count);
-                Assert.AreEqual(3, res.IndexResponseItems.Count<IndexResponseItem>(iri => (iri.Id == "1" || iri.Id == "2" || iri.Id == "4")));
+                Assert.Equal(3, res.IndexResponseItems.Count);
+                Assert.Equal(3, res.IndexResponseItems.Count<IndexResponseItem>(iri => (iri.Id == "1" || iri.Id == "2" || iri.Id == "4")));
 
             }
             finally
@@ -3210,7 +3136,7 @@ namespace EPiServer.Search.IndexingService.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SH_WildcardQueryCaseInsensitivityOnStandardFieldsTest()
         {
             //Setup services
@@ -3228,19 +3154,19 @@ namespace EPiServer.Search.IndexingService.Test
                 item.Title = "Testing"; // title is made into lower case by the analyzer and should be handled as case-insensitive
                 SearchHandler.Instance.UpdateIndex(item);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
 
                 IQueryExpression q = new FieldQuery("TEST*"); // a wildcard query for this field should work even when case does not match
                 SearchResults res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
 
-                Assert.AreEqual(1, res.IndexResponseItems.Count);
+                Assert.Equal(1, res.IndexResponseItems.Count);
 
 
                 IQueryExpression q2 = new FieldQuery("test*"); // a wildcard query for this field should work even when case does not match
                 SearchResults res2 = SearchHandler.Instance.GetSearchResults(q2, 1, 100);
 
-                Assert.AreEqual(1, res2.IndexResponseItems.Count);
+                Assert.Equal(1, res2.IndexResponseItems.Count);
             }
             finally
             {
@@ -3249,7 +3175,7 @@ namespace EPiServer.Search.IndexingService.Test
         }
 
 
-        [TestMethod]
+        [Fact]
         public void SH_WildcardQueryCaseSensitivityOnSpecialFieldsTest()
         {
             //Setup services
@@ -3266,25 +3192,25 @@ namespace EPiServer.Search.IndexingService.Test
                 IndexRequestItem item = new IndexRequestItem("Testing", IndexAction.Add); // id is left as-is by the analyzer (no change to casing)
                 SearchHandler.Instance.UpdateIndex(item);
 
-                FlushRequestQueue();
+                RequestQueueHandler.ProcessQueue();
 
 
                 IQueryExpression q = new FieldQuery("TEST*", Field.Id); // a wildcard query for this field should work only when case matches
                 SearchResults res = SearchHandler.Instance.GetSearchResults(q, 1, 100);
 
-                Assert.AreEqual(0, res.IndexResponseItems.Count);
+                Assert.Equal(0, res.IndexResponseItems.Count);
 
 
                 IQueryExpression q2 = new FieldQuery("test*", Field.Id); // a wildcard query for this field should work only when case matches
                 SearchResults res2 = SearchHandler.Instance.GetSearchResults(q2, 1, 100);
 
-                Assert.AreEqual(0, res2.IndexResponseItems.Count);
+                Assert.Equal(0, res2.IndexResponseItems.Count);
 
 
                 IQueryExpression q3 = new FieldQuery("Test*", Field.Id); // a wildcard query for this field should work only when case matches
                 SearchResults res3 = SearchHandler.Instance.GetSearchResults(q3, 1, 100);
 
-                Assert.AreEqual(1, res3.IndexResponseItems.Count);
+                Assert.Equal(1, res3.IndexResponseItems.Count);
 
             }
             finally
@@ -3303,7 +3229,7 @@ namespace EPiServer.Search.IndexingService.Test
             namedIndexes.Add(namedIndex);
             EscapedFieldQuery fe = new EscapedFieldQuery(item.Id, Field.Id);
             SearchResults results = SearchHandler.Instance.GetSearchResults(fe, null, namedIndexes, 1, 20);
-            Assert.AreEqual(1, results.IndexResponseItems.Count, "Found no or too many search results, expected exactly one");
+            Assert.Equal(1, results.IndexResponseItems.Count);
             IndexResponseItem resultItem = results.IndexResponseItems[0];
 
             AssertIndexItemEquality(item, resultItem);
@@ -3311,60 +3237,29 @@ namespace EPiServer.Search.IndexingService.Test
 
         private void AssertIndexItemEquality(IndexItemBase item1, IndexItemBase item2)
         {
-            Assert.AreEqual(item1.Id, item2.Id, "Id not equal");
-            Assert.AreEqual(item1.Title, item2.Title, "Header not equal");
-            Assert.AreEqual(item1.DisplayText, item2.DisplayText, "Body not equal");
-            Assert.AreEqual(item1.Created.ToString(), item2.Created.ToString(), "Created not equal");
-            Assert.AreEqual(item1.Modified.ToString(), item2.Modified.ToString(), "Modified not equal");
-            Assert.AreEqual(item1.ItemType, item2.ItemType, "Type not equal");
-            Assert.AreEqual(item1.Culture, item2.Culture, "Culture not equal");
-            Assert.AreEqual((item1.Uri != null) ? item1.Uri.ToString() : "", (item2.Uri != null) ? item2.Uri.ToString() : "", "Uri not equal");
-            Assert.AreEqual((item1.DataUri != null) ? item1.DataUri.ToString() : "", (item2.DataUri != null) ? item2.DataUri.ToString() : "", "Data Uri not equal");
-            Assert.AreEqual(item1.ReferenceId, item2.ReferenceId, "Reference ID not equal");
-            Assert.AreEqual(item1.BoostFactor.ToString(), item2.BoostFactor.ToString(), "Boost factor not equal");
-            //Assert.AreEqual(item1.MetaData, item2.MetaData, "MetaData not equal"); // Not in response
+            Assert.Equal(item1.Id, item2.Id);
+            Assert.Equal(item1.Title, item2.Title);
+            Assert.Equal(item1.DisplayText, item2.DisplayText);
+            Assert.Equal(item1.Created.ToString(), item2.Created.ToString());
+            Assert.Equal(item1.Modified.ToString(), item2.Modified.ToString());
+            Assert.Equal(item1.ItemType, item2.ItemType);
+            Assert.Equal(item1.Culture, item2.Culture);
+            Assert.Equal(item1.Uri?.ToString() ?? "", item2.Uri?.ToString() ?? "");
+            Assert.Equal(item1.DataUri?.ToString() ?? "", item2.DataUri?.ToString() ?? "");
+            Assert.Equal(item1.ReferenceId, item2.ReferenceId);
+            Assert.Equal(item1.BoostFactor, item2.BoostFactor);
+            //Assert.Equal(item1.MetaData, item2.MetaData, "MetaData not equal"); // Not in response
 
             string expectedNamedIndex = item1.NamedIndex;
             if (item1.NamedIndex == null || item1.NamedIndex == "")
                 expectedNamedIndex = "default";
 
-            Assert.AreEqual(expectedNamedIndex, item2.NamedIndex);
+            Assert.Equal(expectedNamedIndex, item2.NamedIndex);
 
-            //Assert RACL
-            int i = 0;
-            Assert.AreEqual(item1.AccessControlList.Count, item2.AccessControlList.Count, "RACL count mismatch");
-            foreach (string rac in item1.AccessControlList)
-            {
-                Assert.AreEqual(rac, item2.AccessControlList[i], "RACL mismatch");
-                i++;
-            }
-
-            //Assert categories
-            i = 0;
-            Assert.AreEqual(item1.Categories.Count, item2.Categories.Count, "Categories count mismatch");
-            foreach (string category in item1.Categories)
-            {
-                Assert.AreEqual(category, item2.Categories[i], "Category mismatch");
-                i++;
-            }
-
-            //Assert Virtual Path
-            i = 0;
-            Assert.AreEqual(item1.VirtualPathNodes.Count, item2.VirtualPathNodes.Count, "Virtual path nodes count mismatch");
-            foreach (string node in item1.VirtualPathNodes)
-            {
-                Assert.AreEqual(node.Replace(" ", ""), item2.VirtualPathNodes[i], "Virtual Path mismatch");
-                i++;
-            }
-
-            //Assert authors
-            i = 0;
-            Assert.AreEqual(item1.Authors.Count, item2.Authors.Count, "Authors count mismatch");
-            foreach (string author in item1.Authors)
-            {
-                Assert.AreEqual(author, item2.Authors[i], "Author mismatch");
-                i++;
-            }
+            Assert.Equal(item1.AccessControlList, item2.AccessControlList);
+            Assert.Equal(item1.Categories, item2.Categories);
+            Assert.Equal(item1.VirtualPathNodes.Select(x => x.Replace(" ", "")), item2.VirtualPathNodes);
+            Assert.Equal(item1.Authors, item2.Authors);
         }
 
         private void ResetAllIndexes()

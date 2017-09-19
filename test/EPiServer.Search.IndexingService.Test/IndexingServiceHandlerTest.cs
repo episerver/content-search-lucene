@@ -1,6 +1,4 @@
 ﻿using EPiServer.Search.IndexingService.Wcf;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.VisualStudio.TestTools.UnitTesting.Web;
 using EPiServer.Search;
 using System.Collections.Generic;
 using System.ServiceModel;
@@ -18,70 +16,15 @@ using System.Web;
 using MockupService;
 using System.ServiceModel.Syndication;
 
-namespace EPiServer.Search.IndexingService.Test
-{   
-    /// <summary>
-    ///This is a test class for IndexingServiceHandlerTest and is intended
-    ///to contain all IndexingServiceHandlerTest Unit Tests
-    ///</summary>
-    [TestClass()]
-    [DeploymentItem(@"EPiServer.Cms.Core.sql", IntegrationTestFiles.SqlOutput)]
+namespace EPiServer.Search.IndexingService
+{
     public class IndexingServiceHandlerTest
     {
         string accessKey = "accessKey1";
         string secretAccessKey = "secretAccessKey1";
         string _ns = "EPiServer.Search.IndexingService";
 
-        private TestContext testContextInstance;
 
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
-
-        #region Additional test attributes
-        // 
-        //You can use the following additional attributes as you write your tests:
-        //
-        //Use ClassInitialize to run code before running the first test in the class
-        //[ClassInitialize()]
-        //public static void MyClassInitialize(TestContext testContext)
-        //{
-        //}
-        //
-        //Use ClassCleanup to run code after all tests in a class have run
-        //[ClassCleanup()]
-        //public static void MyClassCleanup()
-        //{
-        //}
-        //
-        //Use TestInitialize to run code before running each test
-        //[TestInitialize()]
-        //public void MyTestInitialize()
-        //{
-        //}
-        //
-        //Use TestCleanup to run code after each test has run
-        //[TestCleanup()]
-        //public void MyTestCleanup()
-        //{
-        //}
-        //
-        #endregion
-
-
-        [TestMethod()]
         public void IS_AddTest()
         {
             string id1 = "e00c464d-2d3c-4ad0-a4ad-356364313321";

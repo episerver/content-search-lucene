@@ -1,0 +1,7 @@
+{
+  "sdk": {
+    "version": "1.0.4",
+    "runtime": "clr",
+    "architecture": "x86"
+  }
+}
