@@ -2,7 +2,7 @@
   <Import Project="..\..\build\common.props" />
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
-    <RootNamespace>EPiServer.Search</RootNamespace>
+    <RootNamespace>EPiServer</RootNamespace>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
@@ -10,14 +10,11 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\EPiServer.Search.Client\EPiServer.Search.Client.csproj" />
-    <ProjectReference Include="..\..\src\EPiServer.Search.Client.AspNet\EPiServer.Search.Client.AspNet.csproj" />
-    <ProjectReference Include="..\..\src\EPiServer.Search.IndexingService\EPiServer.Search.IndexingService.csproj" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
     <PackageReference Include="Microsoft.NETCore.Platforms" Version="1.1.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
     <PackageReference Include="xunit" Version="2.2.0" />
-    <PackageReference Include="EPiserver.TestTools" Version="10.10.1-feature-006705" />
-    <PackageReference Include="EPiServer.ServiceLocation.StructureMap" Version="1.0.0" />
+    <PackageReference Include="Moq" Version="4.2.1312.1622" />
     <Reference Include="System.Xml" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.ServiceModel.Web" />
