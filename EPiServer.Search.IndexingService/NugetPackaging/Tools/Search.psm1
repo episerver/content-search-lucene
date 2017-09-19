@@ -5,7 +5,7 @@ Function Add-EPiBindingRedirect($installPath, $project)
 {
 	[regex]$regex = '[\w\.]+,\sVersion=[\d\.]+,\sCulture=(?<culture>[\w-]+),\sPublicKeyToken=(?<publicKeyToken>\w+)'
 	$ns = "urn:schemas-microsoft-com:asm.v1"
-	$libPath = join-path $installPath "lib\net45"
+	$libPath = join-path $installPath "lib\net461"
 	$projectFile = Get-Item $project.FullName
 
 	#locate the project configuration file
