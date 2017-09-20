@@ -1,16 +1,16 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>EPiServer.Search.Client</id>
+    <id>EPiServer.Search.Cms</id>
     <version>$version$</version>
-    <title>EPiServer Search Client</title>
+    <title>EPiServer Search for CMS</title>
     <authors>EPiServer AB</authors>
     <owners>EPiServer</owners>
     <licenseUrl>http://www.episerver.com/eula/</licenseUrl>
     <projectUrl>http://www.episerver.com/web-content-management/</projectUrl>
     <iconUrl>http://www.episerver.com/Framework/Styles/Images/Products/Content.png</iconUrl>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
-    <description>Episerver Search Client for CMS.</description>
+    <description>Episerver Search CMS integration</description>
     <copyright>Copyright EPiServer AB 2017</copyright>
     <tags>Search</tags>
     <frameworkAssemblies/>
@@ -19,8 +19,8 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="src\EPiServer.Search.Client\bin\$Configuration$\net461\EPiServer.Search.Client.dll" target="lib\net461\EPiServer.Search.Client.dll" />
-    <file src="src\EPiServer.Search.Client\bin\$Configuration$\net461\EPiServer.Search.Client.pdb" target="lib\net461\EPiServer.Search.Client.pdb" />
-    <file src="src\EPiServer.Search.Client\**\*.cs" target="src\EPiServer.Search.Client" />
+    <file src="src\EPiServer.Search.Cms\bin\$Configuration$\net461\EPiServer.Search.Cms.dll" target="lib\net461\EPiServer.Search.Cms.dll" />
+    <file src="src\EPiServer.Search.Cms\bin\$Configuration$\net461\EPiServer.Search.Cms.pdb" target="lib\net461\EPiServer.Search.Cms.pdb" />
+    <file src="src\EPiServer.Search.Cms\**\*.cs" target="src\EPiServer.Search.Cms" />
   </files>
 </package>

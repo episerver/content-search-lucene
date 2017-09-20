@@ -9,8 +9,8 @@
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\EPiServer.Search.Client\EPiServer.Search.Client.csproj" />
-    <ProjectReference Include="..\..\src\EPiServer.Search.Client.AspNet\EPiServer.Search.Client.AspNet.csproj" />
+    <ProjectReference Include="..\..\src\EPiServer.Search.Cms\EPiServer.Search.Cms.csproj" />
+    <ProjectReference Include="..\..\src\EPiServer.Search.Cms.AspNet\EPiServer.Search.Cms.AspNet.csproj" />
     <ProjectReference Include="..\..\src\EPiServer.Search.IndexingService\EPiServer.Search.IndexingService.csproj" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
     <PackageReference Include="Microsoft.NETCore.Platforms" Version="1.1.0" />
