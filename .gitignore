@@ -5,22 +5,28 @@
 *.suo
 *.user
 *.sln.docstates
+*.bak
 
 # Build results
 
 [Dd]ebug/
 [Rr]elease/
 x64/
-build/
 [Bb]in/
 [Oo]bj/
 
 # Enable "build/" folder in the NuGet Packages folder since NuGet packages use it for MSBuild targets
 !packages/*/build/
+.nuget/
+
+#dotnet cli
+build/dotnet/
+artifacts
 
 # MSTest test Results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
+
 
 *_i.c
 *_p.c
@@ -65,6 +71,7 @@ ipch/
 # ReSharper is a .NET coding add-in
 _ReSharper*/
 *.[Rr]e[Ss]harper
+*.DotSettings
 
 # TeamCity is a build add-in
 _TeamCity*
@@ -89,11 +96,15 @@ DocProject/Help/*.hhp
 DocProject/Help/Html2
 DocProject/Help/html
 
+# GhostDoc configuration file
+*.GhostDoc.xml
+
 # Click-Once directory
 publish/
 
 # Publish Web Output
 *.Publish.xml
+*.pubxml
 
 # NuGet Packages Directory
 ## TODO: If you have NuGet Package Restore enabled, uncomment the next line
@@ -106,14 +117,20 @@ csx
 # Windows Store app package directory
 AppPackages/
 
+# Visual Studio 2015 files
+*.lock.json
+.vs/
+
 # Others
-sql/
+#sql/
 *.Cache
+!*.Cache/
 ClientBin/
 [Ss]tyle[Cc]op.*
 ~$*
 *~
 *.dbmdl
+*.jfm
 *.[Pp]ublish.xml
 *.pfx
 *.publishsettings
@@ -132,11 +149,8 @@ UpgradeLog*.htm
 App_Data/*.mdf
 App_Data/*.ldf
 
-
-#LightSwitch generated files
-GeneratedArtifacts/
-_Pvt_Extensions/
-ModelManifest.xml
+# BenchmarkDotNet
+BenchmarkDotNet.Artifacts/
 
 # =========================
 # Windows detritus
@@ -152,5 +166,5 @@ Desktop.ini
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
 
-# Mac desktop service store files
+# Mac crap
 .DS_Store

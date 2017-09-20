@@ -1,10 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.30723.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.15
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EPiServer.Search.IndexingService", "EPiServer.Search.IndexingService\EPiServer.Search.IndexingService.csproj", "{8415B625-065C-4352-9FD6-F3F1E5F9428B}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{8B9E9EC7-DC95-48BE-9D36-F80DD828368F}"
 	ProjectSection(SolutionItems) = preProject
 		.nuget\NuGet.Config = .nuget\NuGet.Config
@@ -12,7 +10,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{8B9E9E
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EPiServer.Search.IndexingService.Test", "EPiServer.Search.IndexingService.Test\EPiServer.Search.IndexingService.Test.csproj", "{25B314CD-1ED2-4BC1-BAEE-E9C984C3933C}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{77B389FC-5B38-412C-A3DD-9DF5C89A79B6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EPiServer.Search.IndexingService", "src\EPiServer.Search.IndexingService\EPiServer.Search.IndexingService.csproj", "{0B2E2888-95C6-4ED6-B43C-F3D988B2F7D9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{0A274FC2-A2E6-4DB2-8BCA-29BB56CF0AD5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EPiServer.Search.IndexingService.Test", "test\EPiServer.Search.IndexingService.Test\EPiServer.Search.IndexingService.Test.csproj", "{5FAE23B6-A999-400D-8D6A-19FB25B4309A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,16 +24,23 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{8415B625-065C-4352-9FD6-F3F1E5F9428B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8415B625-065C-4352-9FD6-F3F1E5F9428B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8415B625-065C-4352-9FD6-F3F1E5F9428B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8415B625-065C-4352-9FD6-F3F1E5F9428B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{25B314CD-1ED2-4BC1-BAEE-E9C984C3933C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{25B314CD-1ED2-4BC1-BAEE-E9C984C3933C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{25B314CD-1ED2-4BC1-BAEE-E9C984C3933C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{25B314CD-1ED2-4BC1-BAEE-E9C984C3933C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B2E2888-95C6-4ED6-B43C-F3D988B2F7D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B2E2888-95C6-4ED6-B43C-F3D988B2F7D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B2E2888-95C6-4ED6-B43C-F3D988B2F7D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B2E2888-95C6-4ED6-B43C-F3D988B2F7D9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5FAE23B6-A999-400D-8D6A-19FB25B4309A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5FAE23B6-A999-400D-8D6A-19FB25B4309A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5FAE23B6-A999-400D-8D6A-19FB25B4309A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5FAE23B6-A999-400D-8D6A-19FB25B4309A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{0B2E2888-95C6-4ED6-B43C-F3D988B2F7D9} = {77B389FC-5B38-412C-A3DD-9DF5C89A79B6}
+		{5FAE23B6-A999-400D-8D6A-19FB25B4309A} = {0A274FC2-A2E6-4DB2-8BCA-29BB56CF0AD5}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1AEE7B9E-A1EF-4554-9D69-DDE6B166765E}
 	EndGlobalSection
 EndGlobal
