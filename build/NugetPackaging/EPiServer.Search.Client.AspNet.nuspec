@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>EPiServer.Search.Client.AspNet</id>
+    <version>$version$</version>
+    <title>EPiServer Search Client ASP.NET support</title>
+    <authors>EPiServer AB</authors>
+    <owners>EPiServer</owners>
+    <licenseUrl>http://www.episerver.com/eula/</licenseUrl>
+    <projectUrl>http://www.episerver.com/web-content-management/</projectUrl>
+    <iconUrl>http://www.episerver.com/Framework/Styles/Images/Products/Content.png</iconUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>ASP.NET support for the Episerver Search Client.</description>
+    <copyright>Copyright EPiServer AB 2017</copyright>
+    <tags>Search</tags>
+    <frameworkAssemblies/>
+    <dependencies>
+      <dependency id="EPiServer.CMS.AspNet" version="[11,12)" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="build\NugetPackaging\Tools\EPiServer.Search.Client.AspNet.Install.ps1" target="tools\install.ps1" />
+    <file src="build\NugetPackaging\Tools\Search.psm1" target="tools\Search.psm1" />
+    <file src="build\NugetPackaging\EPiServer.Search.Client.AspNet.config.install.xdt" target="content\web.config.install.xdt" />
+    <file src="src\EPiServer.Search.Client.AspNet\bin\$Configuration$\net461\EPiServer.Search.Client.AspNet.dll" target="lib\net461\EPiServer.Search.Client.AspNet.dll" />
+    <file src="src\EPiServer.Search.Client.AspNet\bin\$Configuration$\net461\EPiServer.Search.Client.AspNet.pdb" target="lib\net461\EPiServer.Search.Client.AspNet.pdb" />
+    <file src="src\EPiServer.Search.Client.AspNet\**\*.cs" target="src\EPiServer.Search.Client.AspNet" />
+  </files>
+</package>
