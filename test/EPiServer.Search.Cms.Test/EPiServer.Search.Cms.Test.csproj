@@ -24,4 +24,7 @@
     <None Update="Resources\**\*" CopyToOutputDirectory="PreserveNewest" />
     <Compile Remove="IndexingServiceHandlerTest.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Fakes\" />
+  </ItemGroup>
 </Project>
