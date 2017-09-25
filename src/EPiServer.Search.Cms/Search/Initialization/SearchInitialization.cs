@@ -1,16 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using EPiServer.Core;
+﻿using EPiServer.Core;
 using EPiServer.Data;
 using EPiServer.Data.Dynamic;
 using EPiServer.DataAbstraction;
 using EPiServer.Framework;
 using EPiServer.Framework.Initialization;
-using EPiServer.Initialization;
 using EPiServer.Logging.Compatibility;
+using EPiServer.Search.Configuration;
+using EPiServer.Search.Configuration.Transform.Internal;
 using EPiServer.Security;
+using EPiServer.ServiceLocation;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using HostType = EPiServer.Framework.Initialization.HostType;
 
 namespace EPiServer.Search.Initialization
@@ -19,12 +21,19 @@ namespace EPiServer.Search.Initialization
     /// When this module is initialized the EPiServer Search runtime is initialized.
     /// </summary>
     [InitializableModule]
-    [ModuleDependency(typeof(CmsCoreInitialization))]
-    internal class SearchInitialization : IInitializableModule
+    [ModuleDependency(typeof(Web.InitializationModule))]
+    public class SearchInitialization : IConfigurableModule
     {
         private SearchEventHandler _eventHandler;
         private static object _lock = new object();
         private static readonly ILog _log = LogManager.GetLogger(typeof(SearchInitialization));
+
+        /// <inherit-doc/>
+        public void ConfigureContainer(ServiceConfigurationContext context)
+        {
+            context.Services.AddTransient<EPiServer.Configuration.Transform.Internal.IConfigurationTransform>(s =>
+                new SearchOptionsTransform(s.GetInstance<SearchOptions>(), SearchSection.Instance));
+        }
 
         /// <inherit-doc/>
         public void Initialize(InitializationEngine context)
@@ -189,11 +198,11 @@ namespace EPiServer.Search.Initialization
 
         #endregion
 
-        class RequestQueueRemover
+        private class RequestQueueRemover
         {
             private static readonly ILog _log = LogManager.GetLogger(typeof(RequestQueueRemover));
+            private readonly SearchHandler _searchHandler;
 
-            SearchHandler _searchHandler;
             public RequestQueueRemover(SearchHandler searchHandler)
             {
                 _searchHandler = searchHandler;

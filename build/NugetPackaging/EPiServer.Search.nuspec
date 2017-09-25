@@ -16,7 +16,7 @@
     <frameworkAssemblies/>
     <dependencies>
       <dependency id="Lucene.Net" version="[3.0.3, 4)" />
-      <dependency id="EPiServer.Framework" version="[10.10.4,11)" />
+      <dependency id="EPiServer.Framework" version="[10.10.4,12)" />
     </dependencies>
   </metadata>
   <files>

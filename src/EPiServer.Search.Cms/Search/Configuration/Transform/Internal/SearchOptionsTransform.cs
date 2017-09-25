@@ -1,15 +1,11 @@
-﻿ 
-using EPiServer.Search;
-using EPiServer.Search.Configuration;
+﻿using EPiServer.Configuration.Transform.Internal;
 using EPiServer.Search.Filter;
 using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 
-namespace EPiServer.Configuration.Transform.Internal
+namespace EPiServer.Search.Configuration.Transform.Internal
 {
     public class SearchOptionsTransform : IConfigurationTransform
     {

@@ -2,8 +2,8 @@
 <configuration xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
   <configSections xdt:Transform="InsertBefore(/configuration/*[1])" />
   <configSections xdt:Locator="XPath(/configuration/configSections[last()])">
-    <section name="episerver.search" type="EPiServer.Search.Configuration.SearchSection, EPiServer.Search.Cms.AspNet" xdt:Transform="SetAttributes(type)" xdt:Locator="Match(name)"/>
-    <section name="episerver.search" type="EPiServer.Search.Configuration.SearchSection, EPiServer.Search.Cms.AspNet" xdt:Transform="InsertIfMissing" xdt:Locator="Match(name)"/>
+    <section name="episerver.search" type="EPiServer.Search.Configuration.SearchSection, EPiServer.Search.Cms" xdt:Transform="SetAttributes(type)" xdt:Locator="Match(name)"/>
+    <section name="episerver.search" type="EPiServer.Search.Configuration.SearchSection, EPiServer.Search.Cms" xdt:Transform="InsertIfMissing" xdt:Locator="Match(name)"/>
   </configSections>
   <configSections xdt:Transform="RemoveAll" xdt:Locator="Condition(count(*)=0)" />
   <episerver.search active="false" xdt:Transform="InsertIfMissing">
