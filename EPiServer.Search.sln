@@ -18,11 +18,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{0A274FC2-A
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EPiServer.Search.IndexingService.Test", "test\EPiServer.Search.IndexingService.Test\EPiServer.Search.IndexingService.Test.csproj", "{5FAE23B6-A999-400D-8D6A-19FB25B4309A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EPiServer.Search.Client", "src\EPiServer.Search.Client\EPiServer.Search.Client.csproj", "{4CA1AC2B-C56E-4BD9-A9A7-1DF5D92125B3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EPiServer.Search.Cms", "src\EPiServer.Search.Cms\EPiServer.Search.Cms.csproj", "{4CA1AC2B-C56E-4BD9-A9A7-1DF5D92125B3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EPiServer.Search.Client.AspNet", "src\EPiServer.Search.Client.AspNet\EPiServer.Search.Client.AspNet.csproj", "{75B216EC-393B-4ABE-A1B5-924BCB40A1F4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EPiServer.Search.Cms.AspNet", "src\EPiServer.Search.Cms.AspNet\EPiServer.Search.Cms.AspNet.csproj", "{75B216EC-393B-4ABE-A1B5-924BCB40A1F4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EPiServer.Search.Client.Test", "test\EPiServer.Search.Client.Test\EPiServer.Search.Client.Test.csproj", "{1C2D9EB4-E0E7-4DDB-8276-F704D940AF91}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EPiServer.Search.Cms.Test", "test\EPiServer.Search.Cms.Test\EPiServer.Search.Cms.Test.csproj", "{1C2D9EB4-E0E7-4DDB-8276-F704D940AF91}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{300AF888-9BA4-493D-A743-B9EE5D5939D9}"
 	ProjectSection(SolutionItems) = preProject
@@ -31,16 +31,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{300AF888
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NugetPackaging", "NugetPackaging", "{4E633AAF-E8B9-4EED-9C60-D8FBAEF1D4EC}"
 	ProjectSection(SolutionItems) = preProject
-		build\NugetPackaging\EPiServer.Search.Client.AspNet.config.install.xdt = build\NugetPackaging\EPiServer.Search.Client.AspNet.config.install.xdt
-		build\NugetPackaging\EPiServer.Search.Client.AspNet.nuspec = build\NugetPackaging\EPiServer.Search.Client.AspNet.nuspec
-		build\NugetPackaging\EPiServer.Search.Client.nuspec = build\NugetPackaging\EPiServer.Search.Client.nuspec
+		build\NugetPackaging\EPiServer.Search.Cms.AspNet.config.install.xdt = build\NugetPackaging\EPiServer.Search.Cms.AspNet.config.install.xdt
+		build\NugetPackaging\EPiServer.Search.Cms.AspNet.nuspec = build\NugetPackaging\EPiServer.Search.Cms.AspNet.nuspec
+		build\NugetPackaging\EPiServer.Search.Cms.nuspec = build\NugetPackaging\EPiServer.Search.Cms.nuspec
 		build\NugetPackaging\EPiServer.Search.IndexingService.config.install.xdt = build\NugetPackaging\EPiServer.Search.IndexingService.config.install.xdt
 		build\NugetPackaging\EPiServer.Search.nuspec = build\NugetPackaging\EPiServer.Search.nuspec
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{D33CA17A-28DA-4A9B-91AE-C00D87AFF81C}"
 	ProjectSection(SolutionItems) = preProject
-		build\NugetPackaging\Tools\EPiServer.Search.Client.AspNet.Install.ps1 = build\NugetPackaging\Tools\EPiServer.Search.Client.AspNet.Install.ps1
+		build\NugetPackaging\Tools\EPiServer.Search.Cms.AspNet.Install.ps1 = build\NugetPackaging\Tools\EPiServer.Search.Cms.AspNet.Install.ps1
 		build\NugetPackaging\Tools\EPiServer.Search.IndexingService.Install.ps1 = build\NugetPackaging\Tools\EPiServer.Search.IndexingService.Install.ps1
 		build\NugetPackaging\Tools\Search.psm1 = build\NugetPackaging\Tools\Search.psm1
 	EndProjectSection
