@@ -20,19 +20,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EPiServer.Search.IndexingSe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EPiServer.Search.Cms", "src\EPiServer.Search.Cms\EPiServer.Search.Cms.csproj", "{4CA1AC2B-C56E-4BD9-A9A7-1DF5D92125B3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EPiServer.Search.Cms.AspNet", "src\EPiServer.Search.Cms.AspNet\EPiServer.Search.Cms.AspNet.csproj", "{75B216EC-393B-4ABE-A1B5-924BCB40A1F4}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EPiServer.Search.Cms.Test", "test\EPiServer.Search.Cms.Test\EPiServer.Search.Cms.Test.csproj", "{1C2D9EB4-E0E7-4DDB-8276-F704D940AF91}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{300AF888-9BA4-493D-A743-B9EE5D5939D9}"
 	ProjectSection(SolutionItems) = preProject
 		build\common.props = build\common.props
+		NuGet.config = NuGet.config
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NugetPackaging", "NugetPackaging", "{4E633AAF-E8B9-4EED-9C60-D8FBAEF1D4EC}"
 	ProjectSection(SolutionItems) = preProject
-		build\NugetPackaging\EPiServer.Search.Cms.AspNet.config.install.xdt = build\NugetPackaging\EPiServer.Search.Cms.AspNet.config.install.xdt
-		build\NugetPackaging\EPiServer.Search.Cms.AspNet.nuspec = build\NugetPackaging\EPiServer.Search.Cms.AspNet.nuspec
+		build\NugetPackaging\EPiServer.Search.Cms.config.install.xdt = build\NugetPackaging\EPiServer.Search.Cms.config.install.xdt
 		build\NugetPackaging\EPiServer.Search.Cms.nuspec = build\NugetPackaging\EPiServer.Search.Cms.nuspec
 		build\NugetPackaging\EPiServer.Search.IndexingService.config.install.xdt = build\NugetPackaging\EPiServer.Search.IndexingService.config.install.xdt
 		build\NugetPackaging\EPiServer.Search.nuspec = build\NugetPackaging\EPiServer.Search.nuspec
@@ -40,7 +38,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NugetPackaging", "NugetPack
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{D33CA17A-28DA-4A9B-91AE-C00D87AFF81C}"
 	ProjectSection(SolutionItems) = preProject
-		build\NugetPackaging\Tools\EPiServer.Search.Cms.AspNet.Install.ps1 = build\NugetPackaging\Tools\EPiServer.Search.Cms.AspNet.Install.ps1
+		build\NugetPackaging\Tools\EPiServer.Search.Cms.Install.ps1 = build\NugetPackaging\Tools\EPiServer.Search.Cms.Install.ps1
 		build\NugetPackaging\Tools\EPiServer.Search.IndexingService.Install.ps1 = build\NugetPackaging\Tools\EPiServer.Search.IndexingService.Install.ps1
 		build\NugetPackaging\Tools\Search.psm1 = build\NugetPackaging\Tools\Search.psm1
 	EndProjectSection
@@ -63,10 +61,6 @@ Global
 		{4CA1AC2B-C56E-4BD9-A9A7-1DF5D92125B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4CA1AC2B-C56E-4BD9-A9A7-1DF5D92125B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4CA1AC2B-C56E-4BD9-A9A7-1DF5D92125B3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{75B216EC-393B-4ABE-A1B5-924BCB40A1F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{75B216EC-393B-4ABE-A1B5-924BCB40A1F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{75B216EC-393B-4ABE-A1B5-924BCB40A1F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{75B216EC-393B-4ABE-A1B5-924BCB40A1F4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1C2D9EB4-E0E7-4DDB-8276-F704D940AF91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1C2D9EB4-E0E7-4DDB-8276-F704D940AF91}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1C2D9EB4-E0E7-4DDB-8276-F704D940AF91}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -79,7 +73,6 @@ Global
 		{0B2E2888-95C6-4ED6-B43C-F3D988B2F7D9} = {77B389FC-5B38-412C-A3DD-9DF5C89A79B6}
 		{5FAE23B6-A999-400D-8D6A-19FB25B4309A} = {0A274FC2-A2E6-4DB2-8BCA-29BB56CF0AD5}
 		{4CA1AC2B-C56E-4BD9-A9A7-1DF5D92125B3} = {77B389FC-5B38-412C-A3DD-9DF5C89A79B6}
-		{75B216EC-393B-4ABE-A1B5-924BCB40A1F4} = {77B389FC-5B38-412C-A3DD-9DF5C89A79B6}
 		{1C2D9EB4-E0E7-4DDB-8276-F704D940AF91} = {0A274FC2-A2E6-4DB2-8BCA-29BB56CF0AD5}
 		{4E633AAF-E8B9-4EED-9C60-D8FBAEF1D4EC} = {300AF888-9BA4-493D-A743-B9EE5D5939D9}
 		{D33CA17A-28DA-4A9B-91AE-C00D87AFF81C} = {4E633AAF-E8B9-4EED-9C60-D8FBAEF1D4EC}

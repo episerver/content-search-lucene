@@ -10,13 +10,12 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\EPiServer.Search.Cms\EPiServer.Search.Cms.csproj" />
-    <ProjectReference Include="..\..\src\EPiServer.Search.Cms.AspNet\EPiServer.Search.Cms.AspNet.csproj" />
     <ProjectReference Include="..\..\src\EPiServer.Search.IndexingService\EPiServer.Search.IndexingService.csproj" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
     <PackageReference Include="Microsoft.NETCore.Platforms" Version="1.1.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
     <PackageReference Include="xunit" Version="2.2.0" />
-    <PackageReference Include="EPiserver.TestTools" Version="10.10.1-feature-006705" />
+    <PackageReference Include="EPiserver.TestTools" Version="10.10.1-ci-006766" />
     <PackageReference Include="EPiServer.ServiceLocation.StructureMap" Version="1.0.0" />
     <Reference Include="System.Xml" />
     <Reference Include="System.ServiceModel" />
