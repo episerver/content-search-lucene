@@ -61,6 +61,8 @@ namespace EPiServer.Search.Initialization
 
                 contentSecurityRepo.ContentSecuritySaved += _eventHandler.ContentSecurityRepository_Saved;
 
+                PageTypeConverter.PagesConverted += _eventHandler.PageTypeConverter_PagesConverted;
+
                 RequestQueueRemover requestQueueRemover = new RequestQueueRemover(context.Locate.Advanced.GetInstance<SearchHandler>());
                 ThreadPool.QueueUserWorkItem(new WaitCallback(state => { IndexAllOnce(contentSearchHandler, requestQueueRemover); }));
             }
@@ -81,6 +83,8 @@ namespace EPiServer.Search.Initialization
                 contentEvents.DeletedContentLanguage -= _eventHandler.ContentEvents_DeletedContentLanguage;
 
                 contentSecurityRepo.ContentSecuritySaved -= _eventHandler.ContentSecurityRepository_Saved;
+
+                PageTypeConverter.PagesConverted -= _eventHandler.PageTypeConverter_PagesConverted;
 
                 _eventHandler = null;
             }
@@ -192,6 +196,32 @@ namespace EPiServer.Search.Initialization
                     {
                         _contentSearchHandler.UpdateItem(c);
                     }
+                }
+            }
+
+            public void PageTypeConverter_PagesConverted(object sender, ConvertedPageEventArgs e)
+            {
+                if (_contentRepository.TryGet(e.PageLink, out IContent content))
+                {
+                    _contentSearchHandler.UpdateItem(content);
+                }
+
+                if (e.Recursive)
+                {
+                    UpdateConvertedChildren(e.PageLink, e.ToPageType.ID);
+                }
+            }
+
+            private void UpdateConvertedChildren(ContentReference parent, int contentTypeID)
+            {
+                foreach (var child in _contentRepository.GetChildren<IContent>(parent))
+                {
+                    if (child.ContentTypeID == contentTypeID)
+                    {
+                        _contentSearchHandler.UpdateItem(child);
+                    }
+
+                    UpdateConvertedChildren(child.ContentLink, contentTypeID);
                 }
             }
         }
