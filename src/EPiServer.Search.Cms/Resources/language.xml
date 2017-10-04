@@ -1,0 +1,171 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<languages>
+  <language name="dansk" id="da">
+    <admin>
+      <indexcontent>
+        <description>Et værktøj til indeksering af alt indhold på webstedet</description>
+        <displayname>Indeksering af webstedsindhold</displayname>
+        <heading>Indeksering af webstedsindhold</heading>
+        <indexcontentbutton>Start indeksering</indexcontentbutton>
+        <info>Dette værktøj gennemgår alt indhold og alle filer på webstedet og føjer det/dem til søgeindekset.</info>
+        <latestindexing>Seneste komplette indeksering: </latestindexing>
+        <resetindex>Slet gamle data</resetindex>
+        <resetinfo>Eventuelle gamle indekserede data vil blive fjernet, før det eksisterende indhold gennemgås.</resetinfo>
+      </indexcontent>
+    </admin>
+  </language>
+  <language name="Deutsch" id="de">
+    <admin>
+      <indexcontent>
+        <description>Werkzeug zum Indizieren aller Site-Inhalte</description>
+        <displayname>Site-Inhalt indizieren</displayname>
+        <heading>Site-Inhalt indizieren</heading>
+        <indexcontentbutton>Indizieren starten</indexcontentbutton>
+        <info>Dieses Werkzeug durchsucht den gesamten Inhalt sowie alle Dateien der Site und fügt die Ergebnisse zum Suchindex hinzu.</info>
+        <latestindexing>Letzte vollständige Indizierung: </latestindexing>
+        <resetindex>Alte Daten löschen</resetindex>
+        <resetinfo>Vor dem Durchsuchen des vorhandenen Inhalts werden die alten Indexdaten gelöscht.</resetinfo>
+      </indexcontent>
+    </admin>
+  </language>
+  <language name="English" id="en">
+    <admin>
+      <indexcontent>
+        <description>A tool to index all the content on the site</description>
+        <displayname>Index Site Content</displayname>
+        <heading>Index Site Content</heading>
+        <indexcontentbutton>Start Indexing</indexcontentbutton>
+        <info>This tool will go through all the content and files on the site and add them to the search index.</info>
+        <latestindexing>Latest complete indexing: </latestindexing>
+        <resetindex>Delete old data</resetindex>
+        <resetinfo>Any old indexed data will be cleared before going through the existing content.</resetinfo>
+      </indexcontent>
+    </admin>
+  </language>
+  <language name="español" id="es">
+    <admin>
+      <indexcontent>
+        <description>Herramienta para indexar todo el contenido del sitio</description>
+        <displayname>Indexar contenido del sitio</displayname>
+        <heading>Indexar contenido del sitio</heading>
+        <indexcontentbutton>Iniciar indexación</indexcontentbutton>
+        <info>Esta herramienta revisará todo el contenido y los archivos del sitio y los agregará al índice de búsqueda.</info>
+        <latestindexing>Última indexación realizada: </latestindexing>
+        <resetindex>Eliminar datos anteriores</resetindex>
+        <resetinfo>Todos los datos indexados anteriores se eliminarán antes de revisar el contenido existente.</resetinfo>
+      </indexcontent>
+    </admin>
+  </language>
+  <language name="suomi" id="fi">
+    <admin>
+      <indexcontent>
+        <description>Työkalu, jolla voi indeksoida sivuston koko sisällön</description>
+        <displayname>Indeksoi sivuston sisältö</displayname>
+        <heading>Indeksoi sivuston sisältö</heading>
+        <indexcontentbutton>Aloita indeksointi</indexcontentbutton>
+        <info>Työkalu käy läpi sivuston koko sisällön ja kaikki tiedostot ja lisää ne hakuindekseihin.</info>
+        <latestindexing>Viimeisin täydellinen indeksointi: </latestindexing>
+        <resetindex>Poista vanhat tiedot</resetindex>
+        <resetinfo>Kaikki vanhat indeksoidut tiedot tyhjennetään, ennen kuin nykyinen sisältö käydään läpi.</resetinfo>
+      </indexcontent>
+    </admin>
+  </language>
+  <language name="français" id="fr">
+    <admin>
+      <indexcontent>
+        <description>Outil permettant d'indexer la totalité du contenu sur le site</description>
+        <displayname>Indexer le contenu sur le site</displayname>
+        <heading>Indexer le contenu sur le site</heading>
+        <indexcontentbutton>Démarrer l'indexation</indexcontentbutton>
+        <info>Cet outil parcourt l'intégralité du contenu et des fichiers du site et les ajoute à l'index de recherche.</info>
+        <latestindexing>Dernière indexation effectuée : </latestindexing>
+        <resetindex>Supprimer les anciennes données</resetindex>
+        <resetinfo>Les anciennes données indexées seront supprimées avant de parcourir le contenu existant.</resetinfo>
+      </indexcontent>
+    </admin>
+  </language>
+  <language name="Italiano" id="it">
+    <admin>
+      <indexcontent>
+        <description>Uno strumento per indicizzare tutti i contenuti del sito</description>
+        <displayname>Indicizza il contenuto del sito</displayname>
+        <heading>Indicizza il contenuto del sito</heading>
+        <indexcontentbutton>Avvia l'indicizzazione</indexcontentbutton>
+        <info>Questo strumento scorrerà tutti i contenuti e file sul sito e li aggiungerà all'indice di ricerca.</info>
+        <latestindexing>Ultima indicizzazione completa: </latestindexing>
+        <resetindex>Elimina i vecchi dati</resetindex>
+        <resetinfo>Tutti i vecchi dati indicizzati saranno cancellati prima di scorrere il contenuto esistente.</resetinfo>
+      </indexcontent>
+    </admin>
+  </language>
+  <language name="日本語 (Japanese)" id="ja">
+    <admin>
+      <indexcontent>
+        <description>サイト上のすべてのコンテンツにインデックスを付けるためのツール</description>
+        <displayname>サイト コンテンツのインデックス</displayname>
+        <heading>サイト コンテンツのインデックス</heading>
+        <indexcontentbutton>インデックス作成の開始</indexcontentbutton>
+        <info>このツールはサイト上のすべてのコンテンツおよびファイルを処理し、それらを検索インデックスに追加します。</info>
+        <latestindexing>最新の完了インデックス: </latestindexing>
+        <resetindex>古いデータの削除</resetindex>
+        <resetinfo>古いインデックスのデータはすべて、既存のコンテンツを処理する前にクリアされます。</resetinfo>
+      </indexcontent>
+    </admin>
+  </language>
+  <language name="Nederlands" id="nl">
+    <admin>
+      <indexcontent>
+        <description>Een tool om alle inhoud op de site te indexeren</description>
+        <displayname>Site-inhoud indexeren</displayname>
+        <heading>Site-inhoud indexeren</heading>
+        <indexcontentbutton>Indexering starten</indexcontentbutton>
+        <info>Deze tool doorloopt alle inhoud en bestanden op de site en voegt ze toe aan de zoekindex.</info>
+        <latestindexing>Laatste volledige indexering: </latestindexing>
+        <resetindex>Oude gegevens verwijderen</resetindex>
+        <resetinfo>Oude geïndexeerde gegevens worden gewist alvorens de bestaande inhoud te doorlopen.</resetinfo>
+      </indexcontent>
+    </admin>
+  </language>
+  <language name="Norsk" id="no">
+    <admin>
+      <indexcontent>
+        <description>Et verktøy til å indeksere alt innhold på nettstedet</description>
+        <displayname>Indeks nettstedinnhold</displayname>
+        <heading>Indeks nettstedinnhold</heading>
+        <indexcontentbutton>Start indeksering</indexcontentbutton>
+        <info>Dette verktøyet vil gå gjennom alt innholdet og filer på nettstedet, og legge dem til indeksen for søking.</info>
+        <latestindexing>Sist fullført indeksering: </latestindexing>
+        <resetindex>Slett gamle data</resetindex>
+        <resetinfo>Data som ble indeksert tidligere, fjernes før eksisterende innhold gjennomgås.</resetinfo>
+      </indexcontent>
+    </admin>
+  </language>
+  <language name="svenska" id="sv">
+    <admin>
+      <indexcontent>
+        <description>Ett verktyg för att indexera allt innehåll på webbplatsen</description>
+        <displayname>Indexera webbplatsinnehåll</displayname>
+        <heading>Indexera webbplatsinnehåll</heading>
+        <indexcontentbutton>Starta indexering</indexcontentbutton>
+        <info>Det här verktyget går igenom och lägger till allt innehåll och alla filer på webbplatsen, i sökindexet.</info>
+        <latestindexing>Senast slutförda indexering: </latestindexing>
+        <resetindex>Ta bort gamla data</resetindex>
+        <resetinfo>Alla gamla indexerade data rensas innan det befintliga innehållet gås igenom.</resetinfo>
+      </indexcontent>
+    </admin>
+  </language>
+  <language name="中文 (Chinese)" id="zh-CN">
+    <admin>
+      <indexcontent>
+        <description>可以索引网站所有内容的工具</description>
+        <displayname>索引网站内容</displayname>
+        <heading>索引网站内容</heading>
+        <indexcontentbutton>开始索引</indexcontentbutton>
+        <info>此工具将详细查看网站上的所有内容和文件，并添加至搜索索引。</info>
+        <latestindexing>最新的完整索引： </latestindexing>
+        <resetindex>删除旧数据</resetindex>
+        <resetinfo>在查看现有内容之前，先前所有的索引数据将被清除。</resetinfo>
+      </indexcontent>
+    </admin>
+  </language>
+</languages>
