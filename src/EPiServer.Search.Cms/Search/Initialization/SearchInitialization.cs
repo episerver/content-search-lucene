@@ -1,12 +1,14 @@
-﻿using EPiServer.Core;
+﻿using EPiServer.Configuration.Transform.Internal;
+using EPiServer.Core;
 using EPiServer.Data;
 using EPiServer.Data.Dynamic;
 using EPiServer.DataAbstraction;
 using EPiServer.Framework;
 using EPiServer.Framework.Initialization;
-using EPiServer.Logging.Compatibility;
+using EPiServer.Logging;
 using EPiServer.Search.Configuration;
 using EPiServer.Search.Configuration.Transform.Internal;
+using EPiServer.Search.Internal;
 using EPiServer.Security;
 using EPiServer.ServiceLocation;
 using System;
@@ -26,18 +28,60 @@ namespace EPiServer.Search.Initialization
     {
         private SearchEventHandler _eventHandler;
         private static object _lock = new object();
-        private static readonly ILog _log = LogManager.GetLogger(typeof(SearchInitialization));
+        private static readonly ILogger _log = LogManager.GetLogger();
 
         /// <inherit-doc/>
         public void ConfigureContainer(ServiceConfigurationContext context)
         {
-            context.Services.AddTransient<EPiServer.Configuration.Transform.Internal.IConfigurationTransform>(s =>
-                new SearchOptionsTransform(s.GetInstance<SearchOptions>(), SearchSection.Instance));
+            context.Services
+                .AddTransient<IConfigurationTransform>(s => new SearchOptionsTransform(s.GetInstance<SearchOptions>(), SearchSection.Instance))
+                .AddSingleton<SearchHandler>()
+                .AddSingleton<RequestHandler>()
+                .AddSingleton<RequestQueue>()
+                .AddSingleton<RequestQueueHandler>()
+                .AddSingleton<ReIndexManager>()
+                .Forward<ReIndexManager, IReIndexManager>();
+
         }
 
         /// <inherit-doc/>
         public void Initialize(InitializationEngine context)
         {
+            var searchOptions = context.Locate.Advanced.GetInstance<SearchOptions>();
+            SearchSettings.Options = searchOptions;
+            if (!searchOptions.Active)
+            {
+                return;
+            }
+
+            //Load search result filter providers
+            SearchSettings.LoadSearchResultFilterProviders(searchOptions, context.Locate.Advanced);
+
+            // Provoke a certificate error if user configured an invalid certificate
+            foreach (var serviceReference in searchOptions.IndexingServiceReferences)
+            {
+                if (!serviceReference.BaseUri.IsWellFormedOriginalString())
+                {
+                    throw new ArgumentException($"The Base uri is not well formed '{serviceReference.BaseUri}'");
+                }
+                serviceReference.GetClientCertificate();
+            }
+
+            // Avoid starting the Queue flush timer during installation, since it risks breaking appdomain unloading
+            // (it may stall in unmanaged code (socket/http request) causing an UnloadAppDomainException)
+            if (context == null || context.HostType != HostType.Installer)
+            {
+                var queueHandler = context.Locate.Advanced.GetInstance<RequestQueueHandler>();
+                queueHandler.StartQueueFlushTimer();
+            }
+            else
+            {
+                _log.Information("Didn't start the Queue Flush timer, since HostType is 'Installer'");
+            }
+
+            //Fire event telling that the default configuration is loaded
+            SearchSettings.OnInitializationCompleted();
+
             if (context.Locate.Advanced.GetInstance<IDatabaseMode>().DatabaseMode ==  DatabaseMode.ReadOnly)
             {
                 _log.Debug("Unable to indexing of content because the database is in the ReadOnly mode");
@@ -88,6 +132,8 @@ namespace EPiServer.Search.Initialization
 
                 _eventHandler = null;
             }
+
+            SearchSettings.SearchResultFilterProviders.Clear();
         }
 
         private void IndexAllOnce(ContentSearchHandler contentSearchHandler, RequestQueueRemover requestQueueRemover)
@@ -109,7 +155,7 @@ namespace EPiServer.Search.Initialization
                 catch (Exception e)
                 {
                     // We do not want any type of exception left unhandled since we are running on a separete thread.
-                    _log.Warn("Error during full search indexing of content and files.", e);
+                    _log.Warning("Error during full search indexing of content and files.", e);
                 }
             }
         }
@@ -230,7 +276,7 @@ namespace EPiServer.Search.Initialization
 
         private class RequestQueueRemover
         {
-            private static readonly ILog _log = LogManager.GetLogger(typeof(RequestQueueRemover));
+            private static readonly ILogger _log = LogManager.GetLogger();
             private readonly SearchHandler _searchHandler;
 
             public RequestQueueRemover(SearchHandler searchHandler)
@@ -242,10 +288,7 @@ namespace EPiServer.Search.Initialization
             {
                 foreach (IReIndexable reIndexable in reIndexables)
                 {
-                    if (_log.IsInfoEnabled)
-                    {
-                        _log.InfoFormat("The RequestQueueRemover truncate queue with NamedIndexingService '{0}' and NamedIndex '{1}'", reIndexable.NamedIndexingService, reIndexable.NamedIndex);
-                    }
+                    _log.Information("The RequestQueueRemover truncate queue with NamedIndexingService '{0}' and NamedIndex '{1}'", reIndexable.NamedIndexingService, reIndexable.NamedIndex);
                     _searchHandler.TruncateQueue(reIndexable.NamedIndexingService, reIndexable.NamedIndex);
                 }
             }
