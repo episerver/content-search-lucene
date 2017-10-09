@@ -20,4 +20,8 @@
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Remove="Resources\language.xml" />
+    <EmbeddedResource Include="Resources\language.xml" />
+  </ItemGroup>
 </Project>

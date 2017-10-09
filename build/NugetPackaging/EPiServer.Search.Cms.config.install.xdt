@@ -16,6 +16,11 @@
       <providers />
     </searchResultFilter>
   </episerver.search>
+  <episerver.shell>
+    <protectedModules xdt:Transform="InsertIfMissing">
+      <add name="EPiServer.Search.Cms" xdt:Locator="Match(name)" />
+    </protectedModules>
+  </episerver.shell>
   <system.serviceModel xdt:Transform="InsertIfMissing">
     <serviceHostingEnvironment  multipleSiteBindingsEnabled="true"  xdt:Transform="InsertIfMissing"/>
   </system.serviceModel>
