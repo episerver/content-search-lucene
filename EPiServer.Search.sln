@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.15
+VisualStudioVersion = 15.0.26730.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{8B9E9EC7-DC95-48BE-9D36-F80DD828368F}"
 	ProjectSection(SolutionItems) = preProject
@@ -18,6 +18,31 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{0A274FC2-A
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EPiServer.Search.IndexingService.Test", "test\EPiServer.Search.IndexingService.Test\EPiServer.Search.IndexingService.Test.csproj", "{5FAE23B6-A999-400D-8D6A-19FB25B4309A}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EPiServer.Search.Cms", "src\EPiServer.Search.Cms\EPiServer.Search.Cms.csproj", "{4CA1AC2B-C56E-4BD9-A9A7-1DF5D92125B3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EPiServer.Search.Cms.Test", "test\EPiServer.Search.Cms.Test\EPiServer.Search.Cms.Test.csproj", "{1C2D9EB4-E0E7-4DDB-8276-F704D940AF91}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{300AF888-9BA4-493D-A743-B9EE5D5939D9}"
+	ProjectSection(SolutionItems) = preProject
+		build\common.props = build\common.props
+		NuGet.config = NuGet.config
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NugetPackaging", "NugetPackaging", "{4E633AAF-E8B9-4EED-9C60-D8FBAEF1D4EC}"
+	ProjectSection(SolutionItems) = preProject
+		build\NugetPackaging\EPiServer.Search.Cms.config.install.xdt = build\NugetPackaging\EPiServer.Search.Cms.config.install.xdt
+		build\NugetPackaging\EPiServer.Search.Cms.nuspec = build\NugetPackaging\EPiServer.Search.Cms.nuspec
+		build\NugetPackaging\EPiServer.Search.IndexingService.config.install.xdt = build\NugetPackaging\EPiServer.Search.IndexingService.config.install.xdt
+		build\NugetPackaging\EPiServer.Search.nuspec = build\NugetPackaging\EPiServer.Search.nuspec
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{D33CA17A-28DA-4A9B-91AE-C00D87AFF81C}"
+	ProjectSection(SolutionItems) = preProject
+		build\NugetPackaging\Tools\EPiServer.Search.Cms.Install.ps1 = build\NugetPackaging\Tools\EPiServer.Search.Cms.Install.ps1
+		build\NugetPackaging\Tools\EPiServer.Search.IndexingService.Install.ps1 = build\NugetPackaging\Tools\EPiServer.Search.IndexingService.Install.ps1
+		build\NugetPackaging\Tools\Search.psm1 = build\NugetPackaging\Tools\Search.psm1
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +57,14 @@ Global
 		{5FAE23B6-A999-400D-8D6A-19FB25B4309A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5FAE23B6-A999-400D-8D6A-19FB25B4309A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5FAE23B6-A999-400D-8D6A-19FB25B4309A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4CA1AC2B-C56E-4BD9-A9A7-1DF5D92125B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4CA1AC2B-C56E-4BD9-A9A7-1DF5D92125B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4CA1AC2B-C56E-4BD9-A9A7-1DF5D92125B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4CA1AC2B-C56E-4BD9-A9A7-1DF5D92125B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C2D9EB4-E0E7-4DDB-8276-F704D940AF91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C2D9EB4-E0E7-4DDB-8276-F704D940AF91}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C2D9EB4-E0E7-4DDB-8276-F704D940AF91}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C2D9EB4-E0E7-4DDB-8276-F704D940AF91}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -39,6 +72,10 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{0B2E2888-95C6-4ED6-B43C-F3D988B2F7D9} = {77B389FC-5B38-412C-A3DD-9DF5C89A79B6}
 		{5FAE23B6-A999-400D-8D6A-19FB25B4309A} = {0A274FC2-A2E6-4DB2-8BCA-29BB56CF0AD5}
+		{4CA1AC2B-C56E-4BD9-A9A7-1DF5D92125B3} = {77B389FC-5B38-412C-A3DD-9DF5C89A79B6}
+		{1C2D9EB4-E0E7-4DDB-8276-F704D940AF91} = {0A274FC2-A2E6-4DB2-8BCA-29BB56CF0AD5}
+		{4E633AAF-E8B9-4EED-9C60-D8FBAEF1D4EC} = {300AF888-9BA4-493D-A743-B9EE5D5939D9}
+		{D33CA17A-28DA-4A9B-91AE-C00D87AFF81C} = {4E633AAF-E8B9-4EED-9C60-D8FBAEF1D4EC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1AEE7B9E-A1EF-4554-9D69-DDE6B166765E}
