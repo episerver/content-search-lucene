@@ -5,8 +5,8 @@
     <RootNamespace>EPiServer</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="EPiServer.CMS.UI.Core" Version="10.11.0-ci-015257" />
-    <PackageReference Include="EPiServer.CMS.AspNet" Version="11.0.0-pre-000283" />
+    <PackageReference Include="EPiServer.CMS.UI.Core" Version="11.0.0" />
+    <PackageReference Include="EPiServer.CMS.AspNet" Version="11.0.0" />
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />

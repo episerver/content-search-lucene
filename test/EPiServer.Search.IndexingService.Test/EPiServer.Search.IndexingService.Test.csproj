@@ -15,7 +15,7 @@
     <PackageReference Include="Microsoft.NETCore.Platforms" Version="1.1.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
     <PackageReference Include="xunit" Version="2.2.0" />
-    <PackageReference Include="EPiserver.TestTools" Version="11.0.0-pre-000283" PrivateAssets="all" />
+    <PackageReference Include="EPiserver.TestTools" Version="11.0.0" PrivateAssets="all" />
     <PackageReference Include="EPiServer.ServiceLocation.StructureMap" Version="1.0.0" />
     <Reference Include="System.Xml" />
     <Reference Include="System.ServiceModel" />
