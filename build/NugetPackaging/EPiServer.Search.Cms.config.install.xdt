@@ -24,4 +24,11 @@
   <system.serviceModel xdt:Transform="InsertIfMissing">
     <serviceHostingEnvironment  multipleSiteBindingsEnabled="true"  xdt:Transform="InsertIfMissing"/>
   </system.serviceModel>
+  <system.web>
+    <pages>
+      <controls xdt:Transform="InsertIfMissing">
+        <add tagPrefix="EPiServer" namespace="EPiServer.Web.WebControls" assembly="EPiServer.Search.Cms" xdt:Transform="InsertIfMissing" xdt:Locator="Match(assembly)"/>
+      </controls>
+    </pages>
+  </system.web>
 </configuration>
