@@ -15,7 +15,7 @@
     <tags>Search</tags>
     <frameworkAssemblies/>
     <dependencies>
-      <!--<dependency id="EPiServer.CMS.UI.Core" version="[11,12)" />-->
+      <dependency id="EPiServer.CMS.UI.Core" version="[11,12)" />
     </dependencies>
   </metadata>
   <files>
