@@ -18,11 +18,11 @@
   </episerver.search>
   <episerver.shell>
     <protectedModules xdt:Transform="InsertIfMissing">
-      <add name="EPiServer.Search.Cms" xdt:Locator="Match(name)" />
+      <add name="EPiServer.Search.Cms" xdt:Transform="InsertIfMissing" xdt:Locator="Match(name)" />
     </protectedModules>
   </episerver.shell>
   <system.serviceModel xdt:Transform="InsertIfMissing">
-    <serviceHostingEnvironment  multipleSiteBindingsEnabled="true"  xdt:Transform="InsertIfMissing"/>
+    <serviceHostingEnvironment  multipleSiteBindingsEnabled="true" xdt:Transform="InsertIfMissing"/>
   </system.serviceModel>
   <system.web>
     <pages>
