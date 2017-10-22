@@ -17,6 +17,7 @@ namespace EPiServer.UI.Admin
     /// </summary>
     [GuiPlugIn(DisplayName = "Reindex Content", Area = PlugInArea.AdminMenu, UrlFromModuleFolder = "IndexContent.aspx", LanguagePath = "/admin/indexcontent", SortIndex = 900)]
     [PrincipalPermission(SecurityAction.Demand, Role = "WebAdmins")]
+    [PrincipalPermission(SecurityAction.Demand, Role = "Administrators")]
     public partial class IndexContent : WebFormsBase
     {
         private static readonly ILogger _log = LogManager.GetLogger();
