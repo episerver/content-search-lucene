@@ -37,5 +37,4 @@
       </security>
     </system.webServer>
   </location>
-  <episerver.search active="true"  xdt:Transform="SetAttributes" />
 </configuration>

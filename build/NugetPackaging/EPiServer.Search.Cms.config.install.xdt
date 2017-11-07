@@ -6,7 +6,7 @@
     <section name="episerver.search" type="EPiServer.Search.Configuration.SearchSection, EPiServer.Search.Cms" xdt:Transform="InsertIfMissing" xdt:Locator="Match(name)"/>
   </configSections>
   <configSections xdt:Transform="RemoveAll" xdt:Locator="Condition(count(*)=0)" />
-  <episerver.search active="false" xdt:Transform="InsertIfMissing">
+  <episerver.search active="true" xdt:Transform="InsertIfMissing">
     <namedIndexingServices defaultService="serviceName">
       <services>
         <add name="serviceName" baseUri="Please insert the indexing search service endpoint here if the episerver.search is active. If local service is used pattern is http://sitehost/IndexingService/IndexingService.svc" accessKey="local" />
