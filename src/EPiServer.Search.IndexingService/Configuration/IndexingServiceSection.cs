@@ -30,6 +30,13 @@ namespace EPiServer.Search.IndexingService.Configuration
             set { base["maxHitsForSearchResults"] = value; }
         }
 
+        [ConfigurationProperty("fipsCompliant", IsRequired = false, DefaultValue = false)]
+        public bool FIPSCompliant 
+        {
+            get { return (bool)base["fipsCompliant"]; }
+            set { base["fipsCompliant"] = value; }
+        }
+
         [ConfigurationProperty("maxHitsForReferenceSearch", IsRequired = false, DefaultValue = 10000)]
         public int MaxHitsForReferenceSearch
         {
