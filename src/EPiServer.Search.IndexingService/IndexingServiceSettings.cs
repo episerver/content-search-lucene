@@ -100,6 +100,8 @@ namespace EPiServer.Search.IndexingService
             //Load configuration
             LoadConfiguration();
 
+            Lucene.Net.Support.Cryptography.FIPSCompliant = FIPSCompliant;
+
             //Create or load named indexes
             LoadIndexes();
 
@@ -129,6 +131,11 @@ namespace EPiServer.Search.IndexingService
             get;
             set;
         }
+
+        /// <summary>
+        /// Gets and sets the FIPSCompliant 
+        /// </summary>
+        public static bool FIPSCompliant { get; private set; }
 
         /// <summary>
         /// Gets and sets the maximum number of hits to be returned by a Lucene Search. Overrides the passed maxitems.
@@ -329,6 +336,7 @@ namespace EPiServer.Search.IndexingService
                 MaxHitsForSearchResults = indexingServiceSection.MaxHitsForSearchResults;
                 MaxHitsForReferenceSearch = indexingServiceSection.MaxHitsForReferenceSearch;
                 MaxDisplayTextLength = indexingServiceSection.MaxDisplayTextLength;
+                FIPSCompliant = indexingServiceSection.FIPSCompliant;
 
                 foreach (ClientElement e in indexingServiceSection.Clients)
                 {
