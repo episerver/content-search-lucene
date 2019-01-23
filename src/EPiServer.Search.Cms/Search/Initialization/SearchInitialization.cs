@@ -4,6 +4,7 @@ using EPiServer.Data;
 using EPiServer.Data.Dynamic;
 using EPiServer.DataAbstraction;
 using EPiServer.Framework;
+using EPiServer.Framework.Configuration;
 using EPiServer.Framework.Initialization;
 using EPiServer.Logging;
 using EPiServer.Search.Configuration;
@@ -13,6 +14,7 @@ using EPiServer.Security;
 using EPiServer.ServiceLocation;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Threading;
 using HostType = EPiServer.Framework.Initialization.HostType;
@@ -35,6 +37,7 @@ namespace EPiServer.Search.Initialization
         {
             context.Services
                 .AddTransient<IConfigurationTransform>(s => new SearchOptionsTransform(s.GetInstance<SearchOptions>(), SearchSection.Instance))
+                .AddTransient<IConfigurationTransform>(s => new SearchIndexConfigTransformation(s.GetInstance<SearchIndexConfig>(), ConfigurationSource.Instance))
                 .AddSingleton<SearchHandler>()
                 .AddSingleton<RequestHandler>()
                 .AddSingleton<RequestQueue>()

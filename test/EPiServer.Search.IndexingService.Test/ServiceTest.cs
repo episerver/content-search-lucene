@@ -3225,6 +3225,17 @@ namespace EPiServer.Search.IndexingService
         }
 
 
+        [Fact]
+        public void CMSSearchReIndexable_WhenTheNameIndexIsDefined_ShouldReturnIt()
+        {
+            Assert.True(ServiceLocator.Current.GetAllInstances<IReIndexable>().Any(i => i.NamedIndex == "testnameindex"));
+        }
+
+        [Fact]
+        public void CMSSearchReIndexable_WhenNamedIndexingServiceIsDefined_ShouldReturnIt()
+        {
+            Assert.True(ServiceLocator.Current.GetAllInstances<IReIndexable>().Any(i => i.NamedIndexingService == "testnameservice"));
+        }
         #region Helper methods
 
 
