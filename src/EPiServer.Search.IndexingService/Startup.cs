@@ -29,6 +29,9 @@ namespace EPiServer.Search.IndexingService
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            //register
+            services.AddSingleton<IIndexingServiceSettings, IndexingServiceSettings>();
+            services.AddSingleton<IIndexingServiceHandler, IndexingServiceHandler>();
 
             //register configuration
             services.Configure<IndexingServiceOptions>(Configuration.GetSection("EPiServer::episerver.search.indexingservice"));

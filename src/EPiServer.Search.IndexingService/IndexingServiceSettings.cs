@@ -10,10 +10,11 @@ using Lucene.Net.Analysis;
 using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Documents;
 using Lucene.Net.Store;
+using Microsoft.Extensions.Options;
 
 namespace EPiServer.Search.IndexingService
 {
-    internal class IndexingServiceSettings
+    internal class IndexingServiceSettings : IIndexingServiceSettings
     {
         #region Member variables
         internal const string TagsPrefix = "[[";
@@ -76,12 +77,18 @@ namespace EPiServer.Search.IndexingService
         private static Dictionary<string, FieldProperties> _fieldProperties = new Dictionary<string, FieldProperties>();
         private static IList<string> _lowercaseFields = new List<string>() { DefaultFieldName, TitleFieldName, DisplayTextFieldName, AuthorsFieldName };
 
+        private readonly IndexingServiceOptions _indexingServiceOpts;
+        private readonly IIndexingServiceHandler _indexingServiceHandler;
         #endregion
 
         #region Construct and Init
 
-        static IndexingServiceSettings()
+        public IndexingServiceSettings(IOptions<IndexingServiceOptions> indexingServiceOpts,
+             IIndexingServiceHandler indexingServiceHandler)
         {
+            _indexingServiceOpts = indexingServiceOpts.Value;
+            _indexingServiceHandler = indexingServiceHandler;
+
             Init();
         }
 
@@ -89,7 +96,7 @@ namespace EPiServer.Search.IndexingService
         {
         }
 
-        private static void Init()
+        private void Init()
         {
             //Start logging
             IndexingServiceServiceLog = LogManager.GetLogger(typeof(IndexingController));
@@ -176,11 +183,7 @@ namespace EPiServer.Search.IndexingService
         /// <summary>
         /// Gets and sets the Log4Net logger
         /// </summary>
-        internal static ILog IndexingServiceServiceLog
-        {
-            get;
-            set;
-        }
+        public ILog IndexingServiceServiceLog { get; set; }
 
         internal static Analyzer Analyzer
         {
@@ -308,10 +311,10 @@ namespace EPiServer.Search.IndexingService
             }
         }
 
-        internal static void HandleServiceError(string errorMessage)
+        public void HandleServiceError(string errorMessage)
         {
             //Log, fire event and respond with status code 500
-            IndexingServiceSettings.IndexingServiceServiceLog.Error(errorMessage);
+            IndexingServiceServiceLog.Error(errorMessage);
             throw new HttpResponseException() { Value = new { error = errorMessage } };
         }
 
@@ -319,32 +322,27 @@ namespace EPiServer.Search.IndexingService
 
         #region Private
 
-        private static void LoadConfiguration()
+        private void LoadConfiguration()
         {
-            IndexingServiceSection indexingServiceSection = System.Configuration.ConfigurationManager.GetSection("episerver.search.indexingservice") as IndexingServiceSection;
+            MaxHitsForSearchResults = _indexingServiceOpts.MaxHitsForSearchResults;
+            MaxHitsForReferenceSearch = _indexingServiceOpts.MaxHitsForReferenceSearch;
+            MaxDisplayTextLength = _indexingServiceOpts.MaxDisplayTextLength;
+            FIPSCompliant = _indexingServiceOpts.FIPSCompliant;
 
-            if (indexingServiceSection != null)
+            foreach (ClientElement e in _indexingServiceOpts.Clients)
             {
-                MaxHitsForSearchResults = indexingServiceSection.MaxHitsForSearchResults;
-                MaxHitsForReferenceSearch = indexingServiceSection.MaxHitsForReferenceSearch;
-                MaxDisplayTextLength = indexingServiceSection.MaxDisplayTextLength;
-                FIPSCompliant = indexingServiceSection.FIPSCompliant;
-
-                foreach (ClientElement e in indexingServiceSection.Clients)
-                {
-                    ClientElements.Add(e.Name, e);
-                }
-
-                foreach (NamedIndexElement e in indexingServiceSection.NamedIndexesElement.NamedIndexes)
-                {
-                    NamedIndexElements.Add(e.Name, e);
-                }
-
-                _defaultIndexName = indexingServiceSection.NamedIndexesElement.DefaultIndex;
+                ClientElements.Add(e.Name, e);
             }
+
+            foreach (NamedIndexElement e in _indexingServiceOpts.NamedIndexes.Indexes)
+            {
+                NamedIndexElements.Add(e.Name, e);
+            }
+
+            _defaultIndexName = _indexingServiceOpts.NamedIndexes.DefaultIndex;
         }
 
-        private static void LoadIndexes()
+        private void LoadIndexes()
         {
             foreach (NamedIndexElement e in NamedIndexElements.Values)
             {
@@ -359,7 +357,7 @@ namespace EPiServer.Search.IndexingService
                     if (!directoryMain.Exists)
                     {
                         directoryMain.Create();
-                        Directory dir = IndexingServiceHandler.CreateIndex(e.Name, directoryMain);
+                        Directory dir = _indexingServiceHandler.CreateIndex(e.Name, directoryMain);
                         NamedIndexDirectories.Add(e.Name, dir);
                     }
                     else
@@ -370,7 +368,7 @@ namespace EPiServer.Search.IndexingService
                     if (!directoryRef.Exists)
                     {
                         directoryRef.Create();
-                        Directory refDir = IndexingServiceHandler.CreateIndex(e.Name + RefIndexSuffix, directoryRef);
+                        Directory refDir = _indexingServiceHandler.CreateIndex(e.Name + RefIndexSuffix, directoryRef);
                         ReferenceIndexDirectories.Add(e.Name, refDir);
                     }
                     else
