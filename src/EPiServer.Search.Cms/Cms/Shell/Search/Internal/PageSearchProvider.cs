@@ -4,11 +4,13 @@ using EPiServer.DataAbstraction;
 using EPiServer.Framework.Localization;
 using EPiServer.Globalization;
 using EPiServer.Search;
+using EPiServer.Security;
 using EPiServer.ServiceLocation;
 using EPiServer.Shell;
 using EPiServer.Shell.Search;
 using EPiServer.Web;
 using EPiServer.Web.Routing;
+using Microsoft.AspNetCore.Http;
 
 namespace EPiServer.Cms.Shell.Search.Internal
 {
@@ -21,10 +23,9 @@ namespace EPiServer.Cms.Shell.Search.Internal
         /// <summary>
         /// Initialized a new instance of the <see cref="PageSearchProvider"/> class
         /// </summary>
-        public PageSearchProvider(LocalizationService localizationService, ISiteDefinitionResolver siteDefinitionResolver, IContentTypeRepository<PageType> pageTypeRepository, EditUrlResolver editUrlResolver, ServiceAccessor<SiteDefinition> currentSiteDefinition, IContentRepository contentRepository, ILanguageBranchRepository languageBranchRepository, SearchHandler searchHandler, ContentSearchHandler contentSearchHandler, SearchIndexConfig searchIndexConfig, UIDescriptorRegistry uiDescriptorRegistry, LanguageResolver languageResolver,
-           UrlResolver urlResolver,
-           TemplateResolver templateResolver)
-           : base(localizationService, siteDefinitionResolver, pageTypeRepository, editUrlResolver, currentSiteDefinition, contentRepository, languageBranchRepository, searchHandler, contentSearchHandler, searchIndexConfig, uiDescriptorRegistry, languageResolver, urlResolver, templateResolver)
+        public PageSearchProvider(LocalizationService localizationService, ISiteDefinitionResolver siteDefinitionResolver, IContentTypeRepository<PageType> pageTypeRepository, EditUrlResolver editUrlResolver, ServiceAccessor<SiteDefinition> currentSiteDefinition, IContentRepository contentRepository, ILanguageBranchRepository languageBranchRepository, SearchHandler searchHandler, ContentSearchHandler contentSearchHandler, SearchIndexConfig searchIndexConfig, UIDescriptorRegistry uiDescriptorRegistry, IContentLanguageAccessor languageResolver,
+           IUrlResolver urlResolver, ITemplateResolver templateResolver, HttpContext httpContext, IPrincipalAccessor principalContext)
+           : base(localizationService, siteDefinitionResolver, pageTypeRepository, editUrlResolver, currentSiteDefinition, contentRepository, languageBranchRepository, searchHandler, contentSearchHandler, searchIndexConfig, uiDescriptorRegistry, languageResolver, urlResolver, templateResolver, httpContext, principalContext)
         {
         }
 
