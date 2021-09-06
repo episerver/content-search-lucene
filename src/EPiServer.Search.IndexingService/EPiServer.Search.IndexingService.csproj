@@ -1,30 +1,19 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\build\common.props" />
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
-    <Description>Episerver Search Indexing Service</Description>
+    <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="EPiServer.Framework" Version="11.0.0" />
     <PackageReference Include="Lucene.Net" Version="3.0.3" />
-    <Reference Include="System" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.ServiceModel.Web" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Web" />
-    <Reference Include="System.Web.ApplicationServices" />
-    <Reference Include="System.Web.DynamicData" />
-    <Reference Include="System.Web.Entity" />
-    <Reference Include="System.Web.Extensions" />
-    <Reference Include="System.Web.Extensions.Design" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Xml.Linq" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="5.0.0" />
+    <PackageReference Include="System.ServiceModel.Syndication" Version="5.0.0" />
   </ItemGroup>
+
   <ItemGroup>
-    <None Include="EPiServerLog.config" />
-    <None Include="web.config" />
-    <Content Include="IndexingService.svc" CopyToOutputDirectory="PreserveNewest" />
+    <Reference Include="EPiServer.Framework">
+      <HintPath>..\..\..\netcore-cmscore\src\EPiServer.Framework\bin\Debug\net5.0\EPiServer.Framework.dll</HintPath>
+    </Reference>
   </ItemGroup>
+
 </Project>
