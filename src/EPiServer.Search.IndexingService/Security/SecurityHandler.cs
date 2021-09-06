@@ -8,26 +8,11 @@ namespace EPiServer.Search.IndexingService.Security
 {
     public class SecurityHandler
     {
-        private static SecurityHandler _instance = new SecurityHandler();
+        private static IHttpContextAccessor _httpContextAccessor;
 
-        static SecurityHandler()
+        public SecurityHandler(IHttpContextAccessor httpContextAccessor)
         {
-        }
-
-        protected SecurityHandler()
-        {
-        }
-
-        public static SecurityHandler Instance
-        {
-            get
-            {
-                return _instance;
-            }
-            set
-            {
-                _instance = value;
-            }
+            _httpContextAccessor = httpContextAccessor;
         }
 
         protected internal virtual bool IsAuthenticated(string accessKey, AccessLevel accessLevel)
@@ -57,17 +42,12 @@ namespace EPiServer.Search.IndexingService.Security
             }
 
             //Try to authenticate this request by configured client IP
-            OperationContext context = OperationContext.Current;
-            if (context != null)
-            {
-                MessageProperties messageProperties = context.IncomingMessageProperties;
-                RemoteEndpointMessageProperty endpointProperty = messageProperties[RemoteEndpointMessageProperty.Name] as RemoteEndpointMessageProperty;
+            var remoteIpAddress = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress;
 
-                if (!elem.IsIPAddressAllowed(System.Net.IPAddress.Parse(endpointProperty.Address)))
-                {
-                    IndexingServiceSettings.IndexingServiceServiceLog.Error(string.Format("No match for client IP {0}. Access denied for access key {1}.", endpointProperty.Address, accessKey));
-                    return false;
-                }
+            if (!elem.IsIPAddressAllowed(remoteIpAddress))
+            {
+                IndexingServiceSettings.IndexingServiceServiceLog.Error(string.Format("No match for client IP {0}. Access denied for access key {1}.", remoteIpAddress, accessKey));
+                return false;
             }
 
             IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("Request for authorization for access key '{0}' succeded", accessKey));
