@@ -1,3 +1,5 @@
+using EPiServer.Framework;
+using EPiServer.Search.IndexingService.Configuration;
 using EPiServer.Search.IndexingService.Security;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -9,6 +11,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -26,6 +29,16 @@ namespace EPiServer.Search.IndexingService
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+
+            //register configuration
+            services.Configure<IndexingServiceOptions>(Configuration.GetSection("EPiServer::episerver.search.indexingservice"));
+            services.AddOptions<EpiserverFrameworkOptions>().PostConfigure<IHostEnvironment>((options, hosting) =>
+            {
+                if (options.AppDataPath == null)
+                {
+                    options.AppDataPath = Path.Combine(hosting.ContentRootPath, EnvironmentOptions.DefaultAppDataFolderName);
+                }
+            });
 
             services.AddControllers(options =>
                 options.Filters.Add(new HttpResponseExceptionFilter()));

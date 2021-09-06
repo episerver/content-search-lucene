@@ -8,65 +8,32 @@ using System.Net.NetworkInformation;
 
 namespace EPiServer.Search.IndexingService.Configuration
 {
-    public class ClientElement : ConfigurationElement
+    public class ClientElement
     {
         object _lockObj = new object();
         List<IPAddress> _localIps = null;
         List<IPRange> _ip6Ranges = null;
         List<IPRange> _ip4Ranges = null;
 
-        [ConfigurationProperty("name", IsRequired = true, IsKey = true)]
-        public string Name
-        {
-            get { return (string)base["name"]; }
-            set { base["name"] = value; }
-        }
+        public string Name { get; set; }
 
-        [ConfigurationProperty("description", IsRequired = false)]
-        public string Description
-        {
-            get { return (string)base["description"]; }
-            set { base["description"] = value; }
-        }
+        public string Description { get; set; }
 
-        [ConfigurationProperty("ipAddress", IsRequired = false)]
-        public string IPAddress
-        {
-            get { return (string)base["ipAddress"]; }
-            set
-            {
-                base["ipAddress"] = value;
-                _ip4Ranges = ParseIPRangeList(System.Net.Sockets.AddressFamily.InterNetwork, value);
-            }
-        }
+        public string IPAddress { get; set; }
 
-        [ConfigurationProperty("ip6Address", IsRequired = false)]
         public string IP6Address
         {
-            get { return (string)base["ip6Address"]; }
+            get { return IP6Address; }
             set
             {
-                base["ip6Address"] = value;
+                IP6Address = value;
                 _ip6Ranges = ParseIPRangeList(System.Net.Sockets.AddressFamily.InterNetworkV6, value);
             }
         }
 
-        [ConfigurationProperty("allowLocal", IsRequired = false, DefaultValue = false)]
-        public bool AllowLocal
-        {
-            get { return (bool)base["allowLocal"]; }
-            set
-            {
-                base["allowLocal"] = value;
-            }
-        }
+        public bool AllowLocal { get; set; }
 
-        [ConfigurationProperty("readonly", IsRequired = true)]
-        public bool ReadOnly
-        {
-            get { return (bool)base["readonly"]; }
-            set { base["readonly"] = value; }
-        }
+        public bool ReadOnly { get; set; }
 
         private List<IPRange> ParseIPRangeList(System.Net.Sockets.AddressFamily addressFamily, string list)
         {
@@ -88,7 +55,7 @@ namespace EPiServer.Search.IndexingService.Configuration
         private List<IPAddress> GetLocalAddresses()
         {
             List<IPAddress> localIps = new List<IPAddress>();
-            
+
             NetworkInterface[] nics = NetworkInterface.GetAllNetworkInterfaces();
             foreach (NetworkInterface nic in nics)
             {
