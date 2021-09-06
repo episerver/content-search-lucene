@@ -18,7 +18,7 @@ namespace EPiServer.Search
         /// <returns>
         /// The currently registered <see cref="SearchHandler"/>.
         /// </returns>
-        public static SearchHandler SearchHandler(this ServiceLocationHelper helper)
+        public static SearchHandler SearchHandler(this ServiceProviderHelper helper)
         {
             return helper.Advanced.GetInstance<SearchHandler>();
         }

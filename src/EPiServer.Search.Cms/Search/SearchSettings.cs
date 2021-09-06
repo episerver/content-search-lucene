@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using EPiServer.Search.Configuration;
+//using EPiServer.Search.Configuration;
 using EPiServer.Search.Filter;
 using EPiServer.Search.Queries.Lucene;
 using System.Globalization;
@@ -23,8 +23,8 @@ namespace EPiServer.Search
             set { _options = value; }
         }
 
-        [Obsolete("Add and retrieve indexing service references through the IndexingServiceReferences property on the SearchOptions class.", true)]
-        public static Dictionary<string, IndexingServiceReference> IndexingServiceReferences => throw new NotSupportedException();
+        //[Obsolete("Add and retrieve indexing service references through the IndexingServiceReferences property on the SearchOptions class.", true)]
+        //public static Dictionary<string, IndexingServiceReference> IndexingServiceReferences => throw new NotSupportedException();
 
         /// <summary>
         /// Gets all configured providers for filtering search results
@@ -81,11 +81,11 @@ namespace EPiServer.Search
             }
         }
 
-        internal static void LoadSearchResultFilterProviders(SearchOptions options, IServiceLocator serviceLocator)
+        internal static void LoadSearchResultFilterProviders(SearchOptions options, IServiceProvider serviceProvider)
         {
             foreach (var factory in options.FilterProviders)
             {
-                _searchResultFilterProviders.Add(factory.Key, factory.Value(serviceLocator));
+                _searchResultFilterProviders.Add(factory.Key, factory.Value(serviceProvider));
             }
         }
 

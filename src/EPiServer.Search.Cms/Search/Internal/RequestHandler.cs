@@ -9,7 +9,7 @@ using System.ServiceModel.Syndication;
 using System.Xml;
 using System.Xml.Linq;
 using EPiServer.Logging;
-using EPiServer.Search.Configuration;
+//using EPiServer.Search.Configuration;
 using EPiServer.Search.Filter;
 using EPiServer.Web;
 
@@ -31,7 +31,9 @@ namespace EPiServer.Search.Internal
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times")]
         public virtual bool SendRequest(SyndicationFeed feed, string namedIndexingService)
         {
-            var serviceReference = GetNamedIndexingServiceReference(namedIndexingService, false);
+            return true;
+            //TO BE UPDATED
+            /*var serviceReference = GetNamedIndexingServiceReference(namedIndexingService, false);
 
             using (var stream = new MemoryStream())
             {
@@ -60,7 +62,7 @@ namespace EPiServer.Search.Internal
                     _log.Error($"Update batch could not be sent to service uri '{url}'", ex);
                     return false;
                 }
-            }
+            } */
         }
 
         /// <summary>
@@ -70,28 +72,30 @@ namespace EPiServer.Search.Internal
         /// <param name="namedIndex">The named index to re-create</param>
         protected internal virtual void ResetIndex(string namedIndexingService, string namedIndex)
         {
-            var serviceReference = GetNamedIndexingServiceReference(namedIndexingService);
+            // TO BE UPDATED
 
-            var parameterMapper = new Dictionary<string, string>();
-            parameterMapper.Add("{namedindex}", namedIndex);
-            parameterMapper.Add("{accesskey}", serviceReference.AccessKey);
+            //var serviceReference = GetNamedIndexingServiceReference(namedIndexingService);
 
-            string url = _options.ResetUriTemplate;
-            foreach (string key in parameterMapper.Keys)
-            {
-                url = url.Replace(key, WebUtility.UrlEncode(parameterMapper[key]));
-            }
+            //var parameterMapper = new Dictionary<string, string>();
+            //parameterMapper.Add("{namedindex}", namedIndex);
+            //parameterMapper.Add("{accesskey}", serviceReference.AccessKey);
 
-            url = serviceReference.BaseUri + url;
+            //string url = _options.ResetUriTemplate;
+            //foreach (string key in parameterMapper.Keys)
+            //{
+            //    url = url.Replace(key, WebUtility.UrlEncode(parameterMapper[key]));
+            //}
 
-            try
-            {
-                MakeHttpRequest(url, _options.ResetHttpMethod, serviceReference, null, null);
-            }
-            catch (Exception e)
-            {
-                _log.Error(string.Format("Could not reset index '{0}' for service uri '{1}'. Message: {2}{3}", namedIndex, url, e.Message, e.StackTrace));
-            }
+            //url = serviceReference.BaseUri + url;
+
+            //try
+            //{
+            //    MakeHttpRequest(url, _options.ResetHttpMethod, serviceReference, null, null);
+            //}
+            //catch (Exception e)
+            //{
+            //    _log.Error(string.Format("Could not reset index '{0}' for service uri '{1}'. Message: {2}{3}", namedIndex, url, e.Message, e.StackTrace));
+            //}
         }
 
         /// <summary>
@@ -101,41 +105,43 @@ namespace EPiServer.Search.Internal
         /// <returns></returns>
         protected internal virtual Collection<string> GetNamedIndexes(string namedIndexingService)
         {
-            var serviceReference = GetNamedIndexingServiceReference(namedIndexingService);
+            // TO BE UPDATED
+            return new Collection<string>();
+            //var serviceReference = GetNamedIndexingServiceReference(namedIndexingService);
 
-            var parameterMapper = new Dictionary<string, string>();
-            parameterMapper.Add("{accesskey}", serviceReference.AccessKey);
+            //var parameterMapper = new Dictionary<string, string>();
+            //parameterMapper.Add("{accesskey}", serviceReference.AccessKey);
 
-            string url = _options.NamedIndexesUriTemplate;
-            foreach (string key in parameterMapper.Keys)
-            {
-                url = url.Replace(key, WebUtility.UrlEncode(parameterMapper[key]));
-            }
+            //string url = _options.NamedIndexesUriTemplate;
+            //foreach (string key in parameterMapper.Keys)
+            //{
+            //    url = url.Replace(key, WebUtility.UrlEncode(parameterMapper[key]));
+            //}
 
-            url = serviceReference.BaseUri + url;
+            //url = serviceReference.BaseUri + url;
 
-            XmlReader xmlReader = null;
-            SyndicationFeed feed = null;
-            var namedIndexes = new Collection<string>();
+            //XmlReader xmlReader = null;
+            //SyndicationFeed feed = null;
+            //var namedIndexes = new Collection<string>();
 
-            try
-            {
-                MakeHttpRequest(url, "GET", serviceReference, null, (response) =>
-                {
-                    xmlReader = XmlReader.Create(response);
-                    feed = SyndicationFeed.Load(xmlReader);
-                    foreach (var item in feed.Items)
-                    {
-                        namedIndexes.Add(item.Title.Text);
-                    }
-                });
-            }
-            catch (Exception e)
-            {
-                _log.Error(string.Format("Could not get named indexes for uri '{0}'. Message: {1}{2}", url, e.Message, e.StackTrace));
-            }
+            //try
+            //{
+            //    MakeHttpRequest(url, "GET", serviceReference, null, (response) =>
+            //    {
+            //        xmlReader = XmlReader.Create(response);
+            //        feed = SyndicationFeed.Load(xmlReader);
+            //        foreach (var item in feed.Items)
+            //        {
+            //            namedIndexes.Add(item.Title.Text);
+            //        }
+            //    });
+            //}
+            //catch (Exception e)
+            //{
+            //    _log.Error(string.Format("Could not get named indexes for uri '{0}'. Message: {1}{2}", url, e.Message, e.StackTrace));
+            //}
 
-            return namedIndexes;
+            //return namedIndexes;
         }
 
         /// <summary>
@@ -149,81 +155,85 @@ namespace EPiServer.Search.Internal
         /// <returns></returns>
         protected internal virtual SearchResults GetSearchResults(string query, string namedIndexingService, Collection<string> namedIndexes, int offset, int limit)
         {
-            var parameterMapper = new Dictionary<string, string>();
-            var results = new SearchResults();
+            // TO BE UPDATED
+            return new SearchResults();
+            //var parameterMapper = new Dictionary<string, string>();
+            //var results = new SearchResults();
 
-            var serviceReference = GetNamedIndexingServiceReference(namedIndexingService);
+            //var serviceReference = GetNamedIndexingServiceReference(namedIndexingService);
 
-            string indexes = string.Empty;
-            if (namedIndexes != null && namedIndexes.Count > 0)
-            {
-                foreach (string s in namedIndexes)
-                    indexes += s + "|";
-                indexes = indexes.Substring(0, indexes.LastIndexOf("|", StringComparison.Ordinal));
-            }
+            //string indexes = string.Empty;
+            //if (namedIndexes != null && namedIndexes.Count > 0)
+            //{
+            //    foreach (string s in namedIndexes)
+            //        indexes += s + "|";
+            //    indexes = indexes.Substring(0, indexes.LastIndexOf("|", StringComparison.Ordinal));
+            //}
 
-            parameterMapper.Add("{q}", query);
-            parameterMapper.Add("{namedindexes}", indexes);
-            parameterMapper.Add("{accesskey}", serviceReference.AccessKey);
+            //parameterMapper.Add("{q}", query);
+            //parameterMapper.Add("{namedindexes}", indexes);
+            //parameterMapper.Add("{accesskey}", serviceReference.AccessKey);
 
-            parameterMapper.Add("{offset}", (_options.UseIndexingServicePaging ? offset.ToString(CultureInfo.InvariantCulture.NumberFormat) : "0"));
-            parameterMapper.Add("{limit}", (_options.UseIndexingServicePaging ? limit.ToString(CultureInfo.InvariantCulture.NumberFormat) : _options.MaxHitsFromIndexingService.ToString(CultureInfo.InvariantCulture.NumberFormat)));
+            //parameterMapper.Add("{offset}", (_options.UseIndexingServicePaging ? offset.ToString(CultureInfo.InvariantCulture.NumberFormat) : "0"));
+            //parameterMapper.Add("{limit}", (_options.UseIndexingServicePaging ? limit.ToString(CultureInfo.InvariantCulture.NumberFormat) : _options.MaxHitsFromIndexingService.ToString(CultureInfo.InvariantCulture.NumberFormat)));
 
-            string url = _options.SearchUriTemplate;
-            foreach (string key in parameterMapper.Keys)
-            {
-                url = url.Replace(key, WebUtility.UrlEncode(parameterMapper[key]));
-            }
+            //string url = _options.SearchUriTemplate;
+            //foreach (string key in parameterMapper.Keys)
+            //{
+            //    url = url.Replace(key, WebUtility.UrlEncode(parameterMapper[key]));
+            //}
 
-            url = serviceReference.BaseUri + url;
+            //url = serviceReference.BaseUri + url;
 
-            XmlTextReader xmlReader = null;
+            //XmlTextReader xmlReader = null;
 
-            _log.Debug(string.Format("Start get search results from service with url '{0}'", url));
+            //_log.Debug(string.Format("Start get search results from service with url '{0}'", url));
 
-            try
-            {
-                MakeHttpRequest(url, "GET", serviceReference, null, (response) =>
-                {
-                    xmlReader = new XmlTextReader(response);
-                    xmlReader.DtdProcessing = DtdProcessing.Prohibit;
-                    xmlReader.Normalization = false;
-                    var feed = SyndicationFeed.Load(xmlReader);
-                    results = PopulateSearchResultsFromFeed(feed, offset, limit);
-                });
-            }
-            catch (Exception e)
-            {
-                _log.Error(string.Format("Could not get search results for uri '{0}'. Message: {1}{2}", url, e.Message, e.StackTrace));
-                return results;
-            }
+            //try
+            //{
+            //    MakeHttpRequest(url, "GET", serviceReference, null, (response) =>
+            //    {
+            //        xmlReader = new XmlTextReader(response);
+            //        xmlReader.DtdProcessing = DtdProcessing.Prohibit;
+            //        xmlReader.Normalization = false;
+            //        var feed = SyndicationFeed.Load(xmlReader);
+            //        results = PopulateSearchResultsFromFeed(feed, offset, limit);
+            //    });
+            //}
+            //catch (Exception e)
+            //{
+            //    _log.Error(string.Format("Could not get search results for uri '{0}'. Message: {1}{2}", url, e.Message, e.StackTrace));
+            //    return results;
+            //}
 
-            _log.Debug(string.Format("End get search results"));
+            //_log.Debug(string.Format("End get search results"));
 
-            return results;
+            //return results;
         }
 
-        private IndexingServiceReference GetNamedIndexingServiceReference(string name, bool fallbackToDefault = true)
-        {
-            // Use default indexing service name if passed serviceName is null or empty
-            if (string.IsNullOrEmpty(name) && fallbackToDefault)
-            {
-                name = _options.DefaultIndexingServiceName;
-                if (string.IsNullOrEmpty(name))
-                {
-                    throw new InvalidOperationException("Cannot fallback to default indexing service since it is not defined (defaultService in configuration)");
-                }
-            }
+        // TO BE UPDATED
 
-            var reference = _options.IndexingServiceReferences.FirstOrDefault(r => r.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+        //private IndexingServiceReference GetNamedIndexingServiceReference(string name, bool fallbackToDefault = true)
+        //{
+        //    // Use default indexing service name if passed serviceName is null or empty
+        //    if (string.IsNullOrEmpty(name) && fallbackToDefault)
+        //    {
+        //        name = _options.DefaultIndexingServiceName;
+        //        if (string.IsNullOrEmpty(name))
+        //        {
+        //            throw new InvalidOperationException("Cannot fallback to default indexing service since it is not defined (defaultService in configuration)");
+        //        }
+        //    }
 
-            if (reference == null)
-            {
-                throw new ArgumentException($"The named indexing service '{name}' is not defined in the configuration");
-            }
+        //    var reference = _options.IndexingServiceReferences.FirstOrDefault(r => r.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
-            return reference;
-        }
+        //    if (reference == null)
+        //    {
+        //        throw new ArgumentException($"The named indexing service '{name}' is not defined in the configuration");
+        //    }
+
+        //    return reference;
+        //}
 
         private SearchResults PopulateSearchResultsFromFeed(SyndicationFeed feed, int offset, int limit)
         {
@@ -407,58 +417,60 @@ namespace EPiServer.Search.Internal
             }
         }
 
-        internal virtual void MakeHttpRequest(string url, string method, IndexingServiceReference indexingServiceReference, Stream postData = null, Action<Stream> responseStreamHandler = null)
-        {
-            var request = WebRequest.Create(url) as HttpWebRequest;
-            request.UseDefaultCredentials = true;
+        // TO BE UPDATED
 
-            if (request is HttpWebRequest)
-            {
-                var hwr = request;
-                var cert = indexingServiceReference.GetClientCertificate();
-                if (cert != null)
-                {
-                    hwr.ClientCertificates.Add(cert);
-                }
-                if (indexingServiceReference.CertificateAllowUntrusted)
-                {
-                    ServicePointManager.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) =>
-                    {
-                        return true;
-                    };
-                }
-            }
+        //internal virtual void MakeHttpRequest(string url, string method, IndexingServiceReference indexingServiceReference, Stream postData = null, Action<Stream> responseStreamHandler = null)
+        //{
+        //    var request = WebRequest.Create(url) as HttpWebRequest;
+        //    request.UseDefaultCredentials = true;
 
-            request.Method = method;
-            if (method == "POST" || method == "DELETE" || method == "PUT")
-            {
-                request.ContentType = "application/xml";
-                if (postData != null)
-                {
-                    request.ContentLength = postData.Length;
+        //    if (request is HttpWebRequest)
+        //    {
+        //        var hwr = request;
+        //        var cert = indexingServiceReference.GetClientCertificate();
+        //        if (cert != null)
+        //        {
+        //            hwr.ClientCertificates.Add(cert);
+        //        }
+        //        if (indexingServiceReference.CertificateAllowUntrusted)
+        //        {
+        //            ServicePointManager.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) =>
+        //            {
+        //                return true;
+        //            };
+        //        }
+        //    }
 
-                    var dataStream = request.GetRequestStream();
-                    CopyStream(postData, dataStream);
-                    dataStream.Close();
-                }
-                else
-                {
-                    request.ContentLength = 0;
-                }
+        //    request.Method = method;
+        //    if (method == "POST" || method == "DELETE" || method == "PUT")
+        //    {
+        //        request.ContentType = "application/xml";
+        //        if (postData != null)
+        //        {
+        //            request.ContentLength = postData.Length;
 
-                // Get the response.
-                var response = request.GetResponse();
-                responseStreamHandler?.Invoke(response.GetResponseStream());
-                response.Close();
-            }
-            else if (method == "GET")
-            {
-                request.ContentType = "application/xml";
+        //            var dataStream = request.GetRequestStream();
+        //            CopyStream(postData, dataStream);
+        //            dataStream.Close();
+        //        }
+        //        else
+        //        {
+        //            request.ContentLength = 0;
+        //        }
 
-                var response = request.GetResponse();
-                responseStreamHandler?.Invoke(response.GetResponseStream());
-                response.Close();
-            }
-        }
+        //        // Get the response.
+        //        var response = request.GetResponse();
+        //        responseStreamHandler?.Invoke(response.GetResponseStream());
+        //        response.Close();
+        //    }
+        //    else if (method == "GET")
+        //    {
+        //        request.ContentType = "application/xml";
+
+        //        var response = request.GetResponse();
+        //        responseStreamHandler?.Invoke(response.GetResponseStream());
+        //        response.Close();
+        //    }
+        //}
     }
 }

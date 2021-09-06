@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using EPiServer.Framework;
-using EPiServer.Search.Configuration;
+//using EPiServer.Search.Configuration;
 using EPiServer.Search.Filter;
 using EPiServer.ServiceLocation;
 
@@ -306,12 +306,13 @@ namespace EPiServer.Search
         /// <summary>
         /// Factories for search filter providers
         /// </summary>
-        public Dictionary<string, Func<IServiceLocator, SearchResultFilterProvider>> FilterProviders { get; } = new Dictionary<string, Func<IServiceLocator, SearchResultFilterProvider>>();
+        public Dictionary<string, Func<IServiceProvider, SearchResultFilterProvider>> FilterProviders { get; } = new Dictionary<string, Func<IServiceProvider, SearchResultFilterProvider>>();
 
+        // TO BE UPDATED
         /// <summary>
         /// Contains a list of references for indexing services.
         /// </summary>
-        public List<IndexingServiceReference> IndexingServiceReferences { get; } = new List<IndexingServiceReference>();
+        //public List<IndexingServiceReference> IndexingServiceReferences { get; } = new List<IndexingServiceReference>();
 
         /// <summary>
         /// The name of the default indexing service in <see cref="IndexingServiceReferences"/>
