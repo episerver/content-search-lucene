@@ -10,8 +10,8 @@ namespace EPiServer.Search.IndexingService.FieldSerializers
 {
     internal class AuthorsFieldStoreSerializer : PipeSeparatedFieldStoreSerializer
     {
-        internal AuthorsFieldStoreSerializer(SyndicationItem syndicationItem)
-            : base(syndicationItem)
+        internal AuthorsFieldStoreSerializer(FeedItemModel feedItem)
+            : base(feedItem)
         {
         }
 
@@ -22,13 +22,13 @@ namespace EPiServer.Search.IndexingService.FieldSerializers
 
         internal override string ToFieldStoreValue()
         {
-            if (SyndicationItem != null)
+            if (FeedItem != null)
             {
                 StringBuilder authors = new StringBuilder();
 
-                foreach (SyndicationPerson person in SyndicationItem.Authors.Where(a => a != null && !string.IsNullOrEmpty(a.Name)))
+                foreach (string person in FeedItem.Authors.Where(a => !string.IsNullOrEmpty(a)))
                 {
-                    authors.Append(person.Name.Trim());
+                    authors.Append(person.Trim());
                     authors.Append("|");
                 }
 
@@ -43,14 +43,14 @@ namespace EPiServer.Search.IndexingService.FieldSerializers
             }
         }
 
-        internal override void AddFieldStoreValueToSyndicationItem(SyndicationItem syndicationItem)
+        internal override void AddFieldStoreValueToSyndicationItem(FeedItemModel feedItem)
         {
             string[] nodes = base.SplitFieldStoreValue();
             foreach (string node in nodes)
             {
-                if(!String.IsNullOrEmpty(node))
+                if (!String.IsNullOrEmpty(node))
                 {
-                    syndicationItem.Authors.Add(new SyndicationPerson(String.Empty, node, String.Empty));
+                    feedItem.Authors.Add(node);
                 }
             }
         }

@@ -10,8 +10,8 @@ namespace EPiServer.Search.IndexingService.FieldSerializers
 {
     internal class VirtualPathFieldStoreSerializer : PipeSeparatedFieldStoreSerializer
     {
-        internal VirtualPathFieldStoreSerializer(SyndicationItem syndicationItem)
-            : base(syndicationItem)
+        internal VirtualPathFieldStoreSerializer(FeedItemModel feedItem)
+            : base(feedItem)
         {
         }
 
@@ -25,9 +25,9 @@ namespace EPiServer.Search.IndexingService.FieldSerializers
             return base.ToFieldStoreValue(IndexingServiceSettings.SyndicationItemElementNameVirtualPath);
         }
 
-        internal override void AddFieldStoreValueToSyndicationItem(SyndicationItem syndicationItem)
+        internal override void AddFieldStoreValueToSyndicationItem(FeedItemModel feedItem)
         {
-            base.AddFieldStoreValueToSyndicationItem(syndicationItem, IndexingServiceSettings.SyndicationItemElementNameVirtualPath);
+            base.AddFieldStoreValueToSyndicationItem(feedItem, IndexingServiceSettings.SyndicationItemElementNameVirtualPath);
         }
     }
 }

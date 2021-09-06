@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Net;
 using System.ServiceModel;
-using System.ServiceModel.Channels;
 using System.Threading;
 using EPiServer.Logging.Compatibility;
 using EPiServer.Search.IndexingService.Configuration;
+using EPiServer.Search.IndexingService.Controllers;
 using Lucene.Net.Analysis;
 using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Documents;
@@ -92,7 +92,7 @@ namespace EPiServer.Search.IndexingService
         private static void Init()
         {
             //Start logging
-            IndexingServiceServiceLog = LogManager.GetLogger(typeof(IndexingService));
+            IndexingServiceServiceLog = LogManager.GetLogger(typeof(IndexingController));
 
             //Must check breaking changes and database format compatibility before 'upgrading' this
             LuceneVersion = Lucene.Net.Util.Version.LUCENE_29;
@@ -108,7 +108,7 @@ namespace EPiServer.Search.IndexingService
             LoadFieldProperties();
 
             LoadAnalyzer();
-            
+
             IndexingServiceServiceLog.Info("EPiServer Indexing Service Started!");
         }
 
@@ -292,7 +292,7 @@ namespace EPiServer.Search.IndexingService
                 _defaultIndexName = value;
 
                 //re-set default directory
-                if(NamedIndexDirectories[DefaultIndexName] != null)
+                if (NamedIndexDirectories[DefaultIndexName] != null)
                     DefaultDirectory = (Directory)NamedIndexDirectories[value];
             }
         }
@@ -308,19 +308,11 @@ namespace EPiServer.Search.IndexingService
             }
         }
 
-        internal static void SetResponseHeaderStatusCode(int statusCode)
-        {
-            HttpResponseMessageProperty p = new HttpResponseMessageProperty();
-            p.StatusCode = (HttpStatusCode)statusCode;
-            OperationContext.Current.OutgoingMessageProperties[HttpResponseMessageProperty.Name] = p;
-        }
-
         internal static void HandleServiceError(string errorMessage)
         {
             //Log, fire event and respond with status code 500
             IndexingServiceSettings.IndexingServiceServiceLog.Error(errorMessage);
-            IndexingService.OnInternalServerError(null, new InternalServerErrorEventArgs(errorMessage));
-            SetResponseHeaderStatusCode(500);              
+            throw new HttpResponseException() { Value = new { error = errorMessage } };
         }
 
         #endregion
@@ -398,9 +390,6 @@ namespace EPiServer.Search.IndexingService
                 catch (Exception ex)
                 {
                     IndexingServiceServiceLog.Fatal(String.Format("Failed to load or create index: \"{0}\". Message: {1}", e.Name, ex.Message), ex);
-
-                    //Fire internal server error event
-                    IndexingService.OnInternalServerError(null, new InternalServerErrorEventArgs(String.Format("Failed to load or create index: {0}. Message: {1}{2}{3}", e.Name, ex.Message, Environment.NewLine, ex.StackTrace)));
                 }
             }
         }
@@ -431,7 +420,7 @@ namespace EPiServer.Search.IndexingService
 
         private static void LoadAnalyzer()
         {
-            System.String[] stopWords = new System.String[] {};
+            System.String[] stopWords = new System.String[] { };
             PerFieldAnalyzerWrapper perf = new PerFieldAnalyzerWrapper(new StandardAnalyzer(IndexingServiceSettings.LuceneVersion, StopFilter.MakeStopSet(stopWords)));
 
             // Untokenized fields uses keyword analyzer at all times
@@ -460,8 +449,8 @@ namespace EPiServer.Search.IndexingService
 
             _analyzer = perf;
         }
-        
-        
+
+
         #endregion
     }
 }
