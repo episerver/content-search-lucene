@@ -4,11 +4,8 @@ using EPiServer.Data;
 using EPiServer.Data.Dynamic;
 using EPiServer.DataAbstraction;
 using EPiServer.Framework;
-using EPiServer.Framework.Configuration;
 using EPiServer.Framework.Initialization;
 using EPiServer.Logging;
-using EPiServer.Search.Configuration;
-using EPiServer.Search.Configuration.Transform.Internal;
 using EPiServer.Search.Internal;
 using EPiServer.Security;
 using EPiServer.ServiceLocation;
@@ -18,6 +15,7 @@ using System.Configuration;
 using System.Linq;
 using System.Threading;
 using HostType = EPiServer.Framework.Initialization.HostType;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace EPiServer.Search.Initialization
 {
@@ -35,9 +33,9 @@ namespace EPiServer.Search.Initialization
         /// <inherit-doc/>
         public void ConfigureContainer(ServiceConfigurationContext context)
         {
-            context.Services
-                .AddTransient<IConfigurationTransform>(s => new SearchOptionsTransform(s.GetInstance<SearchOptions>(), SearchSection.Instance))
-                .AddTransient<IConfigurationTransform>(s => new SearchIndexConfigTransformation(s.GetInstance<SearchIndexConfig>(), ConfigurationSource.Instance))
+            context.Services //TO BE UPDATED
+              //  .AddTransient<IConfigurationTransform>(s => new SearchOptionsTransform(s.GetInstance<SearchOptions>(), SearchSection.Instance))
+              //  .AddTransient<IConfigurationTransform>(s => new SearchIndexConfigTransformation(s.GetInstance<SearchIndexConfig>(), ConfigurationSource.Instance))
                 .AddSingleton<SearchHandler>()
                 .AddSingleton<RequestHandler>()
                 .AddSingleton<RequestQueue>()
@@ -61,25 +59,26 @@ namespace EPiServer.Search.Initialization
             SearchSettings.LoadSearchResultFilterProviders(searchOptions, context.Locate.Advanced);
 
             // Provoke a certificate error if user configured an invalid certificate
-            foreach (var serviceReference in searchOptions.IndexingServiceReferences)
-            {
-                if (!serviceReference.BaseUri.IsWellFormedOriginalString())
-                {
-                    throw new ArgumentException($"The Base uri is not well formed '{serviceReference.BaseUri}'");
-                }
-                serviceReference.GetClientCertificate();
-            }
+            // TO BE UPDATED
+            //foreach (var serviceReference in searchOptions.IndexingServiceReferences)
+            //{
+            //    if (!serviceReference.BaseUri.IsWellFormedOriginalString())
+            //    {
+            //        throw new ArgumentException($"The Base uri is not well formed '{serviceReference.BaseUri}'");
+            //    }
+            //    serviceReference.GetClientCertificate();
+            //}
 
             // Avoid starting the Queue flush timer during installation, since it risks breaking appdomain unloading
             // (it may stall in unmanaged code (socket/http request) causing an UnloadAppDomainException)
-            if (context == null || context.HostType != HostType.Installer)
+            if (context == null)
             {
                 var queueHandler = context.Locate.Advanced.GetInstance<RequestQueueHandler>();
                 queueHandler.StartQueueFlushTimer();
             }
             else
             {
-                _log.Information("Didn't start the Queue Flush timer, since HostType is 'Installer'");
+                _log.Information("Didn't start the Queue Flush timer, since context is null");
             }
 
             //Fire event telling that the default configuration is loaded
@@ -91,7 +90,7 @@ namespace EPiServer.Search.Initialization
                 return;
             }
 
-            if (SearchSettings.Options.Active && (context.HostType == HostType.WebApplication || context.HostType == HostType.Service))
+            if (SearchSettings.Options.Active && (context.HostType == HostType.WebApplication || context.HostType == HostType.LegacyMirroringAppDomain))
             {
                 var contentRepo = context.Locate.ContentRepository();
                 var contentSecurityRepo = context.Locate.ContentSecurityRepository();

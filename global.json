@@ -1,7 +1,7 @@
 {
   "sdk": {
-    "version": "1.0.4",
-    "runtime": "clr",
-    "architecture": "x86"
+     "version": "5.0.100",
+     "architecture": "x64",
+     "rollForward": "minor"
   }
 }

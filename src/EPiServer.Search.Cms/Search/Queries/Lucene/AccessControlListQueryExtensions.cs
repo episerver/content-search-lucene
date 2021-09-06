@@ -11,10 +11,10 @@ namespace EPiServer.Search.Queries.Lucene
         /// <param name="query">The query to extend.</param>
         /// <param name="principalInfo">The principal.</param>
         /// <param name="context">The context used for virtual roles to establish if the user is a part of a role.</param>
-        public static void AddAclForUser(this AccessControlListQuery query, PrincipalInfo principalInfo, object context)
+        public static void AddAclForUser(this AccessControlListQuery query, object context)
         {
             var queryBuilder = ServiceLocator.Current.GetInstance<IAccessControlListQueryBuilder>();
-            queryBuilder.AddUser(query, principalInfo.Principal, context);
+            queryBuilder.AddUser(query, PrincipalInfo.CurrentPrincipal, context);
         }
 
       
