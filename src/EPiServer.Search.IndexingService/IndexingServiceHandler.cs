@@ -17,6 +17,7 @@ using Lucene.Net.Index;
 using Lucene.Net.QueryParsers;
 using Lucene.Net.Search;
 using Lucene.Net.Store;
+using Microsoft.AspNetCore.Mvc;
 
 namespace EPiServer.Search.IndexingService
 {
@@ -33,8 +34,6 @@ namespace EPiServer.Search.IndexingService
         private const string IgnoreItemId = "<IgnoreItemId>";
 
         private static IndexingServiceHandler _instance = new IndexingServiceHandler();
-
-        private static TaskQueue _taskQueue = new TaskQueue("indexing service data uri callback", 1000, TimeSpan.FromSeconds(0));
 
         #endregion
 
@@ -68,7 +67,7 @@ namespace EPiServer.Search.IndexingService
         /// Updates the Lucene index from the passed syndication feed
         /// </summary>
         /// <param name="feed">The feed to process</param>
-        protected internal virtual void UpdateIndex(SyndicationFeed feed)
+        protected internal virtual StatusCodeResult UpdateIndex(SyndicationFeed feed)
         {
             IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("Start processing feed '{0}'", feed.Id));
 
@@ -97,7 +96,7 @@ namespace EPiServer.Search.IndexingService
                             namedIndex = new NamedIndex(namedIndexName, true);
                         }
                     }
-                    
+
                     IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("Start processing feed item '{0}' for '{1}'", item.Id, indexAction));
 
                     // If there is a callback uri defined, we run the callback in async mode
@@ -142,6 +141,7 @@ namespace EPiServer.Search.IndexingService
             }
 
             IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("End processing feed '{0}'", feed.Id));
+            return new OkResult();
         }
 
         /// <summary>
@@ -182,7 +182,7 @@ namespace EPiServer.Search.IndexingService
                     IndexingServiceSettings.HandleServiceError(String.Format("Named index \"{0}\" is not valid, it does not exist in configuration or has faulty configuration", namedIndex.Name));
                     return null;
                 }
-                namedIndexes.Add(namedIndex); 
+                namedIndexes.Add(namedIndex);
             }
 
             Collection<ScoreDocument> scoreDocuments = GetScoreDocuments(q, true, namedIndexes, offset, limit, IndexingServiceSettings.MaxHitsForSearchResults, out totalHits);
@@ -240,7 +240,7 @@ namespace EPiServer.Search.IndexingService
         /// Wipes the supplied named index and creates a new one
         /// </summary>
         /// <param name="namedIndex">The named index to wipe</param>
-        protected internal virtual void ResetNamedIndex(string namedIndexName)
+        protected internal virtual StatusCodeResult ResetNamedIndex(string namedIndexName)
         {
             NamedIndex namedIndex = new NamedIndex(namedIndexName);
             if (IndexingServiceSettings.NamedIndexElements.ContainsKey(namedIndexName))
@@ -250,10 +250,12 @@ namespace EPiServer.Search.IndexingService
             }
             else
             {
-                IndexingServiceSettings.HandleServiceError(String.Format("Reset of index: '{0}' failed. Index not found!", namedIndexName));
+                IndexingServiceSettings.IndexingServiceServiceLog.Error(String.Format("Reset of index: '{0}' failed. Index not found!", namedIndexName));
+                return new NotFoundResult();
             }
+            return new OkResult();
         }
-        
+
         /// <summary>
         /// Gets the text content for the passed uri that is not a file uri. Not implemented. Should be overridden.
         /// </summary>
@@ -295,7 +297,7 @@ namespace EPiServer.Search.IndexingService
             // Try to parse the uri
             if (!Uri.TryCreate(uriString, UriKind.RelativeOrAbsolute, out uri))
             {
-                IndexingServiceSettings.HandleServiceError(String.Format("Data Uri callback failed. Uri '{0}' is not well formed", uriString));     
+                IndexingServiceSettings.HandleServiceError(String.Format("Data Uri callback failed. Uri '{0}' is not well formed", uriString));
                 return;
             }
 
@@ -328,7 +330,7 @@ namespace EPiServer.Search.IndexingService
             TextSyndicationContent textContent = item.Content as TextSyndicationContent;
             if (textContent != null && !String.IsNullOrEmpty(textContent.Text))
             {
-                SplitDisplayTextToMetadata(textContent.Text + " " + content ,
+                SplitDisplayTextToMetadata(textContent.Text + " " + content,
                     GetElementValue(item, IndexingServiceSettings.SyndicationItemElementNameMetadata),
                                     out displayTextOut, out metadataOut);
             }
@@ -341,7 +343,7 @@ namespace EPiServer.Search.IndexingService
 
             item.Content = new TextSyndicationContent(displayTextOut);
             SetElementValue(item, IndexingServiceSettings.SyndicationItemElementNameMetadata, metadataOut);
-            
+
             string requestType = GetAttributeValue(item, IndexingServiceSettings.SyndicationItemAttributeNameIndexAction);
             if (requestType == "add")
             {
@@ -386,7 +388,7 @@ namespace EPiServer.Search.IndexingService
             }
             catch (Exception e)
             {
-                IndexingServiceSettings.HandleServiceError(String.Format("Failed to create index for path: '{0}'. Message: {1}{2}'", directoryInfo.FullName, e.Message, e.StackTrace));
+                IndexingServiceSettings.IndexingServiceServiceLog.Error(String.Format("Failed to create index for path: '{0}'. Message: {1}{2}'", directoryInfo.FullName, e.Message, e.StackTrace));
             }
             finally
             {
@@ -420,7 +422,7 @@ namespace EPiServer.Search.IndexingService
                 return null;
             }
 
-            return doc.Get(IndexingServiceSettings.ReferenceIdFieldName); 
+            return doc.Get(IndexingServiceSettings.ReferenceIdFieldName);
         }
 
         private Collection<ScoreDocument> GetScoreDocuments(string q, bool excludeNotPublished, Collection<NamedIndex> namedIndexes, int offset, int limit, int maxHits, out int totalHits)
@@ -660,8 +662,8 @@ namespace EPiServer.Search.IndexingService
             totalContents.Append(GetReferenceData(id, namedIndex));
 
             doc.RemoveField(IndexingServiceSettings.DefaultFieldName);
-            doc.Add(new Field(IndexingServiceSettings.DefaultFieldName, totalContents.ToString(), 
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.DefaultFieldName].FieldStore, 
+            doc.Add(new Field(IndexingServiceSettings.DefaultFieldName, totalContents.ToString(),
+                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.DefaultFieldName].FieldStore,
                 IndexingServiceSettings.FieldProperties[IndexingServiceSettings.DefaultFieldName].FieldIndex));
         }
 
@@ -707,7 +709,7 @@ namespace EPiServer.Search.IndexingService
 
             //Create the document
             Document doc = new Document();
-            doc.Add(new Field(IndexingServiceSettings.IdFieldName, id, 
+            doc.Add(new Field(IndexingServiceSettings.IdFieldName, id,
                 IndexingServiceSettings.FieldProperties[IndexingServiceSettings.IdFieldName].FieldStore,
                 IndexingServiceSettings.FieldProperties[IndexingServiceSettings.IdFieldName].FieldIndex));
 
@@ -1021,7 +1023,7 @@ namespace EPiServer.Search.IndexingService
             }
             catch (Exception e)
             {
-                IndexingServiceSettings.HandleServiceError(String.Format("Failed to delete Document with id: {0}. Message: {1}{2}{3}", itemId.ToString(), e.Message, Environment.NewLine, e.StackTrace)); 
+                IndexingServiceSettings.HandleServiceError(String.Format("Failed to delete Document with id: {0}. Message: {1}{2}{3}", itemId.ToString(), e.Message, Environment.NewLine, e.StackTrace));
                 return false;
             }
             finally
@@ -1058,7 +1060,7 @@ namespace EPiServer.Search.IndexingService
                         return false;
                     }
                     finally
-                    {                        
+                    {
                         rwlRef.ExitWriteLock();
                     }
 
@@ -1068,7 +1070,7 @@ namespace EPiServer.Search.IndexingService
                 IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("End deleting Lucene document with id field: '{0}'", itemId));
 
                 // Optimize index
-                if ((namedIndex.PendingDeletesOptimizeThreshold > 0) && 
+                if ((namedIndex.PendingDeletesOptimizeThreshold > 0) &&
                     (pendingDeletions >= namedIndex.PendingDeletesOptimizeThreshold))
                 {
                     OptimizeIndex(namedIndex);
@@ -1122,7 +1124,7 @@ namespace EPiServer.Search.IndexingService
             }
             catch (Exception e)
             {
-                IndexingServiceSettings.HandleServiceError(String.Format("Failed to write to index: '{0}'. Message: {1}{2}{3}", namedIndex.Name, e.Message, Environment.NewLine, e.StackTrace));    
+                IndexingServiceSettings.HandleServiceError(String.Format("Failed to write to index: '{0}'. Message: {1}{2}{3}", namedIndex.Name, e.Message, Environment.NewLine, e.StackTrace));
                 return;
             }
             finally
@@ -1305,12 +1307,12 @@ namespace EPiServer.Search.IndexingService
 
             if (excludeNotPublished)
             {
-                expression = String.Format("({0}) AND ({1}:(no) OR {1}:[{2} TO 99999999999999])", expression, 
+                expression = String.Format("({0}) AND ({1}:(no) OR {1}:[{2} TO 99999999999999])", expression,
                     IndexingServiceSettings.PublicationEndFieldName, currentDate);
             }
             if (excludeNotPublished)
             {
-                expression = String.Format("({0}) AND ({1}:(no) OR {1}:[00000000000000 TO {2}])", expression, 
+                expression = String.Format("({0}) AND ({1}:(no) OR {1}:[00000000000000 TO {2}])", expression,
                     IndexingServiceSettings.PublicationStartFieldName, currentDate);
             }
 
@@ -1319,7 +1321,7 @@ namespace EPiServer.Search.IndexingService
 
         private static string PrepareEscapeFields(string q, string fieldName)
         {
-            MatchEvaluator regexEscapeFields = delegate(Match m)
+            MatchEvaluator regexEscapeFields = delegate (Match m)
             {
                 if (m.Groups["fieldname"].Value.Equals(fieldName + ":"))
                 {
@@ -1405,7 +1407,7 @@ namespace EPiServer.Search.IndexingService
 
             if (mainDoc == null)
             {
-                IndexingServiceSettings.IndexingServiceServiceLog.Error(String.Format("Could not find main document with id: '{0}' for referencing item id '{1}'. Continuing anyway, index will heal when main document is added/updated.", referenceId, itemId));        
+                IndexingServiceSettings.IndexingServiceServiceLog.Error(String.Format("Could not find main document with id: '{0}' for referencing item id '{1}'. Continuing anyway, index will heal when main document is added/updated.", referenceId, itemId));
                 return;
             }
 

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using EPiServer.Search.IndexingService.Security;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -12,18 +13,37 @@ namespace EPiServer.Search.IndexingService.Controllers
     [ApiController]
     public class IndexingController : ControllerBase
     {
+        private readonly SecurityHandler _securityHandler;
+
+        public IndexingController(SecurityHandler securityHandler)
+        {
+            _securityHandler = securityHandler;
+        }
+
         [HttpPost]
         [Route("reset/?namedindex={namedindex}&accessKey={accessKey}")]
         public IActionResult ResetIndex(string namedIndex, string accessKey)
         {
-            return Ok();
+            IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("Reset of index: {0} requested", namedIndex));
+
+            if (!_securityHandler.IsAuthenticated(accessKey, AccessLevel.Modify))
+            {
+                return StatusCode(401);
+            }
+
+            return IndexingServiceHandler.Instance.ResetNamedIndex(namedIndex);
         }
 
         [HttpPost]
         [Route("update/?accessKey={accessKey}")]
         public IActionResult UpdateIndex(string accessKey, SyndicationFeedFormatter formatter)
         {
-            return Ok();
+            if (!_securityHandler.IsAuthenticated(accessKey, AccessLevel.Modify))
+            {
+                return StatusCode(401);
+            }
+
+            return IndexingServiceHandler.Instance.UpdateIndex(formatter.Feed);
         }
 
         [HttpGet]
