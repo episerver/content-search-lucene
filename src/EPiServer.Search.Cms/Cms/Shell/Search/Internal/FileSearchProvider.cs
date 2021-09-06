@@ -7,11 +7,13 @@ using EPiServer.Framework.Localization;
 using EPiServer.Globalization;
 using EPiServer.Search;
 using EPiServer.Search.Queries.Lucene;
+using EPiServer.Security;
 using EPiServer.ServiceLocation;
 using EPiServer.Shell;
 using EPiServer.Shell.Search;
 using EPiServer.Web;
 using EPiServer.Web.Routing;
+using Microsoft.AspNetCore.Http;
 
 namespace EPiServer.Cms.Shell.Search.Internal
 {
@@ -26,8 +28,8 @@ namespace EPiServer.Cms.Shell.Search.Internal
         /// </summary>
         public FileSearchProvider(LocalizationService localizationService, ISiteDefinitionResolver siteDefinitionResolver, IContentTypeRepository contentTypeRepository, EditUrlResolver editUrlResolver, 
             ServiceAccessor<SiteDefinition> currentSiteDefinition, IContentRepository contentRepository, ILanguageBranchRepository languageBranchRepository, SearchHandler searchHandler, ContentSearchHandler contentSearchHandler, 
-            SearchIndexConfig searchIndexConfig, UIDescriptorRegistry uiDescriptorRegistry, LanguageResolver languageResolver, UrlResolver urlResolver, TemplateResolver templateResolver)
-            : base(localizationService, siteDefinitionResolver, contentTypeRepository, editUrlResolver, currentSiteDefinition, contentRepository, languageBranchRepository, searchHandler, contentSearchHandler, searchIndexConfig, uiDescriptorRegistry, languageResolver, urlResolver, templateResolver)
+            SearchIndexConfig searchIndexConfig, UIDescriptorRegistry uiDescriptorRegistry, IContentLanguageAccessor languageResolver, IUrlResolver urlResolver, ITemplateResolver templateResolver, HttpContext httpContext, IPrincipalAccessor principalContext)
+            : base(localizationService, siteDefinitionResolver, contentTypeRepository, editUrlResolver, currentSiteDefinition, contentRepository, languageBranchRepository, searchHandler, contentSearchHandler, searchIndexConfig, uiDescriptorRegistry, languageResolver, urlResolver, templateResolver, httpContext, principalContext)
         {
         }
 

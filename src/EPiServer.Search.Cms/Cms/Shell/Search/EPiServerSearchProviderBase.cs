@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Security.Claims;
 using System.Web;
+using EPiServer.Authorization;
 using EPiServer.Cms.Shell.Search.Internal;
 using EPiServer.Core;
 using EPiServer.DataAbstraction;
@@ -17,6 +19,7 @@ using EPiServer.Shell;
 using EPiServer.Shell.Search;
 using EPiServer.Web;
 using EPiServer.Web.Routing;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json.Linq;
 
 namespace EPiServer.Cms.Shell.Search
@@ -36,6 +39,8 @@ namespace EPiServer.Cms.Shell.Search
         private readonly ContentSearchHandler _contentSearchHandler;
         private readonly SearchIndexConfig _searchIndexConfig;
         private readonly UIDescriptorRegistry _uiDescriptorRegistry;
+        private readonly IPrincipalAccessor _principalContext;
+        private readonly HttpContext _httpContext;
 
         private bool? _isSearchActive;
 
@@ -44,7 +49,7 @@ namespace EPiServer.Cms.Shell.Search
         /// </summary>
         protected EPiServerSearchProviderBase(LocalizationService localizationService, ISiteDefinitionResolver siteDefinitionResolver, IContentTypeRepository<TContentType> contentTypeRepository, EditUrlResolver editUrlResolver,
             ServiceAccessor<SiteDefinition> currentSiteDefinition, IContentRepository contentRepository, ILanguageBranchRepository languageBranchRepository, SearchHandler searchHandler, ContentSearchHandler contentSearchHandler,
-            SearchIndexConfig searchIndexConfig, UIDescriptorRegistry uiDescriptorRegistry, LanguageResolver languageResolver, UrlResolver urlResolver, TemplateResolver templateResolver)
+            SearchIndexConfig searchIndexConfig, UIDescriptorRegistry uiDescriptorRegistry, IContentLanguageAccessor languageResolver, IUrlResolver urlResolver, ITemplateResolver templateResolver, HttpContext httpContext, IPrincipalAccessor principalContext)
             : base(localizationService, siteDefinitionResolver, contentTypeRepository, editUrlResolver, currentSiteDefinition, languageResolver, urlResolver, templateResolver, uiDescriptorRegistry)
         {
             Validator.ThrowIfNull("contentRepository", contentRepository);
@@ -55,8 +60,11 @@ namespace EPiServer.Cms.Shell.Search
             _contentSearchHandler = contentSearchHandler;
             _searchIndexConfig = searchIndexConfig;
             _uiDescriptorRegistry = uiDescriptorRegistry;
+            _principalContext = principalContext;
+            _httpContext = httpContext;
 
-            HasAdminAccess = () => PrincipalInfo.HasAdminAccess;
+            HasAdminAccess = () => _principalContext.Principal.IsInRole(Roles.WebAdmins) || 
+                                    _principalContext.Principal.IsInRole(Roles.Administrators);
         }
 
         /// <summary>
@@ -103,7 +111,7 @@ namespace EPiServer.Cms.Shell.Search
                     var icontent = content as IContent;
                     var searchInWasteBasket = query.SearchRoots.Any(p => p.Equals(ContentReference.WasteBasket.ID.ToString()));
 
-                    if ((searchInWasteBasket || icontent == null || !icontent.IsDeleted) && (securable == null || securable.GetSecurityDescriptor().HasAccess(PrincipalInfo.CurrentPrincipal, AccessLevel.Read)))
+                    if ((searchInWasteBasket || icontent == null || !icontent.IsDeleted) && (securable == null || securable.GetSecurityDescriptor().HasAccess( _principalContext.Principal , AccessLevel.Read)))
                     {
                         var localizable = content as ILocalizable;
 
@@ -202,7 +210,7 @@ namespace EPiServer.Cms.Shell.Search
             if (!HasAdminAccess())
             {
                 var aclQuery = new AccessControlListQuery();
-                aclQuery.AddAclForUser(PrincipalInfo.Current, HttpContext.Current);
+                aclQuery.AddAclForUser(_httpContext);
                 groupQuery.QueryExpressions.Add(aclQuery);
             }
 
@@ -267,7 +275,7 @@ namespace EPiServer.Cms.Shell.Search
             if (query.FilterOnCulture)
             {
                 //If we should filter on culture, only get hits on current language.
-                cultureQuery.QueryExpressions.Add(new FieldQuery(LanguageResolver.GetPreferredCulture().Name, Field.Culture));
+                cultureQuery.QueryExpressions.Add(new FieldQuery(LanguageResolver.Language.Name, Field.Culture));
             }
             else
             {
