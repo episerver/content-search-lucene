@@ -15,10 +15,16 @@ namespace EPiServer.Search.IndexingService.Controllers
     public class IndexingController : ControllerBase
     {
         private readonly SecurityHandler _securityHandler;
+        private IIndexingServiceSettings _indexingServiceSettings;
+        private IIndexingServiceHandler _indexingServiceHandler;
 
-        public IndexingController(SecurityHandler securityHandler)
+        public IndexingController(SecurityHandler securityHandler, 
+            IIndexingServiceSettings indexingServiceSettings,
+            IIndexingServiceHandler indexingServiceHandler)
         {
             _securityHandler = securityHandler;
+            _indexingServiceSettings = indexingServiceSettings;
+            _indexingServiceHandler = indexingServiceHandler;
         }
 
         //POST: reset?namedIndex={namedIndex}&accessKey={accessKey}
@@ -26,20 +32,20 @@ namespace EPiServer.Search.IndexingService.Controllers
         [Route("reset")]
         public IActionResult ResetIndex(string namedIndex, string accessKey)
         {
-            IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("Reset of index: {0} requested", namedIndex));
+            _indexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("Reset of index: {0} requested", namedIndex));
 
             if (!_securityHandler.IsAuthenticated(accessKey, AccessLevel.Modify))
             {
                 throw new HttpResponseException() { Status = 401 };
             }
 
-            IndexingServiceHandler.Instance.ResetNamedIndex(namedIndex);
+            _indexingServiceHandler.ResetNamedIndex(namedIndex);
             return Ok();
         }
 
         //POST: update?accessKey={accessKey}
         [HttpPost]
-        [Route("update")]
+        [Route("update")]        
         public IActionResult UpdateIndex(string accessKey, [FromBody] FeedModel model)
         {
             if (!_securityHandler.IsAuthenticated(accessKey, AccessLevel.Modify))
@@ -47,7 +53,7 @@ namespace EPiServer.Search.IndexingService.Controllers
                 throw new HttpResponseException() { Status = 401 };
             }
 
-            IndexingServiceHandler.Instance.UpdateIndex(model);
+            _indexingServiceHandler.UpdateIndex(model);
             return Ok();
         }
 
@@ -88,14 +94,14 @@ namespace EPiServer.Search.IndexingService.Controllers
                 throw new HttpResponseException() { Status = 401 };
             }
 
-            return Ok(IndexingServiceHandler.Instance.GetNamedIndexes());
+            return Ok(_indexingServiceHandler.GetNamedIndexes());
         }
 
         #region Private
 
         private FeedModel GetSearchResults(string q, string namedIndexes, int offset, int limit)
         {
-            IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("Request for search with query parser with expression: {0} in named indexes: {1}", q, namedIndexes));
+            _indexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("Request for search with query parser with expression: {0} in named indexes: {1}", q, namedIndexes));
 
             //Parse named indexes string from request
             string[] namedIndexesArr = null;
@@ -105,7 +111,7 @@ namespace EPiServer.Search.IndexingService.Controllers
                 namedIndexesArr = namedIndexes.Split(delimiter);
             }
 
-            return IndexingServiceHandler.Instance.GetSearchResults(q, namedIndexesArr, offset, limit);
+            return _indexingServiceHandler.GetSearchResults(q, namedIndexesArr, offset, limit);
         }
         #endregion
 
@@ -171,5 +177,5 @@ namespace EPiServer.Search.IndexingService.Controllers
 
         #endregion
     }
-
+    
 }

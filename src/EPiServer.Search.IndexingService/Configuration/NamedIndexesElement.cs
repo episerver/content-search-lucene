@@ -6,20 +6,10 @@ using System.Configuration;
 
 namespace EPiServer.Search.IndexingService.Configuration
 {
-    public class NamedIndexesElement : ConfigurationElement
+    public class NamedIndexesElement
     {
-        [ConfigurationProperty("defaultIndex", IsRequired = true)]
-        public string DefaultIndex
-        {
-            get { return (string)base["defaultIndex"]; }
-            set { base["defaultIndex"] = value; }
-        }
+        public string DefaultIndex { get; set; }
 
-        [ConfigurationProperty("indexes", IsRequired = true)]
-        public NamedIndexCollection NamedIndexes
-        {
-            get { return (NamedIndexCollection)base["indexes"]; }
-        }
-
+        public List<NamedIndexElement> Indexes { get; set; }
     }
 }

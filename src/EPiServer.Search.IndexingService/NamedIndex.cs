@@ -10,7 +10,7 @@ namespace EPiServer.Search.IndexingService
     /// <summary>
     /// Class to encapsulates a named index, its per field analyzer and its field include in response flag
     /// </summary>
-    internal class NamedIndex
+    public class NamedIndex
     {
         #region Members
         private string _namedIndex;

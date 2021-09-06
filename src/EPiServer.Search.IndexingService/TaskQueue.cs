@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Collections;
 using System;
 
@@ -14,6 +14,7 @@ namespace EPiServer.Search.IndexingService
         private readonly double _timerInterval;
         private readonly TimeSpan _minQueueItemAge;
         private readonly string _queueName;
+        private IIndexingServiceSettings _indexingServiceSettings;
 
         /// <summary>
         /// Constructs a TaskQueue
@@ -21,7 +22,7 @@ namespace EPiServer.Search.IndexingService
         /// <param name="queueName">Queue identifier used for logging purposes</param>
         /// <param name="timerInterval">Interval in milliseconds telling when the queue should be processed</param>
         /// <param name="minQueueItemAge">The minimum age of a queue item in order for it to be dequeued</param>
-        public TaskQueue(string queueName, double timerInterval, TimeSpan minQueueItemAge)
+        public TaskQueue(string queueName, double timerInterval, TimeSpan minQueueItemAge, IIndexingServiceSettings indexingServiceSettings)
         {
             _queueName = queueName;
             _timerInterval = timerInterval;
@@ -29,6 +30,7 @@ namespace EPiServer.Search.IndexingService
             _queueFlushTimer = new System.Timers.Timer(_timerInterval);
             _queueFlushTimer.AutoReset = false;
             _queueFlushTimer.Elapsed += new System.Timers.ElapsedEventHandler(Timer_Elapsed);
+            _indexingServiceSettings = indexingServiceSettings;
         }
 
         /// <summary>
@@ -56,7 +58,7 @@ namespace EPiServer.Search.IndexingService
                     }
                     catch (Exception ex)
                     {
-                        IndexingServiceSettings.IndexingServiceServiceLog.Error(
+                        _indexingServiceSettings.IndexingServiceServiceLog.Error(
                             string.Format("An exception was thrown when task was invoked by TaskQueue: '{0}'. The message was: {1}. Stacktrace was: {2}", _queueName, ex.Message, ex.StackTrace));
                     }
                 }
@@ -64,7 +66,7 @@ namespace EPiServer.Search.IndexingService
             }
             catch (Exception ex)
             {
-                IndexingServiceSettings.IndexingServiceServiceLog.Error(
+                _indexingServiceSettings.IndexingServiceServiceLog.Error(
                         string.Format("An exception was thrown while processing TaskQueue: '{0}'. The message was: {1}. Stacktrace was: {2}", _queueName, ex.Message, ex.StackTrace));
             }
             finally
