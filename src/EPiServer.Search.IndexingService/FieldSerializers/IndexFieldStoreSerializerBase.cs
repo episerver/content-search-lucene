@@ -8,9 +8,9 @@ namespace EPiServer.Search.IndexingService.FieldSerializers
 {
     internal abstract class IndexFieldStoreSerializerBase
     {
-        internal IndexFieldStoreSerializerBase(SyndicationItem syndicationItem)
+        internal IndexFieldStoreSerializerBase(FeedItemModel feedItem)
         {
-            SyndicationItem = syndicationItem;
+            FeedItem = feedItem;
         }
 
         internal IndexFieldStoreSerializerBase(string fieldStoreValue)
@@ -24,7 +24,7 @@ namespace EPiServer.Search.IndexingService.FieldSerializers
             return (FieldStoreValue != null) ? FieldStoreValue : "";
         }
 
-        internal virtual void AddFieldStoreValueToSyndicationItem(SyndicationItem syndicationItem)
+        internal virtual void AddFieldStoreValueToSyndicationItem(FeedItemModel feedItem)
         {
             //No default implementation
         }
@@ -35,7 +35,7 @@ namespace EPiServer.Search.IndexingService.FieldSerializers
             set;
         }
 
-        internal SyndicationItem SyndicationItem
+        internal FeedItemModel FeedItem
         {
             get;
             set;

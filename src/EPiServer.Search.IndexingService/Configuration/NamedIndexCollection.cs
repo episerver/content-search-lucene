@@ -3,12 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Configuration;
+using Microsoft.Extensions.Hosting;
 
 namespace EPiServer.Search.IndexingService.Configuration
 {
     [ConfigurationCollection(typeof(NamedIndexElement))]
     public class NamedIndexCollection : ConfigurationElementCollection
     {
+        private readonly IHostEnvironment _hostEnvironment;
+        public NamedIndexCollection(IHostEnvironment hostEnvironment)
+        {
+            _hostEnvironment = hostEnvironment;
+        }
         public override ConfigurationElementCollectionType CollectionType
         {
             get
@@ -40,7 +46,7 @@ namespace EPiServer.Search.IndexingService.Configuration
 
         protected override ConfigurationElement CreateNewElement()
         {
-            return new NamedIndexElement();
+            return new NamedIndexElement(_hostEnvironment);
         }
 
         protected override object GetElementKey(ConfigurationElement element)

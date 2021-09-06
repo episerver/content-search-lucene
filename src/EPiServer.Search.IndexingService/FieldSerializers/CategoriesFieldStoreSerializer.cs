@@ -12,11 +12,11 @@ namespace EPiServer.Search.IndexingService.FieldSerializers
     internal class CategoriesFieldStoreSerializer : TaggedFieldStoreSerializer
     {
         /// <summary>
-        /// Constructs a <see cref="IndexCategories"/> from the passed <see cref="SyndcationItem"/>
+        /// Constructs a <see cref="IndexCategories"/> from the passed <see cref="FeedItemModel"/>
         /// </summary>
-        /// <param name="syndicationItem"></param>
-        internal CategoriesFieldStoreSerializer(SyndicationItem syndicationItem) 
-            : base(syndicationItem)
+        /// <param name="feedItem"></param>
+        internal CategoriesFieldStoreSerializer(FeedItemModel feedItem)
+            : base(feedItem)
         {
         }
 
@@ -31,16 +31,16 @@ namespace EPiServer.Search.IndexingService.FieldSerializers
 
         internal override string ToFieldStoreValue()
         {
-            if (SyndicationItem != null)
+            if (FeedItem != null)
             {
                 StringBuilder categories = new StringBuilder();
 
-                foreach (SyndicationCategory category in SyndicationItem.Categories)
+                foreach (string category in FeedItem.Categories)
                 {
                     // Add prefix and suffix to ensure that categories with white spaces always stick together 
                     // in searches and getting them back in its original shape and form
                     categories.Append(IndexingServiceSettings.TagsPrefix);
-                    categories.Append(category.Name.Trim());
+                    categories.Append(category.Trim());
                     categories.Append(IndexingServiceSettings.TagsSuffix);
                     categories.Append(" ");
                 }
@@ -57,20 +57,20 @@ namespace EPiServer.Search.IndexingService.FieldSerializers
         /// Adds syndication categories to the passed syndication item either from field store string or from syndication item used to construct this CategoriesFieldStoreSerializer
         /// </summary>
         /// <param name="syndicationItem">The <see cref="SyndicationItem"/> for which to add syndication categories</param>
-        internal override void AddFieldStoreValueToSyndicationItem(SyndicationItem syndicationItem)
+        internal override void AddFieldStoreValueToSyndicationItem(FeedItemModel feedItem)
         {
             if (!String.IsNullOrEmpty(FieldStoreValue))
             {
                 MatchCollection matches = base.SplitFieldStoreValue();
                 foreach (Match match in matches)
                 {
-                    syndicationItem.Categories.Add(new SyndicationCategory(base.GetOriginalValue(match.Value)));
+                    feedItem.Categories.Add(base.GetOriginalValue(match.Value));
                 }
             }
             else
             {
-                base.AddFieldStoreValueToSyndicationItem(syndicationItem);
+                base.AddFieldStoreValueToSyndicationItem(feedItem);
             }
-        }  
+        }
     }
 }

@@ -10,6 +10,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml;
+using EPiServer.Search.IndexingService.Controllers;
 using EPiServer.Search.IndexingService.FieldSerializers;
 using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Documents;
@@ -34,6 +35,8 @@ namespace EPiServer.Search.IndexingService
         private const string IgnoreItemId = "<IgnoreItemId>";
 
         private static IndexingServiceHandler _instance = new IndexingServiceHandler();
+
+        private static TaskQueue _taskQueue = new TaskQueue("indexing service data uri callback", 1000, TimeSpan.FromSeconds(0));
 
         #endregion
 
@@ -67,11 +70,11 @@ namespace EPiServer.Search.IndexingService
         /// Updates the Lucene index from the passed syndication feed
         /// </summary>
         /// <param name="feed">The feed to process</param>
-        protected internal virtual StatusCodeResult UpdateIndex(SyndicationFeed feed)
+        protected internal virtual void UpdateIndex(FeedModel feed)
         {
             IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("Start processing feed '{0}'", feed.Id));
 
-            foreach (SyndicationItem item in feed.Items)
+            foreach (FeedItemModel item in feed.Items)
             {
                 string namedIndexName = GetAttributeValue(item, IndexingServiceSettings.SyndicationItemAttributeNameNamedIndex);
 
@@ -141,7 +144,6 @@ namespace EPiServer.Search.IndexingService
             }
 
             IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("End processing feed '{0}'", feed.Id));
-            return new OkResult();
         }
 
         /// <summary>
@@ -152,13 +154,13 @@ namespace EPiServer.Search.IndexingService
         /// <param name="offset">The offset from hit 1 to start collection hits from</param>
         /// <param name="limit">The number of items from offset to collect</param>
         /// <returns><see cref="SearchResults"/></return>s
-        protected internal virtual SyndicationFeedFormatter GetSearchResults(string q, string[] namedIndexNames, int offset, int limit)
+        protected internal virtual FeedModel GetSearchResults(string q, string[] namedIndexNames, int offset, int limit)
         {
             IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("Start search with expression: '{0}'", q));
 
             int totalHits = 0;
-            SyndicationFeed feed = new SyndicationFeed();
-            Collection<SyndicationItem> syndicationItems = new Collection<SyndicationItem>();
+            FeedModel feed = new FeedModel();
+            Collection<FeedItemModel> feedItems = new Collection<FeedItemModel>();
 
             Collection<NamedIndex> namedIndexes = new Collection<NamedIndex>();
             if (namedIndexNames != null && namedIndexNames.Length > 0)
@@ -182,7 +184,7 @@ namespace EPiServer.Search.IndexingService
                     IndexingServiceSettings.HandleServiceError(String.Format("Named index \"{0}\" is not valid, it does not exist in configuration or has faulty configuration", namedIndex.Name));
                     return null;
                 }
-                namedIndexes.Add(namedIndex);
+                namedIndexes.Add(namedIndex); 
             }
 
             Collection<ScoreDocument> scoreDocuments = GetScoreDocuments(q, true, namedIndexes, offset, limit, IndexingServiceSettings.MaxHitsForSearchResults, out totalHits);
@@ -190,57 +192,53 @@ namespace EPiServer.Search.IndexingService
             int returnedHits = 0;
             foreach (ScoreDocument scoreDocument in scoreDocuments)
             {
-                SyndicationItem syndicationItem = GetSyndicationItemFromDocument(scoreDocument);
-                syndicationItems.Add(syndicationItem);
+                FeedItemModel feedItem = GetSyndicationItemFromDocument(scoreDocument);
+                feedItems.Add(feedItem);
                 returnedHits++;
             }
 
             // Add total hits to feed
-            feed.AttributeExtensions.Add
-                (new XmlQualifiedName(IndexingServiceSettings.SyndicationFeedAttributeNameTotalHits,
-                    IndexingServiceSettings.XmlQualifiedNamespace), totalHits.ToString(CultureInfo.InvariantCulture));
+            feed.AttributeExtensions.Add(IndexingServiceSettings.SyndicationFeedAttributeNameTotalHits, totalHits.ToString(CultureInfo.InvariantCulture));
 
             // Add service version as an attribute extension to response feed
             System.Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
             string versionString = String.Format(CultureInfo.InvariantCulture, "EPiServer.Search v.{0}.{1}.{2}.{3}",
                version.Major.ToString(CultureInfo.InvariantCulture), version.Minor.ToString(CultureInfo.InvariantCulture),
                version.Build.ToString(CultureInfo.InvariantCulture), version.Revision.ToString(CultureInfo.InvariantCulture));
-            feed.AttributeExtensions.Add
-               (new XmlQualifiedName(IndexingServiceSettings.SyndicationFeedAttributeNameVersion,
-                   IndexingServiceSettings.XmlQualifiedNamespace), versionString);
+            feed.AttributeExtensions.Add(IndexingServiceSettings.SyndicationFeedAttributeNameVersion, versionString);
 
             IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("End search with expression '{0}'. Returned {1} hits of total {2} with offset {3} and limit {4}",
                 q, returnedHits.ToString(CultureInfo.InvariantCulture), totalHits.ToString(CultureInfo.InvariantCulture),
                 offset.ToString(CultureInfo.InvariantCulture), limit.ToString(CultureInfo.InvariantCulture)));
 
-            feed.Items = syndicationItems;
+            feed.Items = feedItems;
 
-            return new Atom10FeedFormatter(feed);
+            return feed;
         }
 
         /// <summary>
         /// Gets the configured index names.
         /// </summary>
         /// <returns></returns>
-        protected internal virtual SyndicationFeedFormatter GetNamedIndexes()
+        protected internal virtual FeedModel GetNamedIndexes()
         {
-            SyndicationFeed feed = new SyndicationFeed();
-            Collection<SyndicationItem> items = new Collection<SyndicationItem>();
+            FeedModel feed = new FeedModel();
+            Collection<FeedItemModel> items = new Collection<FeedItemModel>();
             foreach (string name in IndexingServiceSettings.NamedIndexElements.Keys)
             {
-                SyndicationItem item = new SyndicationItem();
-                item.Title = new TextSyndicationContent(name);
+                FeedItemModel item = new FeedItemModel();
+                item.Title = name;
                 items.Add(item);
             }
             feed.Items = items;
-            return new Atom10FeedFormatter(feed);
+            return feed;
         }
 
         /// <summary>
         /// Wipes the supplied named index and creates a new one
         /// </summary>
         /// <param name="namedIndex">The named index to wipe</param>
-        protected internal virtual StatusCodeResult ResetNamedIndex(string namedIndexName)
+        protected internal virtual void ResetNamedIndex(string namedIndexName)
         {
             NamedIndex namedIndex = new NamedIndex(namedIndexName);
             if (IndexingServiceSettings.NamedIndexElements.ContainsKey(namedIndexName))
@@ -250,10 +248,8 @@ namespace EPiServer.Search.IndexingService
             }
             else
             {
-                IndexingServiceSettings.IndexingServiceServiceLog.Error(String.Format("Reset of index: '{0}' failed. Index not found!", namedIndexName));
-                return new NotFoundResult();
+                IndexingServiceSettings.HandleServiceError(String.Format("Reset of index: '{0}' failed. Index not found!", namedIndexName));
             }
-            return new OkResult();
         }
 
         /// <summary>
@@ -285,7 +281,7 @@ namespace EPiServer.Search.IndexingService
         /// </summary>
         /// <param name="item">The <see cref="SyndicationItem"/> passed to the index</param>
         /// <param name="namedIndex">The <see cref="NamedIndex"/> to use</param>
-        internal void HandleDataUri(SyndicationItem item, NamedIndex namedIndex)
+        internal void HandleDataUri(FeedItemModel item, NamedIndex namedIndex)
         {
             // Get the uri string
             string uriString = GetAttributeValue(item, IndexingServiceSettings.SyndicationItemAttributeNameDataUri);
@@ -297,7 +293,7 @@ namespace EPiServer.Search.IndexingService
             // Try to parse the uri
             if (!Uri.TryCreate(uriString, UriKind.RelativeOrAbsolute, out uri))
             {
-                IndexingServiceSettings.HandleServiceError(String.Format("Data Uri callback failed. Uri '{0}' is not well formed", uriString));
+                IndexingServiceSettings.HandleServiceError(String.Format("Data Uri callback failed. Uri '{0}' is not well formed", uriString));     
                 return;
             }
 
@@ -327,10 +323,10 @@ namespace EPiServer.Search.IndexingService
             string displayTextOut = String.Empty;
             string metadataOut = String.Empty;
 
-            TextSyndicationContent textContent = item.Content as TextSyndicationContent;
-            if (textContent != null && !String.IsNullOrEmpty(textContent.Text))
+            string textContent = item.DisplayText;
+            if (textContent != null && !String.IsNullOrEmpty(textContent))
             {
-                SplitDisplayTextToMetadata(textContent.Text + " " + content,
+                SplitDisplayTextToMetadata(textContent + " " + content ,
                     GetElementValue(item, IndexingServiceSettings.SyndicationItemElementNameMetadata),
                                     out displayTextOut, out metadataOut);
             }
@@ -341,9 +337,9 @@ namespace EPiServer.Search.IndexingService
                                     out displayTextOut, out metadataOut);
             }
 
-            item.Content = new TextSyndicationContent(displayTextOut);
+            item.DisplayText = displayTextOut;
             SetElementValue(item, IndexingServiceSettings.SyndicationItemElementNameMetadata, metadataOut);
-
+            
             string requestType = GetAttributeValue(item, IndexingServiceSettings.SyndicationItemAttributeNameIndexAction);
             if (requestType == "add")
             {
@@ -422,7 +418,7 @@ namespace EPiServer.Search.IndexingService
                 return null;
             }
 
-            return doc.Get(IndexingServiceSettings.ReferenceIdFieldName);
+            return doc.Get(IndexingServiceSettings.ReferenceIdFieldName); 
         }
 
         private Collection<ScoreDocument> GetScoreDocuments(string q, bool excludeNotPublished, Collection<NamedIndex> namedIndexes, int offset, int limit, int maxHits, out int totalHits)
@@ -461,12 +457,12 @@ namespace EPiServer.Search.IndexingService
             return results;
         }
 
-        private void Add(SyndicationItem syndicationItem, NamedIndex namedIndex)
+        private void Add(FeedItemModel item, NamedIndex namedIndex)
         {
-            if (syndicationItem == null)
+            if (item == null)
                 return;
 
-            string id = syndicationItem.Id;
+            string id = item.Id;
 
             IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("Start adding Lucene document with id field: '{0}' to index: '{1}'", id, namedIndex.Name));
 
@@ -483,59 +479,59 @@ namespace EPiServer.Search.IndexingService
                 return;
             }
 
-            Document doc = GetDocumentFromSyndicationItem(syndicationItem, namedIndex);
+            Document doc = GetDocumentFromSyndicationItem(item, namedIndex);
 
             //Fire adding event
-            IndexingService.OnDocumentAdding(this, new AddUpdateEventArgs(doc, namedIndex.Name));
+            IndexingController.OnDocumentAdding(this, new AddUpdateEventArgs(doc, namedIndex.Name));
 
             WriteToIndex(id, doc, namedIndex);
 
             IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("End adding document with id field: '{0}' to index: '{1}'", id, namedIndex.Name));
 
             //Fire added event
-            IndexingService.OnDocumentAdded(this, new AddUpdateEventArgs(doc, namedIndex.Name));
+            IndexingController.OnDocumentAdded(this, new AddUpdateEventArgs(doc, namedIndex.Name));
         }
 
-        private void Update(SyndicationItem item, NamedIndex namedIndex)
+        private void Update(FeedItemModel feedItem, NamedIndex namedIndex)
         {
             // Store old virtual path values if they are needed later to update virtual paths for subnodes
             string oldVirtualPath = String.Empty;
             string newVirtualPath = String.Empty;
 
-            if (GetAutoUpdateVirtualPathValue(item))
+            if (GetAutoUpdateVirtualPathValue(feedItem))
             {
-                Document doc = GetDocumentById(item.Id, namedIndex);
+                Document doc = GetDocumentById(feedItem.Id, namedIndex);
 
                 if (doc != null)
                 {
                     oldVirtualPath = doc.Get(IndexingServiceSettings.VirtualPathFieldName);
-                    newVirtualPath = new VirtualPathFieldStoreSerializer(item).ToFieldStoreValue();
+                    newVirtualPath = new VirtualPathFieldStoreSerializer(feedItem).ToFieldStoreValue();
                 }
             }
 
-            Remove(item.Id, namedIndex, false);
-            Add(item, namedIndex);
+            Remove(feedItem.Id, namedIndex, false);
+            Add(feedItem, namedIndex);
 
             UpdateVirtualPaths(oldVirtualPath, newVirtualPath);
         }
 
-        private void Remove(SyndicationItem item, NamedIndex namedIndex)
+        private void Remove(FeedItemModel feedItem, NamedIndex namedIndex)
         {
             // We could have recieved remove requests that only should affect virtual paths
-            if (!string.Equals(item.Id, IgnoreItemId))
+            if (!string.Equals(feedItem.Id, IgnoreItemId))
             {
-                Remove(item.Id, namedIndex, true);
+                Remove(feedItem.Id, namedIndex, true);
             }
 
             // If AutoUpdate is set, delete all items with the provided virtual path or 
-            if (GetAutoUpdateVirtualPathValue(item))
+            if (GetAutoUpdateVirtualPathValue(feedItem))
             {
-                var virtualPath = new VirtualPathFieldStoreSerializer(item).ToFieldStoreValue();
+                var virtualPath = new VirtualPathFieldStoreSerializer(feedItem).ToFieldStoreValue();
                 RemoveByVirtualPath(virtualPath);
             }
         }
 
-        private bool GetAutoUpdateVirtualPathValue(SyndicationItem item)
+        private bool GetAutoUpdateVirtualPathValue(FeedItemModel item)
         {
             bool autoUpdateVirtualPath;
             if (bool.TryParse(GetAttributeValue(item, IndexingServiceSettings.SyndicationItemAttributeNameAutoUpdateVirtualPath), out autoUpdateVirtualPath))
@@ -554,13 +550,13 @@ namespace EPiServer.Search.IndexingService
         {
             IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("Start deleting Lucene document with id field: '{0}' from index '{1}'", itemId, namedIndex.Name));
 
-            IndexingService.OnDocumentRemoving(this, new RemoveEventArgs(itemId, namedIndex.Name));
+            IndexingController.OnDocumentRemoving(this, new RemoveEventArgs(itemId, namedIndex.Name));
 
             bool succeeded = DeleteFromIndex(namedIndex, itemId, removeRef);
 
             if (succeeded)
             {
-                IndexingService.OnDocumentRemoved(this, new RemoveEventArgs(itemId, namedIndex.Name));
+                IndexingController.OnDocumentRemoved(this, new RemoveEventArgs(itemId, namedIndex.Name));
 
                 IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("End deleting document with id field: '{0}'", itemId));
             }
@@ -662,45 +658,45 @@ namespace EPiServer.Search.IndexingService
             totalContents.Append(GetReferenceData(id, namedIndex));
 
             doc.RemoveField(IndexingServiceSettings.DefaultFieldName);
-            doc.Add(new Field(IndexingServiceSettings.DefaultFieldName, totalContents.ToString(),
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.DefaultFieldName].FieldStore,
+            doc.Add(new Field(IndexingServiceSettings.DefaultFieldName, totalContents.ToString(), 
+                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.DefaultFieldName].FieldStore, 
                 IndexingServiceSettings.FieldProperties[IndexingServiceSettings.DefaultFieldName].FieldIndex));
         }
 
-        private Document GetDocumentFromSyndicationItem(SyndicationItem syndicationItem, NamedIndex namedIndex)
+        private Document GetDocumentFromSyndicationItem(FeedItemModel feedItem, NamedIndex namedIndex)
         {
-            string id = syndicationItem.Id;
-            string authors = PrepareAuthors(syndicationItem);
-            string title = (syndicationItem.Title != null) ? syndicationItem.Title.Text : "";
-            string displayText = (syndicationItem.Content != null) ? ((TextSyndicationContent)syndicationItem.Content).Text : "";
-            DateTime created = (syndicationItem.PublishDate.DateTime.Year < 2) ? DateTime.Now : syndicationItem.PublishDate.DateTime;
-            DateTime modified = (syndicationItem.LastUpdatedTime.DateTime.Year < 2) ? DateTime.Now : syndicationItem.LastUpdatedTime.DateTime;
-            string url = (syndicationItem.BaseUri != null) ? syndicationItem.BaseUri.ToString() : "";
-            string boostFactor = GetAttributeValue(syndicationItem, IndexingServiceSettings.SyndicationItemAttributeNameBoostFactor);
-            string culture = GetAttributeValue(syndicationItem, IndexingServiceSettings.SyndicationItemAttributeNameCulture);
-            string type = GetAttributeValue(syndicationItem, IndexingServiceSettings.SyndicationItemAttributeNameType);
-            string referenceId = GetAttributeValue(syndicationItem, IndexingServiceSettings.SyndicationItemAttributeNameReferenceId);
-            string metadata = GetElementValue(syndicationItem, IndexingServiceSettings.SyndicationItemElementNameMetadata);
-            string itemStatus = GetAttributeValue(syndicationItem, IndexingServiceSettings.SyndicationItemAttributeNameItemStatus);
+            string id = feedItem.Id;
+            string authors = PrepareAuthors(feedItem);
+            string title = feedItem.Title;
+            string displayText = feedItem.DisplayText;
+            DateTime created = (feedItem.Created.Year < 2) ? DateTime.Now : feedItem.Created.DateTime;
+            DateTime modified = (feedItem.Modified.Year < 2) ? DateTime.Now : feedItem.Modified.DateTime;
+            string url = (feedItem.Uri != null) ? feedItem.Uri.ToString() : "";
+            string boostFactor = GetAttributeValue(feedItem, IndexingServiceSettings.SyndicationItemAttributeNameBoostFactor);
+            string culture = GetAttributeValue(feedItem, IndexingServiceSettings.SyndicationItemAttributeNameCulture);
+            string type = GetAttributeValue(feedItem, IndexingServiceSettings.SyndicationItemAttributeNameType);
+            string referenceId = GetAttributeValue(feedItem, IndexingServiceSettings.SyndicationItemAttributeNameReferenceId);
+            string metadata = GetElementValue(feedItem, IndexingServiceSettings.SyndicationItemElementNameMetadata);
+            string itemStatus = GetAttributeValue(feedItem, IndexingServiceSettings.SyndicationItemAttributeNameItemStatus);
 
             DateTime publicationEnd;
             bool hasExpiration = false;
-            if (DateTime.TryParse(GetAttributeValue(syndicationItem, IndexingServiceSettings.SyndicationItemAttributeNamePublicationEnd), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out publicationEnd))
+            if (DateTime.TryParse(GetAttributeValue(feedItem, IndexingServiceSettings.SyndicationItemAttributeNamePublicationEnd), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out publicationEnd))
             {
                 hasExpiration = true;
             }
 
             DateTime publicationStart;
             bool hasStart = false;
-            if (DateTime.TryParse(GetAttributeValue(syndicationItem, IndexingServiceSettings.SyndicationItemAttributeNamePublicationStart), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out publicationStart))
+            if (DateTime.TryParse(GetAttributeValue(feedItem, IndexingServiceSettings.SyndicationItemAttributeNamePublicationStart), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out publicationStart))
             {
                 hasStart = true;
             }
 
-            CategoriesFieldStoreSerializer categoriesSerializer = new CategoriesFieldStoreSerializer(syndicationItem);
-            AclFieldStoreSerializer aclSerializer = new AclFieldStoreSerializer(syndicationItem);
-            VirtualPathFieldStoreSerializer virtualPathSerializer = new VirtualPathFieldStoreSerializer(syndicationItem);
-            AuthorsFieldStoreSerializer authorsSerializer = new AuthorsFieldStoreSerializer(syndicationItem);
+            CategoriesFieldStoreSerializer categoriesSerializer = new CategoriesFieldStoreSerializer(feedItem);
+            AclFieldStoreSerializer aclSerializer = new AclFieldStoreSerializer(feedItem);
+            VirtualPathFieldStoreSerializer virtualPathSerializer = new VirtualPathFieldStoreSerializer(feedItem);
+            AuthorsFieldStoreSerializer authorsSerializer = new AuthorsFieldStoreSerializer(feedItem);
 
             // Split displayText
             string displayTextOut = String.Empty;
@@ -709,7 +705,7 @@ namespace EPiServer.Search.IndexingService
 
             //Create the document
             Document doc = new Document();
-            doc.Add(new Field(IndexingServiceSettings.IdFieldName, id,
+            doc.Add(new Field(IndexingServiceSettings.IdFieldName, id, 
                 IndexingServiceSettings.FieldProperties[IndexingServiceSettings.IdFieldName].FieldStore,
                 IndexingServiceSettings.FieldProperties[IndexingServiceSettings.IdFieldName].FieldIndex));
 
@@ -831,7 +827,7 @@ namespace EPiServer.Search.IndexingService
             return sb.ToString();
         }
 
-        private SyndicationItem GetSyndicationItemFromDocument(ScoreDocument scoreDocument)
+        private FeedItemModel GetSyndicationItemFromDocument(ScoreDocument scoreDocument)
         {
             Document doc = scoreDocument.Document;
 
@@ -839,65 +835,65 @@ namespace EPiServer.Search.IndexingService
             NamedIndex namedIndex = new NamedIndex(doc.Get(IndexingServiceSettings.NamedIndexFieldName));
 
             //Create search result object and add it to result collection
-            SyndicationItem syndicationItem = new SyndicationItem();
+            FeedItemModel feedItem = new FeedItemModel();
 
             // ID field
-            syndicationItem.Id = namedIndex.IncludeInResponse(IndexingServiceSettings.IdFieldName) ? doc.Get(IndexingServiceSettings.IdFieldName) : "";
+            feedItem.Id = namedIndex.IncludeInResponse(IndexingServiceSettings.IdFieldName) ? doc.Get(IndexingServiceSettings.IdFieldName) : "";
 
             // Title field
-            syndicationItem.Title = namedIndex.IncludeInResponse(IndexingServiceSettings.TitleFieldName) ? new TextSyndicationContent(doc.Get(IndexingServiceSettings.TitleFieldName)) : new TextSyndicationContent("");
+            feedItem.Title = namedIndex.IncludeInResponse(IndexingServiceSettings.TitleFieldName) ? doc.Get(IndexingServiceSettings.TitleFieldName) : "";
 
             // DisplayText field
-            syndicationItem.Content = namedIndex.IncludeInResponse(IndexingServiceSettings.DisplayTextFieldName) ? new TextSyndicationContent(doc.Get(IndexingServiceSettings.DisplayTextFieldName)) : new TextSyndicationContent("");
+            feedItem.DisplayText = namedIndex.IncludeInResponse(IndexingServiceSettings.DisplayTextFieldName) ? doc.Get(IndexingServiceSettings.DisplayTextFieldName) : "";
 
             // Modified field
             if (namedIndex.IncludeInResponse(IndexingServiceSettings.ModifiedFieldName))
             {
-                syndicationItem.LastUpdatedTime = new DateTimeOffset(Convert.ToDateTime(Regex.Replace(doc.Get(IndexingServiceSettings.ModifiedFieldName), @"(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})", "$1-$2-$3 $4:$5:$6"), CultureInfo.InvariantCulture));
+                feedItem.Modified = new DateTimeOffset(Convert.ToDateTime(Regex.Replace(doc.Get(IndexingServiceSettings.ModifiedFieldName), @"(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})", "$1-$2-$3 $4:$5:$6"), CultureInfo.InvariantCulture));
             }
 
             // Created field
             if (namedIndex.IncludeInResponse(IndexingServiceSettings.CreatedFieldName))
             {
-                syndicationItem.PublishDate = new DateTimeOffset(Convert.ToDateTime(Regex.Replace(doc.Get(IndexingServiceSettings.CreatedFieldName), @"(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})", "$1-$2-$3 $4:$5:$6"), CultureInfo.InvariantCulture));
+                feedItem.Created = new DateTimeOffset(Convert.ToDateTime(Regex.Replace(doc.Get(IndexingServiceSettings.CreatedFieldName), @"(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})", "$1-$2-$3 $4:$5:$6"), CultureInfo.InvariantCulture));
             }
 
             // Uri field
             Uri uri;
             if (Uri.TryCreate(doc.Get(IndexingServiceSettings.UriFieldName), UriKind.RelativeOrAbsolute, out uri))
             {
-                syndicationItem.BaseUri = namedIndex.IncludeInResponse(IndexingServiceSettings.UriFieldName) ? uri : null;
+                feedItem.Uri = namedIndex.IncludeInResponse(IndexingServiceSettings.UriFieldName) ? uri : null;
             }
 
             // Culture field
             if (namedIndex.IncludeInResponse(IndexingServiceSettings.CultureFieldName))
             {
-                syndicationItem.AttributeExtensions.Add(new XmlQualifiedName(IndexingServiceSettings.SyndicationItemAttributeNameCulture, IndexingServiceSettings.XmlQualifiedNamespace), doc.Get(IndexingServiceSettings.CultureFieldName));
+                feedItem.AttributeExtensions.Add(IndexingServiceSettings.SyndicationItemAttributeNameCulture, doc.Get(IndexingServiceSettings.CultureFieldName));
             }
 
             // ItemStatus field
             if (namedIndex.IncludeInResponse(IndexingServiceSettings.ItemStatusFieldName))
             {
-                syndicationItem.AttributeExtensions.Add(new XmlQualifiedName(IndexingServiceSettings.SyndicationItemAttributeNameItemStatus, IndexingServiceSettings.XmlQualifiedNamespace), doc.Get(IndexingServiceSettings.ItemStatusFieldName));
+                feedItem.AttributeExtensions.Add(IndexingServiceSettings.SyndicationItemAttributeNameItemStatus, doc.Get(IndexingServiceSettings.ItemStatusFieldName));
             }
 
             // Type field
             if (namedIndex.IncludeInResponse(IndexingServiceSettings.TypeFieldName))
             {
-                syndicationItem.AttributeExtensions.Add(new XmlQualifiedName(IndexingServiceSettings.SyndicationItemAttributeNameType, IndexingServiceSettings.XmlQualifiedNamespace), doc.Get(IndexingServiceSettings.TypeFieldName));
+                feedItem.AttributeExtensions.Add(IndexingServiceSettings.SyndicationItemAttributeNameType, doc.Get(IndexingServiceSettings.TypeFieldName));
             }
 
             // Score field not optional. Always included
-            syndicationItem.AttributeExtensions.Add(new XmlQualifiedName(IndexingServiceSettings.SyndicationItemAttributeNameScore, IndexingServiceSettings.XmlQualifiedNamespace), scoreDocument.Score.ToString(CultureInfo.InvariantCulture));
+            feedItem.AttributeExtensions.Add(IndexingServiceSettings.SyndicationItemAttributeNameScore, scoreDocument.Score.ToString(CultureInfo.InvariantCulture));
 
             // Data Uri not optional. Always included
-            syndicationItem.AttributeExtensions.Add(new XmlQualifiedName(IndexingServiceSettings.SyndicationItemAttributeNameDataUri, IndexingServiceSettings.XmlQualifiedNamespace), doc.Get(IndexingServiceSettings.SyndicationItemAttributeNameDataUri));
+            feedItem.AttributeExtensions.Add(IndexingServiceSettings.SyndicationItemAttributeNameDataUri, doc.Get(IndexingServiceSettings.SyndicationItemAttributeNameDataUri));
 
             // Boost factor not optional. Always included
-            syndicationItem.AttributeExtensions.Add(new XmlQualifiedName(IndexingServiceSettings.SyndicationItemAttributeNameBoostFactor, IndexingServiceSettings.XmlQualifiedNamespace), doc.Boost.ToString(CultureInfo.InvariantCulture));
+            feedItem.AttributeExtensions.Add(IndexingServiceSettings.SyndicationItemAttributeNameBoostFactor, doc.Boost.ToString(CultureInfo.InvariantCulture));
 
             // Named index not optional. Always included
-            syndicationItem.AttributeExtensions.Add(new XmlQualifiedName(IndexingServiceSettings.SyndicationItemAttributeNameNamedIndex, IndexingServiceSettings.XmlQualifiedNamespace), doc.Get(IndexingServiceSettings.NamedIndexFieldName));
+            feedItem.AttributeExtensions.Add(IndexingServiceSettings.SyndicationItemAttributeNameNamedIndex, doc.Get(IndexingServiceSettings.NamedIndexFieldName));
 
             // PublicationEnd field
             if (namedIndex.IncludeInResponse(IndexingServiceSettings.PublicationEndFieldName))
@@ -905,7 +901,7 @@ namespace EPiServer.Search.IndexingService
                 string publicationEnd = doc.Get(IndexingServiceSettings.PublicationEndFieldName);
                 if (!publicationEnd.Equals("no"))
                 {
-                    syndicationItem.AttributeExtensions.Add(new XmlQualifiedName(IndexingServiceSettings.SyndicationItemAttributeNamePublicationEnd, IndexingServiceSettings.XmlQualifiedNamespace), Convert.ToDateTime(Regex.Replace(publicationEnd, @"(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})", "$1-$2-$3 $4:$5:$6Z"), CultureInfo.InvariantCulture).ToUniversalTime().ToString("u", CultureInfo.InvariantCulture));
+                    feedItem.AttributeExtensions.Add(IndexingServiceSettings.SyndicationItemAttributeNamePublicationEnd, Convert.ToDateTime(Regex.Replace(publicationEnd, @"(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})", "$1-$2-$3 $4:$5:$6Z"), CultureInfo.InvariantCulture).ToUniversalTime().ToString("u", CultureInfo.InvariantCulture));
                 }
             }
 
@@ -915,15 +911,14 @@ namespace EPiServer.Search.IndexingService
                 string publicationStart = doc.Get(IndexingServiceSettings.PublicationStartFieldName);
                 if (!publicationStart.Equals("no"))
                 {
-                    syndicationItem.AttributeExtensions.Add(new XmlQualifiedName(IndexingServiceSettings.SyndicationItemAttributeNamePublicationStart, IndexingServiceSettings.XmlQualifiedNamespace), Convert.ToDateTime(Regex.Replace(publicationStart, @"(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})", "$1-$2-$3 $4:$5:$6Z"), CultureInfo.InvariantCulture).ToUniversalTime().ToString("u", CultureInfo.InvariantCulture));
+                    feedItem.AttributeExtensions.Add(IndexingServiceSettings.SyndicationItemAttributeNamePublicationStart, Convert.ToDateTime(Regex.Replace(publicationStart, @"(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})", "$1-$2-$3 $4:$5:$6Z"), CultureInfo.InvariantCulture).ToUniversalTime().ToString("u", CultureInfo.InvariantCulture));
                 }
             }
 
             //Metadata field
             if (namedIndex.IncludeInResponse(IndexingServiceSettings.MetadataFieldName))
             {
-                syndicationItem.ElementExtensions.Add(new SyndicationElementExtension(IndexingServiceSettings.SyndicationItemElementNameMetadata,
-                    IndexingServiceSettings.XmlQualifiedNamespace, doc.Get(IndexingServiceSettings.MetadataFieldName)));
+                feedItem.ElementExtensions.Add(IndexingServiceSettings.SyndicationItemElementNameMetadata, doc.Get(IndexingServiceSettings.MetadataFieldName));
             }
 
             // Categories
@@ -932,7 +927,7 @@ namespace EPiServer.Search.IndexingService
                 string fieldStoreValue = doc.Get(IndexingServiceSettings.CategoriesFieldName);
                 new CategoriesFieldStoreSerializer
                     (fieldStoreValue).
-                    AddFieldStoreValueToSyndicationItem(syndicationItem);
+                    AddFieldStoreValueToSyndicationItem(feedItem);
             }
 
             //Authors 
@@ -940,7 +935,7 @@ namespace EPiServer.Search.IndexingService
             {
                 string fieldStoreValue = doc.Get(IndexingServiceSettings.AuthorStorageFieldName);
                 new AuthorsFieldStoreSerializer
-                    (fieldStoreValue).AddFieldStoreValueToSyndicationItem(syndicationItem);
+                    (fieldStoreValue).AddFieldStoreValueToSyndicationItem(feedItem);
             }
 
             //RACL to syndication item
@@ -948,7 +943,7 @@ namespace EPiServer.Search.IndexingService
             {
                 string fieldStoreValue = doc.Get(IndexingServiceSettings.AclFieldName);
                 new AclFieldStoreSerializer
-                    (fieldStoreValue).AddFieldStoreValueToSyndicationItem(syndicationItem);
+                    (fieldStoreValue).AddFieldStoreValueToSyndicationItem(feedItem);
             }
 
             //Virtual path to syndication item
@@ -957,10 +952,10 @@ namespace EPiServer.Search.IndexingService
                 string fieldStoreValue = doc.Get(IndexingServiceSettings.VirtualPathFieldName);
                 new VirtualPathFieldStoreSerializer
                     (fieldStoreValue).
-                    AddFieldStoreValueToSyndicationItem(syndicationItem);
+                    AddFieldStoreValueToSyndicationItem(feedItem);
             }
 
-            return syndicationItem;
+            return feedItem;
         }
 
         /// <summary>
@@ -1023,7 +1018,7 @@ namespace EPiServer.Search.IndexingService
             }
             catch (Exception e)
             {
-                IndexingServiceSettings.HandleServiceError(String.Format("Failed to delete Document with id: {0}. Message: {1}{2}{3}", itemId.ToString(), e.Message, Environment.NewLine, e.StackTrace));
+                IndexingServiceSettings.HandleServiceError(String.Format("Failed to delete Document with id: {0}. Message: {1}{2}{3}", itemId.ToString(), e.Message, Environment.NewLine, e.StackTrace)); 
                 return false;
             }
             finally
@@ -1060,7 +1055,7 @@ namespace EPiServer.Search.IndexingService
                         return false;
                     }
                     finally
-                    {
+                    {                        
                         rwlRef.ExitWriteLock();
                     }
 
@@ -1070,7 +1065,7 @@ namespace EPiServer.Search.IndexingService
                 IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("End deleting Lucene document with id field: '{0}'", itemId));
 
                 // Optimize index
-                if ((namedIndex.PendingDeletesOptimizeThreshold > 0) &&
+                if ((namedIndex.PendingDeletesOptimizeThreshold > 0) && 
                     (pendingDeletions >= namedIndex.PendingDeletesOptimizeThreshold))
                 {
                     OptimizeIndex(namedIndex);
@@ -1124,7 +1119,7 @@ namespace EPiServer.Search.IndexingService
             }
             catch (Exception e)
             {
-                IndexingServiceSettings.HandleServiceError(String.Format("Failed to write to index: '{0}'. Message: {1}{2}{3}", namedIndex.Name, e.Message, Environment.NewLine, e.StackTrace));
+                IndexingServiceSettings.HandleServiceError(String.Format("Failed to write to index: '{0}'. Message: {1}{2}{3}", namedIndex.Name, e.Message, Environment.NewLine, e.StackTrace));    
                 return;
             }
             finally
@@ -1163,7 +1158,7 @@ namespace EPiServer.Search.IndexingService
             }
 
             //Fire event
-            IndexingService.OnIndexedOptimized(this, new OptimizedEventArgs(namedIndex.Name));
+            IndexingController.OnIndexedOptimized(this, new OptimizedEventArgs(namedIndex.Name));
 
             IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("Optimized index: '{0}'", namedIndex.Name));
         }
@@ -1286,9 +1281,7 @@ namespace EPiServer.Search.IndexingService
 
             if (IndexingServiceSettings.NamedIndexElements[namedIndexName].ReadOnly)
             {
-                IndexingServiceSettings.IndexingServiceServiceLog.Error(String.Format("cannot modify index: '{0}'. Index is readonly.", namedIndexName));
-
-                IndexingServiceSettings.SetResponseHeaderStatusCode(401);
+                IndexingServiceSettings.HandleServiceError(String.Format("cannot modify index: '{0}'. Index is readonly.", namedIndexName));
 
                 return false;
             }
@@ -1307,12 +1300,12 @@ namespace EPiServer.Search.IndexingService
 
             if (excludeNotPublished)
             {
-                expression = String.Format("({0}) AND ({1}:(no) OR {1}:[{2} TO 99999999999999])", expression,
+                expression = String.Format("({0}) AND ({1}:(no) OR {1}:[{2} TO 99999999999999])", expression, 
                     IndexingServiceSettings.PublicationEndFieldName, currentDate);
             }
             if (excludeNotPublished)
             {
-                expression = String.Format("({0}) AND ({1}:(no) OR {1}:[00000000000000 TO {2}])", expression,
+                expression = String.Format("({0}) AND ({1}:(no) OR {1}:[00000000000000 TO {2}])", expression, 
                     IndexingServiceSettings.PublicationStartFieldName, currentDate);
             }
 
@@ -1321,7 +1314,7 @@ namespace EPiServer.Search.IndexingService
 
         private static string PrepareEscapeFields(string q, string fieldName)
         {
-            MatchEvaluator regexEscapeFields = delegate (Match m)
+            MatchEvaluator regexEscapeFields = delegate(Match m)
             {
                 if (m.Groups["fieldname"].Value.Equals(fieldName + ":"))
                 {
@@ -1338,66 +1331,47 @@ namespace EPiServer.Search.IndexingService
             return expr;
         }
 
-        private static string PrepareAuthors(SyndicationItem syndicationItem)
+        private static string PrepareAuthors(FeedItemModel item)
         {
             StringBuilder authors = new StringBuilder();
-            if (syndicationItem.Authors != null)
+            if (item.Authors != null)
             {
-                foreach (SyndicationPerson person in syndicationItem.Authors)
+                foreach (string person in item.Authors)
                 {
-                    authors.Append(person.Name);
+                    authors.Append(person);
                     authors.Append(" ");
                 }
             }
             return authors.ToString().Trim();
         }
 
-        private static void SetElementValue(SyndicationItem item, string elementExtensionName, string value)
+        private static void SetElementValue(FeedItemModel item, string elementExtensionName, string value)
         {
-            //Remove and add the element extension meta data
-            SyndicationElementExtension newExt = new SyndicationElementExtension(elementExtensionName,
-                                                              IndexingServiceSettings.XmlQualifiedNamespace,
-                                                              value);
-
-            int i = 0;
-            foreach (SyndicationElementExtension ext in item.ElementExtensions)
-            {
-                if (ext.OuterName == elementExtensionName &&
-                    ext.OuterNamespace == IndexingServiceSettings.XmlQualifiedNamespace)
-                {
-                    break;
-                }
-                i++;
-            }
-
-            item.ElementExtensions.RemoveAt(i);
-            item.ElementExtensions.Add(newExt);
+            item.ElementExtensions[elementExtensionName] = value;
         }
 
-        private static void SetAttributeValue(SyndicationItem item, string attributeExtensionName, string value)
+        private static void SetAttributeValue(FeedItemModel item, string attributeExtensionName, string value)
         {
-            item.AttributeExtensions[new XmlQualifiedName(attributeExtensionName, IndexingServiceSettings.XmlQualifiedNamespace)] = value;
+            item.AttributeExtensions[attributeExtensionName] = value;
         }
 
-        private static string GetAttributeValue(SyndicationItem syndicationItem, string attributeName)
+        private static string GetAttributeValue(FeedItemModel item, string attributeName)
         {
             string value = String.Empty;
-            if (syndicationItem.AttributeExtensions.ContainsKey(new XmlQualifiedName(attributeName, IndexingServiceSettings.XmlQualifiedNamespace)))
+            if (item.AttributeExtensions.ContainsKey(attributeName))
             {
-                value = syndicationItem.AttributeExtensions[new XmlQualifiedName(attributeName, IndexingServiceSettings.XmlQualifiedNamespace)];
+                value = item.AttributeExtensions[attributeName];
             }
             return value;
         }
 
-        private static string GetElementValue(SyndicationItem syndicationItem, string elementName)
+        private static string GetElementValue(FeedItemModel item, string elementName)
         {
-            Collection<string> elements = syndicationItem.ElementExtensions.ReadElementExtensions<string>(elementName, IndexingServiceSettings.XmlQualifiedNamespace);
             string value = "";
-            if (elements.Count > 0)
+            if (item.ElementExtensions.ContainsKey(elementName))
             {
-                value = syndicationItem.ElementExtensions.ReadElementExtensions<string>(elementName, IndexingServiceSettings.XmlQualifiedNamespace).ElementAt<string>(0);
+                value = item.ElementExtensions[elementName].ToString();
             }
-
             return value;
         }
 
@@ -1407,7 +1381,7 @@ namespace EPiServer.Search.IndexingService
 
             if (mainDoc == null)
             {
-                IndexingServiceSettings.IndexingServiceServiceLog.Error(String.Format("Could not find main document with id: '{0}' for referencing item id '{1}'. Continuing anyway, index will heal when main document is added/updated.", referenceId, itemId));
+                IndexingServiceSettings.IndexingServiceServiceLog.Error(String.Format("Could not find main document with id: '{0}' for referencing item id '{1}'. Continuing anyway, index will heal when main document is added/updated.", referenceId, itemId));        
                 return;
             }
 
@@ -1443,9 +1417,9 @@ namespace EPiServer.Search.IndexingService
 
         private class DataUriQueueItem
         {
-            private SyndicationItem _item;
+            private FeedItemModel _item;
             private NamedIndex _namedIndex;
-            internal DataUriQueueItem(SyndicationItem item, NamedIndex namedIndex)
+            internal DataUriQueueItem(FeedItemModel item, NamedIndex namedIndex)
             {
                 this._item = item;
                 this._namedIndex = namedIndex;

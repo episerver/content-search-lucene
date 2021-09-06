@@ -12,8 +12,8 @@ namespace EPiServer.Search.IndexingService.FieldSerializers
 {
     internal class TaggedFieldStoreSerializer : IndexFieldStoreSerializerBase
     {
-        internal TaggedFieldStoreSerializer(SyndicationItem syndicationItem)
-            : base(syndicationItem)
+        internal TaggedFieldStoreSerializer(FeedItemModel feedItem)
+            : base(feedItem)
         {
         }
 
@@ -28,52 +28,48 @@ namespace EPiServer.Search.IndexingService.FieldSerializers
         {
             string value = base.ToFieldStoreValue();
 
-            if (SyndicationItem != null)
+            if (FeedItem != null)
             {
                 StringBuilder acl = new StringBuilder();
 
-                Collection<XElement> elements = SyndicationItem.ElementExtensions.ReadElementExtensions<XElement>
-                    (syndicationItemElementExtensionName,
-                    IndexingServiceSettings.XmlQualifiedNamespace);
+                var element = FeedItem.ElementExtensions[syndicationItemElementExtensionName];
 
-                if (elements.Count > 0)
+                if (element != null)
                 {
-                    XElement element = elements.ElementAt<XElement>(0);
-                    foreach (XElement e in element.Elements())
+                    foreach (string e in (Collection<string>)element)
                     {
                         acl.Append(IndexingServiceSettings.TagsPrefix);
-                        acl.Append(e.Value.Trim());
+                        acl.Append(e.Trim());
                         acl.Append(IndexingServiceSettings.TagsSuffix);
                         acl.Append(" ");
                     }
 
                     value = acl.ToString().Trim();
                 }
-                
+
             }
             return value;
         }
 
-        internal void AddFieldStoreValueToSyndicationItem(SyndicationItem syndicationItem, string syndicationItemElementExtensionName)
+        internal void AddFieldStoreValueToSyndicationItem(FeedItemModel feedItem, string syndicationItemElementExtensionName)
         {
             if (!String.IsNullOrEmpty(FieldStoreValue))
             {
-                XNamespace ns = IndexingServiceSettings.XmlQualifiedNamespace;
                 MatchCollection matches = SplitFieldStoreValue();
-                XElement element = new XElement(ns + syndicationItemElementExtensionName);
+                Collection<string> element = new Collection<string>();
                 foreach (Match match in matches)
                 {
                     if (match.Value != null)
                     {
                         string value = GetOriginalValue(match.Value);
-                        element.Add(new XElement(ns + "Item", value));
+                        element.Add(value);
                     }
                 }
-                syndicationItem.ElementExtensions.Add(element.CreateReader());
+                feedItem.ElementExtensions[syndicationItemElementExtensionName] = element;
             }
             else
             {
-                base.AddFieldStoreValueToSyndicationItem(syndicationItem);
+                base.AddFieldStoreValueToSyndicationItem(feedItem);
             }
         }
 

@@ -10,8 +10,8 @@ namespace EPiServer.Search.IndexingService.FieldSerializers
 {
     internal class AclFieldStoreSerializer : TaggedFieldStoreSerializer
     {
-        internal AclFieldStoreSerializer(SyndicationItem syndicationItem)
-            : base(syndicationItem)
+        internal AclFieldStoreSerializer(FeedItemModel feedItem)
+            : base(feedItem)
         {
         }
 
@@ -25,9 +25,9 @@ namespace EPiServer.Search.IndexingService.FieldSerializers
             return base.ToFieldStoreString(IndexingServiceSettings.SyndicationItemElementNameAcl);
         }
 
-        internal override void AddFieldStoreValueToSyndicationItem(SyndicationItem syndicationItem)
+        internal override void AddFieldStoreValueToSyndicationItem(FeedItemModel feedItem)
         {
-            base.AddFieldStoreValueToSyndicationItem(syndicationItem, IndexingServiceSettings.SyndicationItemElementNameAcl);
+            base.AddFieldStoreValueToSyndicationItem(feedItem, IndexingServiceSettings.SyndicationItemElementNameAcl);
         }
     }
 }

@@ -308,6 +308,13 @@ namespace EPiServer.Search.IndexingService
             }
         }
 
+        internal static void HandleServiceError(string errorMessage)
+        {
+            //Log, fire event and respond with status code 500
+            IndexingServiceSettings.IndexingServiceServiceLog.Error(errorMessage);
+            throw new HttpResponseException() { Value = new { error = errorMessage } };
+        }
+
         #endregion
 
         #region Private
