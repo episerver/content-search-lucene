@@ -15,17 +15,17 @@
     <tags>Search</tags>
     <frameworkAssemblies/>
     <dependencies>
-      <dependency id="Lucene.Net" version="[3.0.3, 4)" />
-      <dependency id="EPiServer.Framework" version="[11,12)" />
+      <dependency id="Lucene.Net" version="[4.8,4.9)" />
+      <dependency id="Lucene.Net.Analysis.Common" version="[4.8,4.9)" />
+      <dependency id="Lucene.Net.QueryParser" version="[4.8,4.9)" />
+      <dependency id="EPiServer.Framework" version="[12,13)" />
     </dependencies>
   </metadata>
   <files>
     <file src="build\NugetPackaging\Tools\EPiServer.Search.IndexingService.Install.ps1" target="tools\install.ps1" />
     <file src="build\NugetPackaging\Tools\Search.psm1" target="tools\Search.psm1" />
     <file src="build\NugetPackaging\EPiServer.Search.IndexingService.config.install.xdt" target="content\web.config.install.xdt" />
-    <file src="src\EPiServer.Search.IndexingService\IndexingService.svc" target="content\IndexingService\IndexingService.svc" />
-    <file src="src\EPiServer.Search.IndexingService\bin\$Configuration$\net461\EPiServer.Search.IndexingService.dll" target="lib\net461\EPiServer.Search.IndexingService.dll" />
-    <file src="src\EPiServer.Search.IndexingService\bin\$Configuration$\net461\EPiServer.Search.IndexingService.pdb" target="lib\net461\EPiServer.Search.IndexingService.pdb" />
-    <file src="src\EPiServer.Search.IndexingService\**\*.cs" target="src\EPiServer.Search.IndexingService" />
+    <file src="EPiServer.Search.IndexingApi\bin\$Configuration$\net5.0\EPiServer.Search.IndexingService.dll" target="lib\net5.0\EPiServer.Search.IndexingService.dll" />
+    <file src="EPiServer.Search.IndexingApi\bin\$Configuration$\net5.0\EPiServer.Search.IndexingService.pdb" target="lib\net5.0\EPiServer.Search.IndexingService.pdb" />
   </files>
 </package>
