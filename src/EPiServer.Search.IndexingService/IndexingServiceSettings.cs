@@ -77,8 +77,6 @@ namespace EPiServer.Search.IndexingService
         private static Dictionary<string, System.IO.DirectoryInfo> _referenceDirectoryInfos = new Dictionary<string, System.IO.DirectoryInfo>();
         private static Dictionary<string, int> _indexWriteCounters = new Dictionary<string, int>();
         private static Dictionary<string, Analyzer> _indexAnalyzers = new Dictionary<string, Analyzer>();
-        private static Dictionary<string, ReaderWriterLockSlim> _readerWriterLocks = new Dictionary<string, ReaderWriterLockSlim>();
-        private static Dictionary<string, FieldProperties> _fieldProperties = new Dictionary<string, FieldProperties>();
         private static IList<string> _lowercaseFields = new List<string>() { DefaultFieldName, TitleFieldName, DisplayTextFieldName, AuthorsFieldName };
 
         private readonly IndexingServiceOptions _indexingServiceOpts;
@@ -122,8 +120,6 @@ namespace EPiServer.Search.IndexingService
 
             //Create or load named indexes
             LoadIndexes();
-
-            LoadFieldProperties();
 
             LoadAnalyzer();
 
@@ -207,17 +203,6 @@ namespace EPiServer.Search.IndexingService
         }
 
         /// <summary>
-        /// Gets ReaderWriterLocks for named indexes
-        /// </summary>
-        public static Dictionary<string, ReaderWriterLockSlim> ReaderWriterLocks
-        {
-            get
-            {
-                return _readerWriterLocks;
-            }
-        }
-
-        /// <summary>
         /// Gets named indexes config elements
         /// </summary>
         public static Dictionary<string, NamedIndexElement> NamedIndexElements
@@ -269,19 +254,6 @@ namespace EPiServer.Search.IndexingService
             get
             {
                 return _referenceDirectoryInfos;
-            }
-        }
-
-        /// <summary>
-        /// Gets Field properties for field
-        /// </summary>
-        internal static Dictionary<string, FieldProperties> FieldProperties
-        {
-            get
-            {
-                if (_fieldProperties.Count == 0)
-                    LoadFieldProperties();
-                return _fieldProperties;
             }
         }
 
@@ -357,9 +329,6 @@ namespace EPiServer.Search.IndexingService
                 System.IO.DirectoryInfo directoryMain = new System.IO.DirectoryInfo(System.IO.Path.Combine(GetDirectoryPath(e.DirectoryPath), "Main"));
                 System.IO.DirectoryInfo directoryRef = new System.IO.DirectoryInfo(System.IO.Path.Combine(GetDirectoryPath(e.DirectoryPath), "Ref"));
 
-                ReaderWriterLocks.Add(e.Name, new ReaderWriterLockSlim());
-                ReaderWriterLocks.Add(e.Name + RefIndexSuffix, new ReaderWriterLockSlim());
-
                 try
                 {
                     if (!directoryMain.Exists)
@@ -398,30 +367,6 @@ namespace EPiServer.Search.IndexingService
                     IndexingServiceServiceLog.Fatal(String.Format("Failed to load or create index: \"{0}\". Message: {1}", e.Name, ex.Message), ex);
                 }
             }
-        }
-
-        private static void LoadFieldProperties()
-        {
-            _fieldProperties.Add(IdFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=NOT_ANALYZED
-            _fieldProperties.Add(TitleFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=ANALYZED
-            _fieldProperties.Add(DisplayTextFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=ANALYZED
-            _fieldProperties.Add(CreatedFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=NOT_ANALYZED
-            _fieldProperties.Add(ModifiedFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=NOT_ANALYZED
-            _fieldProperties.Add(PublicationEndFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=NOT_ANALYZED
-            _fieldProperties.Add(PublicationStartFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=NOT_ANALYZED
-            _fieldProperties.Add(UriFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=NO
-            _fieldProperties.Add(MetadataFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=NO
-            _fieldProperties.Add(CategoriesFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=ANALYZED
-            _fieldProperties.Add(CultureFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=NOT_ANALYZED
-            _fieldProperties.Add(AuthorsFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=ANALYZED
-            _fieldProperties.Add(TypeFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=ANALYZED
-            _fieldProperties.Add(ReferenceIdFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=NOT_ANALYZED
-            _fieldProperties.Add(AclFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=ANALYZED
-            _fieldProperties.Add(VirtualPathFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=ANALYZED
-            _fieldProperties.Add(AuthorStorageFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=NOT_ANALYZED
-            _fieldProperties.Add(NamedIndexFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=NOT_ANALYZED
-            _fieldProperties.Add(DefaultFieldName, new FieldProperties() { FieldStore = Field.Store.NO });//FieldIndex=ANALYZED
-            _fieldProperties.Add(ItemStatusFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=NOT_ANALYZED
         }
 
         private static void LoadAnalyzer()

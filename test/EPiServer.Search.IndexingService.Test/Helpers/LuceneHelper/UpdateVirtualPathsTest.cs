@@ -37,9 +37,10 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
             var logMock = new Mock<ILog>();
             IndexingServiceSettings.IndexingServiceServiceLog = logMock.Object;
 
+            var folderId = Guid.NewGuid();
             var namedIndexMock = new Mock<NamedIndex>("testindex1");
-            var dir1 = new System.IO.DirectoryInfo(@"c:\fake\App_Data\Index\Main");
-            var dir2 = new System.IO.DirectoryInfo(@"c:\fake\App_Data\Index\Ref");
+            var dir1 = new System.IO.DirectoryInfo(string.Format(@"c:\fake\App_Data\{0}\Main", folderId));
+            var dir2 = new System.IO.DirectoryInfo(string.Format(@"c:\fake\App_Data\{0}\Ref", folderId));
 
             IndexingServiceSettings.NamedIndexElements.Add(namedIndexMock.Object.Name, new Configuration.NamedIndexElement() { Name= namedIndexMock.Object.Name });
             IndexingServiceSettings.MaxHitsForReferenceSearch = 1;
@@ -48,7 +49,6 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
             IndexingServiceSettings.ReferenceIndexDirectories.Add(namedIndexMock.Object.Name, Lucene.Net.Store.FSDirectory.Open(dir2));
             IndexingServiceSettings.MainDirectoryInfos.Add(namedIndexMock.Object.Name, dir1);
             IndexingServiceSettings.ReferenceDirectoryInfos.Add(namedIndexMock.Object.Name, dir2);
-            IndexingServiceSettings.ReaderWriterLocks.Add(namedIndexMock.Object.Name, new ReaderWriterLockSlim());
 
             int totalHits = 1;
             var docs = new Collection<ScoreDocument>();

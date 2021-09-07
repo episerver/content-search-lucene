@@ -36,11 +36,10 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
             IndexingServiceSettings.IndexingServiceServiceLog = logMock.Object;
             
             var doc = new Document();
-            var dir = Lucene.Net.Store.FSDirectory.Open(new System.IO.DirectoryInfo(@"c:\fake\App_Data\Index"));
+            var dir = Lucene.Net.Store.FSDirectory.Open(new System.IO.DirectoryInfo(string.Format(@"c:\fake\App_Data\{0}\Main", Guid.NewGuid())));
 
             var namedIndexMock = new Mock<NamedIndex>("testindex1");
             namedIndexMock.SetupGet(x => x.Directory).Returns(() => dir);
-            IndexingServiceSettings.ReaderWriterLocks.Add(namedIndexMock.Object.Name, new ReaderWriterLockSlim());
 
             _documentHelperMock.Setup(x => x.DocumentExists(It.IsAny<string>(), It.IsAny<NamedIndex>())).Returns(false);
 

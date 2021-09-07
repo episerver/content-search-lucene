@@ -38,10 +38,9 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
             _documentHelperMock.Setup(x => x.GetDocumentById(It.IsAny<string>(), It.IsAny<NamedIndex>())).Returns(doc);
 
             var namedIndexMock = new Mock<NamedIndex>("testindex1");
-            IndexingServiceSettings.ReaderWriterLocks.Add(namedIndexMock.Object.Name, new ReaderWriterLockSlim());
 
             var classInstant = SetupMock();
-            var result = classInstant.UpdateReference("1", "2", new NamedIndex("testindex1"));
+            var result = classInstant.UpdateReference("1", "2", namedIndexMock.Object);
             Assert.True(result);
         }
     }
