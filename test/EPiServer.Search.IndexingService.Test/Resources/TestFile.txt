@@ -1,3 +1,0 @@
-This is a plain and simple text file that we try to index
-
-Go go go
