@@ -9,10 +9,13 @@ namespace EPiServer.Search.IndexingService.Security
     public class SecurityHandler
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ClientElementHandler _clientElementHandler;
 
-        public SecurityHandler(IHttpContextAccessor httpContextAccessor)
+        public SecurityHandler(IHttpContextAccessor httpContextAccessor,
+            ClientElementHandler clientElementHandler)
         {
             _httpContextAccessor = httpContextAccessor;
+            _clientElementHandler = clientElementHandler;
         }
 
         protected internal virtual bool IsAuthenticated(string accessKey, AccessLevel accessLevel)
@@ -44,7 +47,7 @@ namespace EPiServer.Search.IndexingService.Security
             //Try to authenticate this request by configured client IP
             var remoteIpAddress = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress;
 
-            if (!elem.IsIPAddressAllowed(remoteIpAddress))
+            if (!_clientElementHandler.IsIPAddressAllowed(remoteIpAddress))
             {
                 IndexingServiceSettings.IndexingServiceServiceLog.Error(string.Format("No match for client IP {0}. Access denied for access key {1}.", remoteIpAddress, accessKey));
                 return false;

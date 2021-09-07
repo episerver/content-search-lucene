@@ -1,4 +1,5 @@
-﻿using EPiServer.Search.IndexingService.Security;
+﻿using EPiServer.Search.IndexingService.Helpers;
+using EPiServer.Search.IndexingService.Security;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -15,17 +16,19 @@ namespace EPiServer.Search.IndexingService.Controllers
     public class IndexingController : ControllerBase
     {
         private readonly SecurityHandler _securityHandler;
-        private IIndexingServiceHandler _indexingServiceHandler;
-        private IIndexingServiceSettings _indexingServiceSettings;
+        private readonly IIndexingServiceHandler _indexingServiceHandler;
+        private readonly IIndexingServiceSettings _indexingServiceSettings;
+        private readonly IResponseExceptionHelper _responseExceptionHelper;
 
         public IndexingController(SecurityHandler securityHandler, 
             IIndexingServiceHandler indexingServiceHandler,
-            IIndexingServiceSettings indexingServiceSettings
-            )
+            IIndexingServiceSettings indexingServiceSettings,
+            IResponseExceptionHelper responseExceptionHelper)
         {
             _securityHandler = securityHandler;
             _indexingServiceHandler = indexingServiceHandler;
             _indexingServiceSettings = indexingServiceSettings;
+            _responseExceptionHelper = responseExceptionHelper;
         }
 
         //POST: reset?namedIndex={namedIndex}&accessKey={accessKey}
@@ -37,7 +40,7 @@ namespace EPiServer.Search.IndexingService.Controllers
 
             if (!_securityHandler.IsAuthenticated(accessKey, AccessLevel.Modify))
             {
-                throw new HttpResponseException() { Status = 401 };
+                _responseExceptionHelper.HandleServiceUnauthorized("Unauthorized");
             }
 
             _indexingServiceHandler.ResetNamedIndex(namedIndex);
@@ -51,7 +54,7 @@ namespace EPiServer.Search.IndexingService.Controllers
         {
             if (!_securityHandler.IsAuthenticated(accessKey, AccessLevel.Modify))
             {
-                throw new HttpResponseException() { Status = 401 };
+                _responseExceptionHelper.HandleServiceUnauthorized("Unauthorized");
             }
 
             _indexingServiceHandler.UpdateIndex(model);
@@ -66,10 +69,10 @@ namespace EPiServer.Search.IndexingService.Controllers
         {
             if (!_securityHandler.IsAuthenticated(accessKey, AccessLevel.Read))
             {
-                throw new HttpResponseException() { Status = 401 };
+                _responseExceptionHelper.HandleServiceUnauthorized("Unauthorized");
             }
 
-            return Ok(GetSearchResults(q, namedIndexes, Int32.Parse(offset, CultureInfo.InvariantCulture), Int32.Parse(limit, CultureInfo.InvariantCulture)));
+            return Ok(_indexingServiceHandler.GetSearchResults(q, namedIndexes, Int32.Parse(offset, CultureInfo.InvariantCulture), Int32.Parse(limit, CultureInfo.InvariantCulture)));
         }
 
         //GET: search/json?q={q}&namedIndexes={namedIndexes}&offset={offset}&limit={limit}&accessKey={accessKey}
@@ -79,10 +82,10 @@ namespace EPiServer.Search.IndexingService.Controllers
         {
             if (!_securityHandler.IsAuthenticated(accessKey, AccessLevel.Read))
             {
-                throw new HttpResponseException() { Status = 401 };
+                _responseExceptionHelper.HandleServiceUnauthorized("Unauthorized");
             }
 
-            return Ok(GetSearchResults(q, namedIndexes, Int32.Parse(offset, CultureInfo.InvariantCulture), Int32.Parse(limit, CultureInfo.InvariantCulture)));
+            return Ok(_indexingServiceHandler.GetSearchResults(q, namedIndexes, Int32.Parse(offset, CultureInfo.InvariantCulture), Int32.Parse(limit, CultureInfo.InvariantCulture)));
         }
 
         //GET: namedindexes?accesskey={accesskey}
@@ -92,7 +95,7 @@ namespace EPiServer.Search.IndexingService.Controllers
         {
             if (!_securityHandler.IsAuthenticated(accessKey, AccessLevel.Read))
             {
-                throw new HttpResponseException() { Status = 401 };
+                _responseExceptionHelper.HandleServiceUnauthorized("Unauthorized");
             }
 
             return Ok(_indexingServiceHandler.GetNamedIndexes());
@@ -100,20 +103,7 @@ namespace EPiServer.Search.IndexingService.Controllers
 
         #region Private
 
-        private FeedModel GetSearchResults(string q, string namedIndexes, int offset, int limit)
-        {
-            IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("Request for search with query parser with expression: {0} in named indexes: {1}", q, namedIndexes));
-
-            //Parse named indexes string from request
-            string[] namedIndexesArr = null;
-            if (!String.IsNullOrEmpty(namedIndexes))
-            {
-                char[] delimiter = { '|' };
-                namedIndexesArr = namedIndexes.Split(delimiter);
-            }
-
-            return _indexingServiceHandler.GetSearchResults(q, namedIndexesArr, offset, limit);
-        }
+        
         #endregion
 
         #region Events
