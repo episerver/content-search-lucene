@@ -12,13 +12,8 @@ namespace EPiServer.Search.IndexingService.Configuration
 {
     public class NamedIndexElement
     {
-        private readonly IHostEnvironment _hostEnvironment;
-        private EpiserverFrameworkOptions _episerverFrameworkOpts;
-
-        public NamedIndexElement(IHostEnvironment hostEnvironment, IOptions<EpiserverFrameworkOptions> episerverFrameworkOpts)
+        public NamedIndexElement()
         {
-            _hostEnvironment = hostEnvironment;
-            _episerverFrameworkOpts = episerverFrameworkOpts.Value;
         }
 
         public string Name { get; set; }
@@ -62,28 +57,5 @@ namespace EPiServer.Search.IndexingService.Configuration
         public bool ReferenceFieldInResponse { get; set; }
 
         public bool ItemStatusFieldInResponse { get; set; }
-
-        public const String AppDataPathKey = "[appDataPath]";
-
-        public String GetDirectoryPath()
-        {
-            string path = DirectoryPath;
-
-            if (path.StartsWith(AppDataPathKey, StringComparison.OrdinalIgnoreCase))
-            {
-                string basePath = _episerverFrameworkOpts.AppDataPath;
-                if (String.IsNullOrEmpty(basePath))
-                {
-                    basePath = "App_Data";
-                }
-                path = Path.Combine(basePath, path.Substring(AppDataPathKey.Length).TrimStart('\\', '/'));
-            }
-            path = Environment.ExpandEnvironmentVariables(path);
-            if (!Path.IsPathRooted(path))
-            {
-                path = Path.Combine(_hostEnvironment.ContentRootPath ?? AppDomain.CurrentDomain.BaseDirectory, path);
-            }
-            return path;
-        }
     }
 }

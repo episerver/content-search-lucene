@@ -16,12 +16,16 @@ namespace EPiServer.Search.IndexingService.Controllers
     {
         private readonly SecurityHandler _securityHandler;
         private IIndexingServiceHandler _indexingServiceHandler;
+        private IIndexingServiceSettings _indexingServiceSettings;
 
         public IndexingController(SecurityHandler securityHandler, 
-            IIndexingServiceHandler indexingServiceHandler)
+            IIndexingServiceHandler indexingServiceHandler,
+            IIndexingServiceSettings indexingServiceSettings
+            )
         {
             _securityHandler = securityHandler;
             _indexingServiceHandler = indexingServiceHandler;
+            _indexingServiceSettings = indexingServiceSettings;
         }
 
         //POST: reset?namedIndex={namedIndex}&accessKey={accessKey}
