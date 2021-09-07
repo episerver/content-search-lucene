@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Lucene.Net.Analysis;
-using Lucene.Net.QueryParsers;
+using Lucene.Net.QueryParsers.Classic;
 using Lucene.Net.Search;
 using Lucene.Net.Util;
 
@@ -11,10 +11,10 @@ namespace EPiServer.Search.IndexingService
     /// to match the varying case sensitivity behavior you can have with PerFieldAnalyzerWrapper
     /// </summary>
     internal class PerFieldQueryParserWrapper : QueryParser
-     {
+    {
         private IList<string> _lowercaseFields;
 
-        public PerFieldQueryParserWrapper(Version matchVersion, System.String f, Analyzer a, IList<string> lowercaseFields)
+        public PerFieldQueryParserWrapper(LuceneVersion matchVersion, System.String f, Analyzer a, IList<string> lowercaseFields)
             : base(matchVersion, f, a)
         {
             _lowercaseFields = lowercaseFields;
@@ -80,7 +80,7 @@ namespace EPiServer.Search.IndexingService
             }
         }
 
-        protected override Query GetRangeQuery(string field, string part1, string part2, bool inclusive)
+        protected override Query GetRangeQuery(string field, string part1, string part2, bool startInclusive, bool endInclusive)
         {
             try
             {
@@ -89,7 +89,7 @@ namespace EPiServer.Search.IndexingService
                     LowercaseExpandedTerms = false;
                 }
 
-                return base.GetRangeQuery(field, part1, part2, inclusive);
+                return base.GetRangeQuery(field, part1, part2, startInclusive, endInclusive);
             }
             finally
             {
