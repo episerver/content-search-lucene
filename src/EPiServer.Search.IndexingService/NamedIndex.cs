@@ -22,7 +22,7 @@ namespace EPiServer.Search.IndexingService
         /// <summary>
         /// Contructs a <see cref="NamedIndex"/> for default Index
         /// </summary>
-        internal NamedIndex()
+        public NamedIndex()
             : this(null)
         {           
         }
@@ -31,7 +31,7 @@ namespace EPiServer.Search.IndexingService
         /// Constructs a <see cref="NamedIndex"/> for the passed name
         /// </summary>
         /// <param name="name"></param>
-        internal NamedIndex(string name) : 
+        public NamedIndex(string name) : 
             this(name, false)
         {
         }
@@ -41,7 +41,7 @@ namespace EPiServer.Search.IndexingService
         /// </summary>
         /// <param name="name">The name of the index for which to contruct a <see cref="NamedIndex"/></param>
         /// <param name="useRefIndex">Whether to costruct a <see cref="NamedIndex"/> for the reference index</param>
-        internal NamedIndex(string name, bool useRefIndex)
+        public NamedIndex(string name, bool useRefIndex)
         {
             _namedIndex = (String.IsNullOrEmpty(name)) ? IndexingServiceSettings.DefaultIndexName : name;
 
@@ -97,7 +97,7 @@ namespace EPiServer.Search.IndexingService
         /// <summary>
         /// Gets the Directory for this Index
         /// </summary>
-        internal Lucene.Net.Store.Directory Directory
+        public virtual Lucene.Net.Store.Directory Directory
         {
             get;
             private set;
@@ -106,7 +106,7 @@ namespace EPiServer.Search.IndexingService
         /// <summary>
         /// Gets the reference Directory for this Index where document data is stored separately
         /// </summary>
-        internal Lucene.Net.Store.Directory ReferenceDirectory
+        public virtual Lucene.Net.Store.Directory ReferenceDirectory
         {
             get;
             private set;
@@ -129,7 +129,7 @@ namespace EPiServer.Search.IndexingService
         /// <summary>
         /// Gets the name of this Index
         /// </summary>
-        internal string Name
+        public string Name
         {
             get
             {
@@ -140,7 +140,7 @@ namespace EPiServer.Search.IndexingService
         /// <summary>
         /// Gets the reference index name of this Index
         /// </summary>
-        internal string ReferenceName
+        public string ReferenceName
         {
             get
             {

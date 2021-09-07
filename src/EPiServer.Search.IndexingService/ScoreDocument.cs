@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -8,7 +8,7 @@ namespace EPiServer.Search.IndexingService
 {
     public class ScoreDocument
     {
-        internal ScoreDocument(Document document, float score)
+        public ScoreDocument(Document document, float score)
         {
             Document = document;
             Score = score;

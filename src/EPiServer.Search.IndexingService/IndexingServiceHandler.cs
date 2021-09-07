@@ -25,13 +25,15 @@ namespace EPiServer.Search.IndexingService
         private readonly ILuceneHelper _luceneHelper;
         private readonly ICommonFunc _commonFunc;
         private readonly IResponseExceptionHelper _responseExceptionHelper;
+        private readonly IDocumentHelper _documentHelper;
         #endregion
 
         #region Constructors
         public IndexingServiceHandler(IFeedHelper feedHelper,
             ILuceneHelper luceneHelper,
             ICommonFunc commonFunc,
-            IResponseExceptionHelper responseExceptionHelper)
+            IResponseExceptionHelper responseExceptionHelper,
+            IDocumentHelper documentHelper)
         {
             if(_taskQueue == null)
             {
@@ -42,6 +44,7 @@ namespace EPiServer.Search.IndexingService
             _luceneHelper = luceneHelper;
             _commonFunc = commonFunc;
             _responseExceptionHelper = responseExceptionHelper;
+            _documentHelper = documentHelper;
         }
 
         #endregion
@@ -173,7 +176,7 @@ namespace EPiServer.Search.IndexingService
             int returnedHits = 0;
             foreach (ScoreDocument scoreDocument in scoreDocuments)
             {
-                FeedItemModel feedItem = _luceneHelper.GetSyndicationItemFromDocument(scoreDocument);
+                FeedItemModel feedItem = _documentHelper.GetSyndicationItemFromDocument(scoreDocument);
                 feedItems.Add(feedItem);
                 returnedHits++;
             }
@@ -224,8 +227,8 @@ namespace EPiServer.Search.IndexingService
             NamedIndex namedIndex = new NamedIndex(namedIndexName);
             if (IndexingServiceSettings.NamedIndexElements.ContainsKey(namedIndexName))
             {
-                _luceneHelper.CreateIndex(namedIndex.Name, namedIndex.DirectoryInfo);
-                _luceneHelper.CreateIndex(namedIndex.ReferenceName, namedIndex.ReferenceDirectoryInfo);
+                _documentHelper.CreateIndex(namedIndex.Name, namedIndex.DirectoryInfo);
+                _documentHelper.CreateIndex(namedIndex.ReferenceName, namedIndex.ReferenceDirectoryInfo);
             }
             else
             {

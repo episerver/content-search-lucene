@@ -18,54 +18,54 @@ using Microsoft.Extensions.Options;
 
 namespace EPiServer.Search.IndexingService
 {
-    internal class IndexingServiceSettings : IIndexingServiceSettings
+    public class IndexingServiceSettings : IIndexingServiceSettings
     {
         #region Member variables
-        internal const string TagsPrefix = "[[";
-        internal const string TagsSuffix = "]]";
+        public const string TagsPrefix = "[[";
+        public const string TagsSuffix = "]]";
 
-        internal const string DefaultFieldName = "EPISERVER_SEARCH_DEFAULT";
-        internal const string IdFieldName = "EPISERVER_SEARCH_ID";
-        internal const string TitleFieldName = "EPISERVER_SEARCH_TITLE";
-        internal const string DisplayTextFieldName = "EPISERVER_SEARCH_DISPLAYTEXT";
-        internal const string CreatedFieldName = "EPISERVER_SEARCH_CREATED";
-        internal const string ModifiedFieldName = "EPISERVER_SEARCH_MODIFIED";
-        internal const string PublicationEndFieldName = "EPISERVER_SEARCH_PUBLICATIONEND";
-        internal const string PublicationStartFieldName = "EPISERVER_SEARCH_PUBLICATIONSTART";
-        internal const string UriFieldName = "EPISERVER_SEARCH_URI";
-        internal const string CategoriesFieldName = "EPISERVER_SEARCH_CATEGORIES";
-        internal const string AuthorsFieldName = "EPISERVER_SEARCH_AUTHORS";
-        internal const string CultureFieldName = "EPISERVER_SEARCH_CULTURE";
-        internal const string TypeFieldName = "EPISERVER_SEARCH_TYPE";
-        internal const string ReferenceIdFieldName = "EPISERVER_SEARCH_REFERENCEID";
-        internal const string MetadataFieldName = "EPISERVER_SEARCH_METADATA";
-        internal const string AclFieldName = "EPISERVER_SEARCH_ACL";
-        internal const string VirtualPathFieldName = "EPISERVER_SEARCH_VIRTUALPATH";
-        internal const string DataUriFieldName = "EPISERVER_SEARCH_DATAURI";
-        internal const string AuthorStorageFieldName = "EPISERVER_SEARCH_AUTHORSTORAGE";
-        internal const string NamedIndexFieldName = "EPISERVER_SEARCH_NAMEDINDEX";
-        internal const string ItemStatusFieldName = "EPISERVER_SEARCH_ITEMSTATUS";
+        public const string DefaultFieldName = "EPISERVER_SEARCH_DEFAULT";
+        public const string IdFieldName = "EPISERVER_SEARCH_ID";
+        public const string TitleFieldName = "EPISERVER_SEARCH_TITLE";
+        public const string DisplayTextFieldName = "EPISERVER_SEARCH_DISPLAYTEXT";
+        public const string CreatedFieldName = "EPISERVER_SEARCH_CREATED";
+        public const string ModifiedFieldName = "EPISERVER_SEARCH_MODIFIED";
+        public const string PublicationEndFieldName = "EPISERVER_SEARCH_PUBLICATIONEND";
+        public const string PublicationStartFieldName = "EPISERVER_SEARCH_PUBLICATIONSTART";
+        public const string UriFieldName = "EPISERVER_SEARCH_URI";
+        public const string CategoriesFieldName = "EPISERVER_SEARCH_CATEGORIES";
+        public const string AuthorsFieldName = "EPISERVER_SEARCH_AUTHORS";
+        public const string CultureFieldName = "EPISERVER_SEARCH_CULTURE";
+        public const string TypeFieldName = "EPISERVER_SEARCH_TYPE";
+        public const string ReferenceIdFieldName = "EPISERVER_SEARCH_REFERENCEID";
+        public const string MetadataFieldName = "EPISERVER_SEARCH_METADATA";
+        public const string AclFieldName = "EPISERVER_SEARCH_ACL";
+        public const string VirtualPathFieldName = "EPISERVER_SEARCH_VIRTUALPATH";
+        public const string DataUriFieldName = "EPISERVER_SEARCH_DATAURI";
+        public const string AuthorStorageFieldName = "EPISERVER_SEARCH_AUTHORSTORAGE";
+        public const string NamedIndexFieldName = "EPISERVER_SEARCH_NAMEDINDEX";
+        public const string ItemStatusFieldName = "EPISERVER_SEARCH_ITEMSTATUS";
 
-        internal const string XmlQualifiedNamespace = "EPiServer.Search.IndexingService";
-        internal const string SyndicationItemAttributeNameCulture = "Culture";
-        internal const string SyndicationItemAttributeNameType = "Type";
-        internal const string SyndicationItemElementNameMetadata = "Metadata";
-        internal const string SyndicationItemAttributeNameNamedIndex = "NamedIndex";
-        internal const string SyndicationItemAttributeNameBoostFactor = "BoostFactor";
-        internal const string SyndicationItemAttributeNameIndexAction = "IndexAction";
-        internal const string SyndicationItemAttributeNameReferenceId = "ReferenceId";
-        internal const string SyndicationItemElementNameAcl = "ACL";
-        internal const string SyndicationItemAttributeNameDataUri = "DataUri";
-        internal const string SyndicationItemElementNameVirtualPath = "VirtualPath";
-        internal const string SyndicationItemAttributeNameScore = "Score";
-        internal const string SyndicationFeedAttributeNameVersion = "Version";
-        internal const string SyndicationFeedAttributeNameTotalHits = "TotalHits";
-        internal const string SyndicationItemAttributeNamePublicationEnd = "PublicationEnd";
-        internal const string SyndicationItemAttributeNamePublicationStart = "PublicationStart";
-        internal const string SyndicationItemAttributeNameItemStatus = "ItemStatus";
-        internal const string SyndicationItemAttributeNameAutoUpdateVirtualPath = "AutoUpdateVirtualPath";
+        public const string XmlQualifiedNamespace = "EPiServer.Search.IndexingService";
+        public const string SyndicationItemAttributeNameCulture = "Culture";
+        public const string SyndicationItemAttributeNameType = "Type";
+        public const string SyndicationItemElementNameMetadata = "Metadata";
+        public const string SyndicationItemAttributeNameNamedIndex = "NamedIndex";
+        public const string SyndicationItemAttributeNameBoostFactor = "BoostFactor";
+        public const string SyndicationItemAttributeNameIndexAction = "IndexAction";
+        public const string SyndicationItemAttributeNameReferenceId = "ReferenceId";
+        public const string SyndicationItemElementNameAcl = "ACL";
+        public const string SyndicationItemAttributeNameDataUri = "DataUri";
+        public const string SyndicationItemElementNameVirtualPath = "VirtualPath";
+        public const string SyndicationItemAttributeNameScore = "Score";
+        public const string SyndicationFeedAttributeNameVersion = "Version";
+        public const string SyndicationFeedAttributeNameTotalHits = "TotalHits";
+        public const string SyndicationItemAttributeNamePublicationEnd = "PublicationEnd";
+        public const string SyndicationItemAttributeNamePublicationStart = "PublicationStart";
+        public const string SyndicationItemAttributeNameItemStatus = "ItemStatus";
+        public const string SyndicationItemAttributeNameAutoUpdateVirtualPath = "AutoUpdateVirtualPath";
 
-        internal const string RefIndexSuffix = "_ref";
+        public const string RefIndexSuffix = "_ref";
 
         private static string _defaultIndexName;
         private static Analyzer _analyzer;
@@ -85,6 +85,7 @@ namespace EPiServer.Search.IndexingService
         private readonly IHostEnvironment _hostEnvironment;
         private EpiserverFrameworkOptions _episerverFrameworkOpts;
         private readonly ILuceneHelper _luceneHelper;
+        private readonly IDocumentHelper _documentHelper;
         #endregion
 
         #region Construct and Init
@@ -92,12 +93,14 @@ namespace EPiServer.Search.IndexingService
         public IndexingServiceSettings(IOptions<IndexingServiceOptions> indexingServiceOpts,
              IHostEnvironment hostEnvironment, 
              IOptions<EpiserverFrameworkOptions> episerverFrameworkOpts,
-             ILuceneHelper luceneHelper)
+             ILuceneHelper luceneHelper,
+             IDocumentHelper documentHelper)
         {
             _indexingServiceOpts = indexingServiceOpts.Value;
             _hostEnvironment = hostEnvironment;
             _episerverFrameworkOpts = episerverFrameworkOpts.Value;
             _luceneHelper = luceneHelper;
+            _documentHelper = documentHelper;
 
             Init();
         }
@@ -106,7 +109,7 @@ namespace EPiServer.Search.IndexingService
         {
         }
 
-        private void Init()
+        public void Init()
         {
             //Start logging
             IndexingServiceServiceLog = LogManager.GetLogger(typeof(IndexingController));
@@ -131,7 +134,7 @@ namespace EPiServer.Search.IndexingService
 
         #region Internal properties
 
-        internal static Lucene.Net.Util.LuceneVersion LuceneVersion
+        public static Lucene.Net.Util.LuceneVersion LuceneVersion
         {
             get;
             set;
@@ -155,7 +158,7 @@ namespace EPiServer.Search.IndexingService
         /// <summary>
         /// Gets and sets the maximum number of hits to be returned by a Lucene Search. Overrides the passed maxitems.
         /// </summary>
-        internal static int MaxHitsForSearchResults
+        public static int MaxHitsForSearchResults
         {
             get;
             set;
@@ -164,7 +167,7 @@ namespace EPiServer.Search.IndexingService
         /// <summary>
         /// Gets and sets the maximum number of hits to be returned when doing a search in reference index. e.g. how many top comments should be included in the parent documents metadata
         /// </summary>
-        internal static int MaxHitsForReferenceSearch
+        public static int MaxHitsForReferenceSearch
         {
             get;
             set;
@@ -193,10 +196,12 @@ namespace EPiServer.Search.IndexingService
         /// </summary>
         public static ILog IndexingServiceServiceLog { get; set; }
 
-        internal static Analyzer Analyzer
+        public static Analyzer Analyzer
         {
             get
             {
+                if(_analyzer==null)
+                    LoadAnalyzer();
                 return _analyzer;
             }
         }
@@ -204,7 +209,7 @@ namespace EPiServer.Search.IndexingService
         /// <summary>
         /// Gets ReaderWriterLocks for named indexes
         /// </summary>
-        internal static Dictionary<string, ReaderWriterLockSlim> ReaderWriterLocks
+        public static Dictionary<string, ReaderWriterLockSlim> ReaderWriterLocks
         {
             get
             {
@@ -215,7 +220,7 @@ namespace EPiServer.Search.IndexingService
         /// <summary>
         /// Gets named indexes config elements
         /// </summary>
-        internal static Dictionary<string, NamedIndexElement> NamedIndexElements
+        public static Dictionary<string, NamedIndexElement> NamedIndexElements
         {
             get
             {
@@ -226,7 +231,7 @@ namespace EPiServer.Search.IndexingService
         /// <summary>
         /// Gets named indexes Lucene directories
         /// </summary>
-        internal static Dictionary<string, Directory> NamedIndexDirectories
+        public static Dictionary<string, Directory> NamedIndexDirectories
         {
             get
             {
@@ -237,7 +242,7 @@ namespace EPiServer.Search.IndexingService
         /// <summary>
         /// Gets named reference indexes Lucene directories
         /// </summary>
-        internal static Dictionary<string, Directory> ReferenceIndexDirectories
+        public static Dictionary<string, Directory> ReferenceIndexDirectories
         {
             get
             {
@@ -248,7 +253,7 @@ namespace EPiServer.Search.IndexingService
         /// <summary>
         /// Gets named indexes DirectoryInfos
         /// </summary>
-        internal static Dictionary<string, System.IO.DirectoryInfo> MainDirectoryInfos
+        public static Dictionary<string, System.IO.DirectoryInfo> MainDirectoryInfos
         {
             get
             {
@@ -259,7 +264,7 @@ namespace EPiServer.Search.IndexingService
         /// <summary>
         /// Gets reference indexes DirectoryInfos
         /// </summary>
-        internal static Dictionary<string, System.IO.DirectoryInfo> ReferenceDirectoryInfos
+        public static Dictionary<string, System.IO.DirectoryInfo> ReferenceDirectoryInfos
         {
             get
             {
@@ -274,6 +279,8 @@ namespace EPiServer.Search.IndexingService
         {
             get
             {
+                if (_fieldProperties.Count == 0)
+                    LoadFieldProperties();
                 return _fieldProperties;
             }
         }
@@ -358,7 +365,7 @@ namespace EPiServer.Search.IndexingService
                     if (!directoryMain.Exists)
                     {
                         directoryMain.Create();
-                        Directory dir = _luceneHelper.CreateIndex(e.Name, directoryMain);
+                        Directory dir = _documentHelper.CreateIndex(e.Name, directoryMain);
                         NamedIndexDirectories.Add(e.Name, dir);
                     }
                     else
@@ -369,7 +376,7 @@ namespace EPiServer.Search.IndexingService
                     if (!directoryRef.Exists)
                     {
                         directoryRef.Create();
-                        Directory refDir = _luceneHelper.CreateIndex(e.Name + RefIndexSuffix, directoryRef);
+                        Directory refDir = _documentHelper.CreateIndex(e.Name + RefIndexSuffix, directoryRef);
                         ReferenceIndexDirectories.Add(e.Name, refDir);
                     }
                     else

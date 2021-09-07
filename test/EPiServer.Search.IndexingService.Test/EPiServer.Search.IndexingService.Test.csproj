@@ -1,28 +1,27 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\build\common.props" />
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
-    <RootNamespace>EPiServer.Search</RootNamespace>
-    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <TargetFramework>net5.0</TargetFramework>
+
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\..\src\EPiServer.Search.Cms\EPiServer.Search.Cms.csproj" />
-    <ProjectReference Include="..\..\src\EPiServer.Search.IndexingService\EPiServer.Search.IndexingService.csproj" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
-    <PackageReference Include="Microsoft.NETCore.Platforms" Version="1.1.0" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
-    <PackageReference Include="xunit" Version="2.2.0" />
-    <PackageReference Include="EPiserver.TestTools" Version="11.0.0" PrivateAssets="all" />
-    <PackageReference Include="EPiServer.ServiceLocation.StructureMap" Version="1.0.0" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.ServiceModel.Web" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
+    <PackageReference Include="Moq" Version="4.16.1" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector" Version="1.3.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
+
   <ItemGroup>
-    <None Update="Resources\**\*" CopyToOutputDirectory="PreserveNewest" />
-    <Compile Remove="IndexingServiceHandlerTest.cs" />
+    <ProjectReference Include="..\EPiServer.Search.IndexingApi\EPiServer.Search.IndexingService.csproj" />
   </ItemGroup>
+
 </Project>
