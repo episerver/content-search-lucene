@@ -183,7 +183,7 @@ namespace EPiServer.Search.IndexingService
         /// <summary>
         /// Gets and sets the Log4Net logger
         /// </summary>
-        public ILog IndexingServiceServiceLog { get; set; }
+        public static ILog IndexingServiceServiceLog { get; set; }
 
         internal static Analyzer Analyzer
         {
@@ -309,13 +309,6 @@ namespace EPiServer.Search.IndexingService
             {
                 return _clientElements;
             }
-        }
-
-        public void HandleServiceError(string errorMessage)
-        {
-            //Log, fire event and respond with status code 500
-            IndexingServiceServiceLog.Error(errorMessage);
-            throw new HttpResponseException() { Value = new { error = errorMessage } };
         }
 
         #endregion
