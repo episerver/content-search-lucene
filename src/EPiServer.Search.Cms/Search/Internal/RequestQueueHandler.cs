@@ -83,55 +83,53 @@ namespace EPiServer.Search.Internal
 
         public virtual void ProcessQueue()
         {
-            // TO BE UPDATED
+            lock (_syncObject)
+            {
+                int pageSize = _options.DequeuePageSize;
 
-            //lock (_syncObject)
-            //{
-            //    int pageSize = _options.DequeuePageSize;
+                _log.Debug("Start dequeue unprocessed items");
 
-            //    _log.Debug("Start dequeue unprocessed items");
+                // Iterate all configured indexing services
+                foreach (var serviceReference in _options.IndexingServiceReferences)
+                {
+                    while (true)
+                    {
+                        try
+                        {
+                            var queueItems = _queue.Get(serviceReference.Name, pageSize);
 
-            //    // Iterate all configured indexing services
-            //    foreach (var serviceReference in _options.IndexingServiceReferences)
-            //    {
-            //        while (true)
-            //        {
-            //            try
-            //            {
-            //                var queueItems = _queue.Get(serviceReference.Name, pageSize);
+                            if (!queueItems.Any())
+                            {
+                                break;
+                            }
 
-            //                if (!queueItems.Any())
-            //                {
-            //                    break;
-            //                }
+                            _log.Debug($"Start processing batch for indexing service '{serviceReference.Name}'");
 
-            //                _log.Debug($"Start processing batch for indexing service '{serviceReference.Name}'");
+                            var feed = GetUnprocessedFeed(queueItems);
 
-            //                var feed = GetUnprocessedFeed(queueItems);
+                            bool success = _requestHandler.SendRequest(feed, serviceReference.Name);
 
-            //                bool success = _requestHandler.SendRequest(feed, serviceReference.Name);
+                            if (!success)
+                            {
+                                // The batch could not be sent due to network errors. We should leave the items in queue and move on to the next named service.
+                                _log.Error($"Send batch for named index '{serviceReference.Name}' failed. Items are left in queue.");
+                                break;
+                            }
 
-            //                if (!success)
-            //                {
-            //                    // The batch could not be sent due to network errors. We should leave the items in queue and move on to the next named service.
-            //                    _log.Error($"Send batch for named index '{serviceReference.Name}' failed. Items are left in queue.");
-            //                    break;
-            //                }
+                            _queue.Remove(queueItems);
 
-            //                _queue.Remove(queueItems);
+                            _log.Debug("End processing batch");
+                        }
+                        catch (Exception ex)
+                        {
+                            _log.Error($"RequestQueue failed to retrieve unprocessed queue items.", ex);
+                            break;
+                        }
+                    }
+                }
 
-            //                _log.Debug("End processing batch");
-            //            }
-            //            catch (Exception ex)
-            //            {
-            //                _log.Error($"RequestQueue failed to retrieve unprocessed queue items.", ex);
-            //                break;
-            //            }
-            //        }
-            //    }
-
-            //    _log.Debug("End dequeue unprocessed items");
-            //}
+                _log.Debug("End dequeue unprocessed items");
+            }
         }
 
         private SyndicationFeed GetUnprocessedFeed(IEnumerable<IndexRequestQueueItem> queueItems)

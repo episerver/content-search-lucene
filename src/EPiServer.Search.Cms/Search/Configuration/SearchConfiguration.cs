@@ -1,17 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using EPiServer.Framework;
-using EPiServer.Search.Configuration;
-using EPiServer.Search.Filter;
-using EPiServer.ServiceLocation;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace EPiServer.Search
+namespace EPiServer.Search.Configuration
 {
-    /// <summary>
-    /// Defines settings for search 
-    /// </summary>
-    [Options]
-    public class SearchOptions
+    public class SearchConfiguration
     {
         /// <summary>
         /// Gets or sets if the search service is active
@@ -306,17 +301,12 @@ namespace EPiServer.Search
         /// <summary>
         /// Factories for search filter providers
         /// </summary>
-        public Dictionary<string, Func<IServiceProvider, SearchResultFilterProvider>> FilterProviders { get; } = new Dictionary<string, Func<IServiceProvider, SearchResultFilterProvider>>();
+        public SearchResultFilterElement SearchResultFilter { get; set; }
 
         /// <summary>
-        /// Contains a list of references for indexing services.
+        /// Contains a references for indexing services.
         /// </summary>
-        public List<IndexingServiceReferenceTransform> IndexingServiceReferences { get; } = new List<IndexingServiceReferenceTransform>();
-
-        /// <summary>
-        /// The name of the default indexing service in <see cref="IndexingServiceReferences"/>
-        /// </summary>
-        public string DefaultIndexingServiceName { get; set; }
+        public NamedIndexingServices NamedIndexingServices { get; set; } = new NamedIndexingServices();
 
         /// <summary>
         /// Gets and sets whether the default behaviour for filtering should be to include results when no provider is configured for the type. Default = false.
