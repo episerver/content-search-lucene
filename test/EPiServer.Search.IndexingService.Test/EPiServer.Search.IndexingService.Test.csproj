@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EPiServer.Search.IndexingApi\EPiServer.Search.IndexingService.csproj" />
+    <ProjectReference Include="..\..\src\EPiServer.Search.IndexingService\EPiServer.Search.IndexingService.csproj" />
   </ItemGroup>
 
 </Project>
