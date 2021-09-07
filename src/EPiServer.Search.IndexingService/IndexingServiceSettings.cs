@@ -7,6 +7,8 @@ using EPiServer.Logging.Compatibility;
 using EPiServer.Search.IndexingService.Configuration;
 using EPiServer.Search.IndexingService.Controllers;
 using Lucene.Net.Analysis;
+using Lucene.Net.Analysis.Core;
+using Lucene.Net.Analysis.Miscellaneous;
 using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Documents;
 using Lucene.Net.Store;
@@ -102,12 +104,10 @@ namespace EPiServer.Search.IndexingService
             IndexingServiceServiceLog = LogManager.GetLogger(typeof(IndexingController));
 
             //Must check breaking changes and database format compatibility before 'upgrading' this
-            LuceneVersion = Lucene.Net.Util.Version.LUCENE_29;
+            LuceneVersion = Lucene.Net.Util.LuceneVersion.LUCENE_48;
 
             //Load configuration
             LoadConfiguration();
-
-            Lucene.Net.Support.Cryptography.FIPSCompliant = FIPSCompliant;
 
             //Create or load named indexes
             LoadIndexes();
@@ -123,7 +123,7 @@ namespace EPiServer.Search.IndexingService
 
         #region Internal properties
 
-        internal static Lucene.Net.Util.Version LuceneVersion
+        internal static Lucene.Net.Util.LuceneVersion LuceneVersion
         {
             get;
             set;
@@ -419,31 +419,33 @@ namespace EPiServer.Search.IndexingService
         private static void LoadAnalyzer()
         {
             System.String[] stopWords = new System.String[] { };
-            PerFieldAnalyzerWrapper perf = new PerFieldAnalyzerWrapper(new StandardAnalyzer(IndexingServiceSettings.LuceneVersion, StopFilter.MakeStopSet(stopWords)));
+            var fieldAnalyzers = new Dictionary<string, Analyzer>();
 
             // Untokenized fields uses keyword analyzer at all times
-            perf.AddAnalyzer(IndexingServiceSettings.IdFieldName, new KeywordAnalyzer());
-            perf.AddAnalyzer(IndexingServiceSettings.CultureFieldName, new KeywordAnalyzer());
-            perf.AddAnalyzer(IndexingServiceSettings.ReferenceIdFieldName, new KeywordAnalyzer());
-            perf.AddAnalyzer(IndexingServiceSettings.AuthorStorageFieldName, new KeywordAnalyzer());
+            fieldAnalyzers.Add(IndexingServiceSettings.IdFieldName, new KeywordAnalyzer());
+            fieldAnalyzers.Add(IndexingServiceSettings.CultureFieldName, new KeywordAnalyzer());
+            fieldAnalyzers.Add(IndexingServiceSettings.ReferenceIdFieldName, new KeywordAnalyzer());
+            fieldAnalyzers.Add(IndexingServiceSettings.AuthorStorageFieldName, new KeywordAnalyzer());
 
             // Categories, ACL and VirtualPath field uses Whitespace analyzer at all times. Whitespace analyser leaves stop words and other non literal chars intact. 
-            perf.AddAnalyzer(IndexingServiceSettings.CategoriesFieldName, new WhitespaceAnalyzer());
-            perf.AddAnalyzer(IndexingServiceSettings.AclFieldName, new WhitespaceAnalyzer());
-            perf.AddAnalyzer(IndexingServiceSettings.VirtualPathFieldName, new WhitespaceAnalyzer());
-            perf.AddAnalyzer(IndexingServiceSettings.TypeFieldName, new WhitespaceAnalyzer());
-            perf.AddAnalyzer(IndexingServiceSettings.CreatedFieldName, new WhitespaceAnalyzer());
-            perf.AddAnalyzer(IndexingServiceSettings.ModifiedFieldName, new WhitespaceAnalyzer());
-            perf.AddAnalyzer(IndexingServiceSettings.PublicationEndFieldName, new WhitespaceAnalyzer());
-            perf.AddAnalyzer(IndexingServiceSettings.PublicationStartFieldName, new WhitespaceAnalyzer());
-            perf.AddAnalyzer(IndexingServiceSettings.ItemStatusFieldName, new WhitespaceAnalyzer());
+            fieldAnalyzers.Add(IndexingServiceSettings.CategoriesFieldName, new WhitespaceAnalyzer(LuceneVersion));
+            fieldAnalyzers.Add(IndexingServiceSettings.AclFieldName, new WhitespaceAnalyzer(LuceneVersion));
+            fieldAnalyzers.Add(IndexingServiceSettings.VirtualPathFieldName, new WhitespaceAnalyzer(LuceneVersion));
+            fieldAnalyzers.Add(IndexingServiceSettings.TypeFieldName, new WhitespaceAnalyzer(LuceneVersion));
+            fieldAnalyzers.Add(IndexingServiceSettings.CreatedFieldName, new WhitespaceAnalyzer(LuceneVersion));
+            fieldAnalyzers.Add(IndexingServiceSettings.ModifiedFieldName, new WhitespaceAnalyzer(LuceneVersion));
+            fieldAnalyzers.Add(IndexingServiceSettings.PublicationEndFieldName, new WhitespaceAnalyzer(LuceneVersion));
+            fieldAnalyzers.Add(IndexingServiceSettings.PublicationStartFieldName, new WhitespaceAnalyzer(LuceneVersion));
+            fieldAnalyzers.Add(IndexingServiceSettings.ItemStatusFieldName, new WhitespaceAnalyzer(LuceneVersion));
 
             // Get the selected analyzer for the rest of the fields
-            Analyzer indexAnalyzer = new StandardAnalyzer(IndexingServiceSettings.LuceneVersion, StopFilter.MakeStopSet(stopWords));
-            perf.AddAnalyzer(IndexingServiceSettings.TitleFieldName, indexAnalyzer);
-            perf.AddAnalyzer(IndexingServiceSettings.DisplayTextFieldName, indexAnalyzer);
-            perf.AddAnalyzer(IndexingServiceSettings.AuthorsFieldName, indexAnalyzer);
-            perf.AddAnalyzer(IndexingServiceSettings.DefaultFieldName, indexAnalyzer);
+            Analyzer indexAnalyzer = new StandardAnalyzer(LuceneVersion, StopFilter.MakeStopSet(LuceneVersion, stopWords));
+            fieldAnalyzers.Add(IndexingServiceSettings.TitleFieldName, indexAnalyzer);
+            fieldAnalyzers.Add(IndexingServiceSettings.DisplayTextFieldName, indexAnalyzer);
+            fieldAnalyzers.Add(IndexingServiceSettings.AuthorsFieldName, indexAnalyzer);
+            fieldAnalyzers.Add(IndexingServiceSettings.DefaultFieldName, indexAnalyzer);
+
+            PerFieldAnalyzerWrapper perf = new PerFieldAnalyzerWrapper(new StandardAnalyzer(LuceneVersion, StopFilter.MakeStopSet(LuceneVersion, stopWords)), fieldAnalyzers);
 
             _analyzer = perf;
         }

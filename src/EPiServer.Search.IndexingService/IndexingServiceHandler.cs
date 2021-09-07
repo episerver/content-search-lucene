@@ -1,24 +1,18 @@
-﻿
+﻿using EPiServer.Search.IndexingService.Controllers;
+using EPiServer.Search.IndexingService.FieldSerializers;
+using Lucene.Net.Documents;
+using Lucene.Net.Index;
+using Lucene.Net.QueryParsers.Classic;
+using Lucene.Net.Search;
+using Lucene.Net.Store;
 using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.ServiceModel.Syndication;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Xml;
-using EPiServer.Search.IndexingService.Controllers;
-using EPiServer.Search.IndexingService.FieldSerializers;
-using Lucene.Net.Analysis.Standard;
-using Lucene.Net.Documents;
-using Lucene.Net.Index;
-using Lucene.Net.QueryParsers;
-using Lucene.Net.Search;
-using Lucene.Net.Store;
-using Microsoft.AspNetCore.Mvc;
 
 namespace EPiServer.Search.IndexingService
 {
@@ -367,7 +361,9 @@ namespace EPiServer.Search.IndexingService
                 //Create directory
                 dir = FSDirectory.Open(directoryInfo);
                 //Create index
-                using (IndexWriter iWriter = new IndexWriter(dir, new StandardAnalyzer(IndexingServiceSettings.LuceneVersion), true, Lucene.Net.Index.IndexWriter.MaxFieldLength.UNLIMITED))
+                IndexWriterConfig iwc = new IndexWriterConfig(IndexingServiceSettings.LuceneVersion, IndexingServiceSettings.Analyzer);
+                iwc.OpenMode = OpenMode.CREATE;
+                using (IndexWriter iWriter = new IndexWriter(dir, iwc))
                 {
                 }
             }
@@ -617,9 +613,8 @@ namespace EPiServer.Search.IndexingService
                 vp = vp.Remove(0, oldVirtualPath.Length);
                 vp = vp.Insert(0, newVirtualPath);
                 doc.RemoveField(IndexingServiceSettings.VirtualPathFieldName);
-                doc.Add(new Field(IndexingServiceSettings.VirtualPathFieldName, vp,
-                    IndexingServiceSettings.FieldProperties[IndexingServiceSettings.VirtualPathFieldName].FieldStore,
-                    IndexingServiceSettings.FieldProperties[IndexingServiceSettings.VirtualPathFieldName].FieldIndex));
+                doc.Add(new TextField(IndexingServiceSettings.VirtualPathFieldName, vp,
+                    IndexingServiceSettings.FieldProperties[IndexingServiceSettings.VirtualPathFieldName].FieldStore));
 
                 AddAllSearchableContentsFieldToDocument(doc, namedIndex);
 
@@ -647,9 +642,8 @@ namespace EPiServer.Search.IndexingService
             totalContents.Append(GetReferenceData(id, namedIndex));
 
             doc.RemoveField(IndexingServiceSettings.DefaultFieldName);
-            doc.Add(new Field(IndexingServiceSettings.DefaultFieldName, totalContents.ToString(),
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.DefaultFieldName].FieldStore,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.DefaultFieldName].FieldIndex));
+            doc.Add(new TextField(IndexingServiceSettings.DefaultFieldName, totalContents.ToString(), 
+                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.DefaultFieldName].FieldStore));
         }
 
         private Document GetDocumentFromSyndicationItem(FeedItemModel feedItem, NamedIndex namedIndex)
@@ -694,86 +688,67 @@ namespace EPiServer.Search.IndexingService
 
             //Create the document
             Document doc = new Document();
-            doc.Add(new Field(IndexingServiceSettings.IdFieldName, id,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.IdFieldName].FieldStore,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.IdFieldName].FieldIndex));
+            doc.Add(new StringField(IndexingServiceSettings.IdFieldName, id,
+                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.IdFieldName].FieldStore));
 
-            doc.Add(new Field(IndexingServiceSettings.TitleFieldName, title,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.TitleFieldName].FieldStore,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.TitleFieldName].FieldIndex));
+            doc.Add(new TextField(IndexingServiceSettings.TitleFieldName, title,
+                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.TitleFieldName].FieldStore));
 
-            doc.Add(new Field(IndexingServiceSettings.DisplayTextFieldName, displayTextOut,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.DisplayTextFieldName].FieldStore,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.DisplayTextFieldName].FieldIndex));
+            doc.Add(new TextField(IndexingServiceSettings.DisplayTextFieldName, displayTextOut,
+                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.DisplayTextFieldName].FieldStore));
 
-            doc.Add(new Field(IndexingServiceSettings.CreatedFieldName, Regex.Replace(created.ToString("u", CultureInfo.InvariantCulture), @"\D", ""),
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.CreatedFieldName].FieldStore,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.CreatedFieldName].FieldIndex));
+            doc.Add(new StringField(IndexingServiceSettings.CreatedFieldName, Regex.Replace(created.ToString("u", CultureInfo.InvariantCulture), @"\D", ""),
+                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.CreatedFieldName].FieldStore));
 
-            doc.Add(new Field(IndexingServiceSettings.ModifiedFieldName, Regex.Replace(modified.ToString("u", CultureInfo.InvariantCulture), @"\D", ""),
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.ModifiedFieldName].FieldStore,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.ModifiedFieldName].FieldIndex));
+            doc.Add(new StringField(IndexingServiceSettings.ModifiedFieldName, Regex.Replace(modified.ToString("u", CultureInfo.InvariantCulture), @"\D", ""),
+                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.ModifiedFieldName].FieldStore));
 
-            doc.Add(new Field(IndexingServiceSettings.PublicationEndFieldName, hasExpiration ? Regex.Replace(publicationEnd.ToUniversalTime().ToString("u"), @"\D", "") : "no",
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.PublicationEndFieldName].FieldStore,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.PublicationEndFieldName].FieldIndex));
+            doc.Add(new StringField(IndexingServiceSettings.PublicationEndFieldName, hasExpiration ? Regex.Replace(publicationEnd.ToUniversalTime().ToString("u"), @"\D", "") : "no",
+                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.PublicationEndFieldName].FieldStore));
 
-            doc.Add(new Field(IndexingServiceSettings.PublicationStartFieldName, hasStart ? Regex.Replace(publicationStart.ToUniversalTime().ToString("u"), @"\D", "") : "no",
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.PublicationStartFieldName].FieldStore,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.PublicationStartFieldName].FieldIndex));
+            doc.Add(new StringField(IndexingServiceSettings.PublicationStartFieldName, hasStart ? Regex.Replace(publicationStart.ToUniversalTime().ToString("u"), @"\D", "") : "no",
+                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.PublicationStartFieldName].FieldStore));
 
-            doc.Add(new Field(IndexingServiceSettings.UriFieldName, url,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.UriFieldName].FieldStore,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.UriFieldName].FieldIndex));
+            doc.Add(new StringField(IndexingServiceSettings.UriFieldName, url,
+                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.UriFieldName].FieldStore));
 
-            doc.Add(new Field(IndexingServiceSettings.MetadataFieldName, metadataOut,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.MetadataFieldName].FieldStore,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.MetadataFieldName].FieldIndex));
+            doc.Add(new StringField(IndexingServiceSettings.MetadataFieldName, metadataOut,
+                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.MetadataFieldName].FieldStore));
 
-            doc.Add(new Field(IndexingServiceSettings.CategoriesFieldName, categoriesSerializer.ToFieldStoreValue(),
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.CategoriesFieldName].FieldStore,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.CategoriesFieldName].FieldIndex));
+            doc.Add(new TextField(IndexingServiceSettings.CategoriesFieldName, categoriesSerializer.ToFieldStoreValue(),
+                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.CategoriesFieldName].FieldStore));
 
-            doc.Add(new Field(IndexingServiceSettings.CultureFieldName, culture,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.CultureFieldName].FieldStore,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.CultureFieldName].FieldIndex));
+            doc.Add(new StringField(IndexingServiceSettings.CultureFieldName, culture,
+                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.CultureFieldName].FieldStore));
 
-            doc.Add(new Field(IndexingServiceSettings.AuthorsFieldName, authors,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.AuthorsFieldName].FieldStore,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.AuthorsFieldName].FieldIndex));
+            doc.Add(new TextField(IndexingServiceSettings.AuthorsFieldName, authors,
+                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.AuthorsFieldName].FieldStore));
 
-            doc.Add(new Field(IndexingServiceSettings.TypeFieldName, type,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.TypeFieldName].FieldStore,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.TypeFieldName].FieldIndex));
+            doc.Add(new TextField(IndexingServiceSettings.TypeFieldName, type,
+                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.TypeFieldName].FieldStore));
 
-            doc.Add(new Field(IndexingServiceSettings.ReferenceIdFieldName, referenceId,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.ReferenceIdFieldName].FieldStore,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.ReferenceIdFieldName].FieldIndex));
+            doc.Add(new StringField(IndexingServiceSettings.ReferenceIdFieldName, referenceId,
+                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.ReferenceIdFieldName].FieldStore));
 
-            doc.Add(new Field(IndexingServiceSettings.AclFieldName, aclSerializer.ToFieldStoreValue(),
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.AclFieldName].FieldStore,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.AclFieldName].FieldIndex));
+            doc.Add(new TextField(IndexingServiceSettings.AclFieldName, aclSerializer.ToFieldStoreValue(),
+                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.AclFieldName].FieldStore));
 
-            doc.Add(new Field(IndexingServiceSettings.VirtualPathFieldName, virtualPathSerializer.ToFieldStoreValue(),
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.VirtualPathFieldName].FieldStore,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.VirtualPathFieldName].FieldIndex));
+            doc.Add(new TextField(IndexingServiceSettings.VirtualPathFieldName, virtualPathSerializer.ToFieldStoreValue(),
+                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.VirtualPathFieldName].FieldStore));
 
-            doc.Add(new Field(IndexingServiceSettings.AuthorStorageFieldName, authorsSerializer.ToFieldStoreValue(),
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.AuthorStorageFieldName].FieldStore,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.AuthorStorageFieldName].FieldIndex));
+            doc.Add(new StringField(IndexingServiceSettings.AuthorStorageFieldName, authorsSerializer.ToFieldStoreValue(),
+                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.AuthorStorageFieldName].FieldStore));
 
-            doc.Add(new Field(IndexingServiceSettings.NamedIndexFieldName, namedIndex.Name,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.NamedIndexFieldName].FieldStore,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.NamedIndexFieldName].FieldIndex));
+            doc.Add(new StringField(IndexingServiceSettings.NamedIndexFieldName, namedIndex.Name,
+                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.NamedIndexFieldName].FieldStore));
 
-            doc.Add(new Field(IndexingServiceSettings.ItemStatusFieldName, itemStatus,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.ItemStatusFieldName].FieldStore,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.ItemStatusFieldName].FieldIndex));
+            doc.Add(new StringField(IndexingServiceSettings.ItemStatusFieldName, itemStatus,
+                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.ItemStatusFieldName].FieldStore));
 
             AddAllSearchableContentsFieldToDocument(doc, namedIndex);
 
             float fltBoostFactor = 1;
-            doc.Boost = ((float.TryParse(boostFactor, out fltBoostFactor)) ? fltBoostFactor : 1);
+            ((TextField)doc.Fields[1]).Boost = ((float.TryParse(boostFactor, out fltBoostFactor)) ? fltBoostFactor : 1);
 
             return doc;
         }
@@ -879,7 +854,7 @@ namespace EPiServer.Search.IndexingService
             feedItem.AttributeExtensions.Add(IndexingServiceSettings.SyndicationItemAttributeNameDataUri, doc.Get(IndexingServiceSettings.SyndicationItemAttributeNameDataUri));
 
             // Boost factor not optional. Always included
-            feedItem.AttributeExtensions.Add(IndexingServiceSettings.SyndicationItemAttributeNameBoostFactor, doc.Boost.ToString(CultureInfo.InvariantCulture));
+            feedItem.AttributeExtensions.Add(IndexingServiceSettings.SyndicationItemAttributeNameBoostFactor, doc.Fields[1].Boost.ToString(CultureInfo.InvariantCulture));
 
             // Named index not optional. Always included
             feedItem.AttributeExtensions.Add(IndexingServiceSettings.SyndicationItemAttributeNameNamedIndex, doc.Get(IndexingServiceSettings.NamedIndexFieldName));
@@ -994,15 +969,22 @@ namespace EPiServer.Search.IndexingService
             int i = 0;
             int pendingDeletions = 0;
 
+            IndexWriterConfig iwc = new IndexWriterConfig(IndexingServiceSettings.LuceneVersion, IndexingServiceSettings.Analyzer);
+            iwc.OpenMode = OpenMode.CREATE_OR_APPEND;
+
             rwl.EnterWriteLock();
             try
             {
-                using (var reader = IndexReader.Open(namedIndex.Directory, false))
+                using (IndexWriter iWriter = new IndexWriter(namedIndex.Directory, iwc))
                 {
-                    term = new Term(IndexingServiceSettings.IdFieldName, itemId);
-                    i = reader.DeleteDocuments(term);
+                    using (var reader = DirectoryReader.Open(namedIndex.Directory))
+                    {
+                        term = new Term(IndexingServiceSettings.IdFieldName, itemId);
+                        i = reader.NumDocs;
+                        iWriter.DeleteDocuments(term);
 
-                    pendingDeletions = reader.NumDeletedDocs;
+                        pendingDeletions = reader.NumDeletedDocs;
+                    }
                 }
             }
             catch (Exception e)
@@ -1032,10 +1014,10 @@ namespace EPiServer.Search.IndexingService
 
                     try
                     {
-                        using (var refReader = IndexReader.Open(namedIndex.ReferenceDirectory, false))
+                        using (IndexWriter iWriter = new IndexWriter(namedIndex.ReferenceDirectory, iwc))
                         {
                             Term refTerm = new Term(IndexingServiceSettings.ReferenceIdFieldName, itemId);
-                            refReader.DeleteDocuments(refTerm);
+                            iWriter.DeleteDocuments(refTerm);
                         }
                     }
                     catch (Exception e)
@@ -1101,7 +1083,9 @@ namespace EPiServer.Search.IndexingService
 
             try
             {
-                using (var iWriter = new IndexWriter(namedIndex.Directory, IndexingServiceSettings.Analyzer, false, Lucene.Net.Index.IndexWriter.MaxFieldLength.UNLIMITED))
+                IndexWriterConfig iwc = new IndexWriterConfig(IndexingServiceSettings.LuceneVersion, IndexingServiceSettings.Analyzer);
+                iwc.OpenMode = OpenMode.CREATE_OR_APPEND;
+                using (var iWriter = new IndexWriter(namedIndex.Directory, iwc))
                 {
                     iWriter.AddDocument(doc);
                 }
@@ -1129,9 +1113,11 @@ namespace EPiServer.Search.IndexingService
             {
                 _indexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("Start optimizing index"));
 
-                using (var iWriter = new IndexWriter(namedIndex.Directory, IndexingServiceSettings.Analyzer, false, Lucene.Net.Index.IndexWriter.MaxFieldLength.UNLIMITED))
+                IndexWriterConfig iwc = new IndexWriterConfig(IndexingServiceSettings.LuceneVersion, IndexingServiceSettings.Analyzer);
+                iwc.OpenMode = OpenMode.CREATE_OR_APPEND;
+                using (var iWriter = new IndexWriter(namedIndex.Directory, iwc))
                 {
-                    iWriter.Optimize();
+                    iWriter.ForceMerge(1);
                 }
 
                 _indexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("End optimizing index"));
@@ -1164,8 +1150,10 @@ namespace EPiServer.Search.IndexingService
                 _indexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("Creating Lucene QueryParser for index '{0}' with expression '{1}' with analyzer '{2}'", namedIndex.Name, q, IndexingServiceSettings.Analyzer.ToString()));
                 QueryParser parser = new PerFieldQueryParserWrapper(IndexingServiceSettings.LuceneVersion, IndexingServiceSettings.DefaultFieldName, IndexingServiceSettings.Analyzer, IndexingServiceSettings.LowercaseFields);
                 Query baseQuery = parser.Parse(q);
-                using (var searcher = new IndexSearcher(namedIndex.Directory, true))
+                using (IndexReader reader = DirectoryReader.Open(namedIndex.Directory))
                 {
+                    var searcher = new IndexSearcher(reader);
+
                     TopDocs topDocs = searcher.Search(baseQuery, maxHits);
                     totalHits = topDocs.TotalHits;
                     ScoreDoc[] docs = topDocs.ScoreDocs;
@@ -1190,16 +1178,14 @@ namespace EPiServer.Search.IndexingService
         private Collection<ScoreDocument> MultiIndexSearch(string q, Collection<NamedIndex> namedIndexes, int maxHits, out int totalHits)
         {
             //Prepare queries for MultiSearcher
-            Query[] queries = new Query[namedIndexes.Count];
-            IndexSearcher[] searchers = new IndexSearcher[namedIndexes.Count];
+            string defaultFieldName = IndexingServiceSettings.DefaultFieldName;
+            IndexReader[] readers = new IndexReader[namedIndexes.Count];
             Collection<ReaderWriterLockSlim> locks = new Collection<ReaderWriterLockSlim>();
 
             //Modify queries for other indexes with other field names
             int i = 0;
             foreach (NamedIndex namedIndex in namedIndexes)
             {
-                string defaultFieldName = IndexingServiceSettings.DefaultFieldName;
-
                 ReaderWriterLockSlim rwl = IndexingServiceSettings.ReaderWriterLocks[namedIndex.Name];
                 locks.Add(rwl);
                 rwl.EnterReadLock();
@@ -1207,9 +1193,8 @@ namespace EPiServer.Search.IndexingService
                 try
                 {
                     _indexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("Creating Lucene QueryParser for index '{0}' with expression '{1}' with analyzer '{2}'", namedIndex.Name, q, IndexingServiceSettings.Analyzer.ToString()));
-                    QueryParser parser = new PerFieldQueryParserWrapper(IndexingServiceSettings.LuceneVersion, defaultFieldName, IndexingServiceSettings.Analyzer, IndexingServiceSettings.LowercaseFields);
-                    queries[i] = parser.Parse(q);
-                    searchers[i] = new IndexSearcher(namedIndex.Directory, true);
+
+                    readers[i] = DirectoryReader.Open(namedIndex.Directory);
                 }
                 catch (Exception e)
                 {
@@ -1223,7 +1208,8 @@ namespace EPiServer.Search.IndexingService
                 i++;
             }
 
-            Query combinedQuery = queries[0].Combine(queries);
+            QueryParser parser = new PerFieldQueryParserWrapper(IndexingServiceSettings.LuceneVersion, defaultFieldName, IndexingServiceSettings.Analyzer, IndexingServiceSettings.LowercaseFields);
+            Query query = parser.Parse(q);
             Collection<ScoreDocument> scoreDocuments = new Collection<ScoreDocument>();
             totalHits = 0;
 
@@ -1235,14 +1221,15 @@ namespace EPiServer.Search.IndexingService
 
             try
             {
-                using (MultiSearcher multiSearcher = new MultiSearcher(searchers))
+                using (MultiReader multiReader = new MultiReader(readers))
                 {
-                    TopDocs topDocs = multiSearcher.Search(combinedQuery, maxHits);
+                    IndexSearcher searcher = new IndexSearcher(multiReader);
+                    TopDocs topDocs = searcher.Search(query, maxHits);
                     totalHits = topDocs.TotalHits;
                     ScoreDoc[] docs = topDocs.ScoreDocs;
                     for (int j = 0; j < docs.Length; j++)
                     {
-                        scoreDocuments.Add(new ScoreDocument(multiSearcher.Doc(docs[j].Doc), docs[j].Score));
+                        scoreDocuments.Add(new ScoreDocument(searcher.Doc(docs[j].Doc), docs[j].Score));
                     }
                 }
             }
