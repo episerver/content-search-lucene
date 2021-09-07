@@ -80,62 +80,62 @@ namespace EPiServer.Search.IndexingService.Helpers
 
             //Create the document
             Document doc = new Document();
-            doc.Add(new StringField(IndexingServiceSettings.IdFieldName, id,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.IdFieldName].FieldStore));
+            doc.Add(new StringField(IndexingServiceSettings.IdFieldName, id, 
+                Field.Store.YES));
 
-            doc.Add(new TextField(IndexingServiceSettings.TitleFieldName, title,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.TitleFieldName].FieldStore));
+            doc.Add(new TextField(IndexingServiceSettings.TitleFieldName, title, 
+                Field.Store.YES));
 
-            doc.Add(new TextField(IndexingServiceSettings.DisplayTextFieldName, displayTextOut,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.DisplayTextFieldName].FieldStore));
+            doc.Add(new TextField(IndexingServiceSettings.DisplayTextFieldName, displayTextOut, 
+                Field.Store.YES));
 
             doc.Add(new StringField(IndexingServiceSettings.CreatedFieldName, Regex.Replace(created.ToString("u", CultureInfo.InvariantCulture), @"\D", ""),
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.CreatedFieldName].FieldStore));
+                Field.Store.YES));
 
             doc.Add(new StringField(IndexingServiceSettings.ModifiedFieldName, Regex.Replace(modified.ToString("u", CultureInfo.InvariantCulture), @"\D", ""),
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.ModifiedFieldName].FieldStore));
+                Field.Store.YES));
 
             doc.Add(new StringField(IndexingServiceSettings.PublicationEndFieldName, hasExpiration ? Regex.Replace(publicationEnd.ToUniversalTime().ToString("u"), @"\D", "") : "no",
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.PublicationEndFieldName].FieldStore));
+                Field.Store.YES));
 
             doc.Add(new StringField(IndexingServiceSettings.PublicationStartFieldName, hasStart ? Regex.Replace(publicationStart.ToUniversalTime().ToString("u"), @"\D", "") : "no",
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.PublicationStartFieldName].FieldStore));
+                Field.Store.YES));
 
             doc.Add(new StringField(IndexingServiceSettings.UriFieldName, url,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.UriFieldName].FieldStore));
+                Field.Store.YES));
 
             doc.Add(new StringField(IndexingServiceSettings.MetadataFieldName, metadataOut,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.MetadataFieldName].FieldStore));
+                Field.Store.YES));
 
             doc.Add(new TextField(IndexingServiceSettings.CategoriesFieldName, categoriesSerializer.ToFieldStoreValue(),
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.CategoriesFieldName].FieldStore));
+                Field.Store.YES));
 
             doc.Add(new StringField(IndexingServiceSettings.CultureFieldName, culture,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.CultureFieldName].FieldStore));
+                Field.Store.YES));
 
             doc.Add(new TextField(IndexingServiceSettings.AuthorsFieldName, authors,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.AuthorsFieldName].FieldStore));
+                Field.Store.YES));
 
             doc.Add(new TextField(IndexingServiceSettings.TypeFieldName, type,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.TypeFieldName].FieldStore));
+                Field.Store.YES));
 
             doc.Add(new StringField(IndexingServiceSettings.ReferenceIdFieldName, referenceId,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.ReferenceIdFieldName].FieldStore));
+                Field.Store.YES));
 
             doc.Add(new TextField(IndexingServiceSettings.AclFieldName, aclSerializer.ToFieldStoreValue(),
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.AclFieldName].FieldStore));
+                Field.Store.YES));
 
             doc.Add(new TextField(IndexingServiceSettings.VirtualPathFieldName, virtualPathSerializer.ToFieldStoreValue(),
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.VirtualPathFieldName].FieldStore));
+                Field.Store.YES));
 
             doc.Add(new StringField(IndexingServiceSettings.AuthorStorageFieldName, authorsSerializer.ToFieldStoreValue(),
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.AuthorStorageFieldName].FieldStore));
+                Field.Store.YES));
 
             doc.Add(new StringField(IndexingServiceSettings.NamedIndexFieldName, namedIndex.Name,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.NamedIndexFieldName].FieldStore));
+                Field.Store.YES));
 
             doc.Add(new StringField(IndexingServiceSettings.ItemStatusFieldName, itemStatus,
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.ItemStatusFieldName].FieldStore));
+                Field.Store.YES));
 
             AddAllSearchableContentsFieldToDocument(doc, namedIndex);
 
@@ -159,8 +159,7 @@ namespace EPiServer.Search.IndexingService.Helpers
             totalContents.Append(GetReferenceData(id, namedIndex));
 
             doc.RemoveField(IndexingServiceSettings.DefaultFieldName);
-            doc.Add(new TextField(IndexingServiceSettings.DefaultFieldName, totalContents.ToString(),
-                IndexingServiceSettings.FieldProperties[IndexingServiceSettings.DefaultFieldName].FieldStore));
+            doc.Add(new TextField(IndexingServiceSettings.DefaultFieldName, totalContents.ToString(), Field.Store.YES));
         }
 
         public string GetReferenceData(string referenceId, NamedIndex namedIndex)
@@ -231,7 +230,7 @@ namespace EPiServer.Search.IndexingService.Helpers
                 return false;
             }
 
-            ReaderWriterLockSlim rwl = IndexingServiceSettings.ReaderWriterLocks[namedIndex.Name];
+            ReaderWriterLockSlim rwl = new ReaderWriterLockSlim();
 
             rwl.EnterWriteLock();
 
@@ -405,7 +404,7 @@ namespace EPiServer.Search.IndexingService.Helpers
 
         public bool DeleteFromIndex(NamedIndex namedIndex, string itemId, bool deleteRef)
         {
-            ReaderWriterLockSlim rwl = IndexingServiceSettings.ReaderWriterLocks[namedIndex.Name];
+            ReaderWriterLockSlim rwl = new ReaderWriterLockSlim();
 
             Term term = null;
 
@@ -453,7 +452,7 @@ namespace EPiServer.Search.IndexingService.Helpers
                 {
                     IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("Start deleting reference documents for id '{0}'", itemId.ToString()));
 
-                    ReaderWriterLockSlim rwlRef = IndexingServiceSettings.ReaderWriterLocks[namedIndex.ReferenceName];
+                    ReaderWriterLockSlim rwlRef = new ReaderWriterLockSlim();
                     rwlRef.EnterWriteLock();
 
                     try
@@ -548,7 +547,7 @@ namespace EPiServer.Search.IndexingService.Helpers
                 vp = vp.Insert(0, newVirtualPath);
                 doc.RemoveField(IndexingServiceSettings.VirtualPathFieldName);
                 doc.Add(new TextField(IndexingServiceSettings.VirtualPathFieldName, vp,
-                    IndexingServiceSettings.FieldProperties[IndexingServiceSettings.VirtualPathFieldName].FieldStore));
+                    Field.Store.YES));
 
                 AddAllSearchableContentsFieldToDocument(doc, namedIndex);
 

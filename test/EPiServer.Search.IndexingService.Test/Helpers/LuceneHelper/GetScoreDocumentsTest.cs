@@ -50,7 +50,7 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
 
             int totalHits = 1;
             
-            var dir = Lucene.Net.Store.FSDirectory.Open(new System.IO.DirectoryInfo(@"c:\fake\App_Data\Index"));
+            var dir = Lucene.Net.Store.FSDirectory.Open(new System.IO.DirectoryInfo(string.Format(@"c:\fake\App_Data\{0}\Main", Guid.NewGuid())));
 
             var namedIndexMock = new Mock<NamedIndex>("testindex1");
             namedIndexMock.SetupGet(x => x.Directory).Returns(() => dir);
@@ -78,11 +78,11 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
 
             int totalHits = 2;
 
-            var dir = Lucene.Net.Store.FSDirectory.Open(new System.IO.DirectoryInfo(@"c:\fake\App_Data\Index1"));
+            var dir = Lucene.Net.Store.FSDirectory.Open(new System.IO.DirectoryInfo(string.Format(@"c:\fake\App_Data\{0}\Main", Guid.NewGuid())));
             var namedIndexMock = new Mock<NamedIndex>("testindex1");
             namedIndexMock.SetupGet(x => x.Directory).Returns(() => dir);
 
-            var dir2 = Lucene.Net.Store.FSDirectory.Open(new System.IO.DirectoryInfo(@"c:\fake\App_Data\Index2"));
+            var dir2 = Lucene.Net.Store.FSDirectory.Open(new System.IO.DirectoryInfo(string.Format(@"c:\fake\App_Data\{0}\Main", Guid.NewGuid())));
             var namedIndexMock2 = new Mock<NamedIndex>("testindex2");
             namedIndexMock2.SetupGet(x => x.Directory).Returns(() => dir2);
 

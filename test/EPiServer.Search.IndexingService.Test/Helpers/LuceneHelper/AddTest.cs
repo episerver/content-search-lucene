@@ -65,7 +65,7 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
             IndexingServiceSettings.IndexingServiceServiceLog = logMock.Object;
             var feed = new FeedItemModel()
             {
-                Id = "Id",
+                Id = Guid.NewGuid().ToString(),
                 Title = "Header test",
                 DisplayText = "Body test",
                 Created = DateTime.Now,
@@ -88,11 +88,10 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
             feed.AttributeExtensions.Add(IndexingServiceSettings.SyndicationItemAttributeNamePublicationStart, DateTime.Now.ToString());
             feed.AttributeExtensions.Add(IndexingServiceSettings.SyndicationItemAttributeNamePublicationEnd, DateTime.Now.AddDays(1).ToString());
 
-            var dir = Lucene.Net.Store.FSDirectory.Open(new System.IO.DirectoryInfo(@"c:\fake\App_Data\Index"));
+            var dir = Lucene.Net.Store.FSDirectory.Open(new System.IO.DirectoryInfo(string.Format(@"c:\fake\App_Data\{0}\Main", Guid.NewGuid())));
 
             var namedIndexMock = new Mock<NamedIndex>("testindex1");
             namedIndexMock.SetupGet(x => x.Directory).Returns(() => dir);
-            IndexingServiceSettings.ReaderWriterLocks.Add(namedIndexMock.Object.Name, new ReaderWriterLockSlim());
 
             _documentHelperMock.Setup(x => x.DocumentExists(It.IsAny<string>(), It.IsAny<NamedIndex>())).Returns(false);
             _feedHelperMock.Setup(x => x.GetAttributeValue(It.IsAny<FeedItemModel>(), It.IsAny<string>())).Returns("something");
