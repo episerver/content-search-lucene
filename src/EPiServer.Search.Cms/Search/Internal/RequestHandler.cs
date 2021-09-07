@@ -6,12 +6,13 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.ServiceModel.Syndication;
-using System.Xml;
-using System.Xml.Linq;
+using System.Text;
+using System.Text.Json;
 using EPiServer.Logging;
 using EPiServer.Search.Configuration;
 //using EPiServer.Search.Configuration;
 using EPiServer.Search.Filter;
+using EPiServer.Search.IndexingService;
 using EPiServer.Web;
 
 namespace EPiServer.Search.Internal
@@ -22,44 +23,37 @@ namespace EPiServer.Search.Internal
     public class RequestHandler
     {
         private static ILogger _log = LogManager.GetLogger();
-        private readonly SearchOptions _options;
+        private readonly SearchOptions _options = SearchSettings.Options;
 
-        public RequestHandler(SearchOptions options)
+        public RequestHandler()
         {
-            _options = options ?? new SearchOptions();
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times")]
-        public virtual bool SendRequest(SyndicationFeed feed, string namedIndexingService)
+        public virtual bool SendRequest(FeedModel feed, string namedIndexingService)
         {
             var serviceReference = GetNamedIndexingServiceReference(namedIndexingService, false);
 
             using (var stream = new MemoryStream())
             {
-                var settings = new XmlWriterSettings();
-                settings.Encoding = System.Text.Encoding.UTF8;
-                settings.CheckCharacters = false;
-                settings.CloseOutput = false; // This is the default, but setting this explicitly to show why suppressing the CA2202 warning is safe
-
-                using (var writer = XmlWriter.Create(stream, settings))
+                using (var sw = new StreamWriter(stream, new UnicodeEncoding()))
                 {
-                    feed.GetAtom10Formatter().WriteTo(writer);
-                    writer.Flush();
-                }
-                stream.Position = 0;
+                    string jsonData = JsonSerializer.Serialize(feed);
+                    sw.Write(jsonData);
 
-                string url = serviceReference.BaseUri + _options.UpdateUriTemplate.Replace("{accesskey}", serviceReference.AccessKey);
+                    string url = serviceReference.BaseUri + _options.UpdateUriTemplate.Replace("{accesskey}", serviceReference.AccessKey);
 
-                try
-                {
-                    MakeHttpRequest(url, "POST", serviceReference, stream, null);
+                    try
+                    {
+                        MakeHttpRequest(url, "POST", serviceReference, stream, null);
 
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    _log.Error($"Update batch could not be sent to service uri '{url}'", ex);
-                    return false;
+                        return true;
+                    }
+                    catch (Exception ex)
+                    {
+                        _log.Error($"Update batch could not be sent to service uri '{url}'", ex);
+                        return false;
+                    }
                 }
             }
         }
@@ -69,7 +63,7 @@ namespace EPiServer.Search.Internal
         /// </summary>
         /// <param name="namedIndexingService">The configured indexing service to reset</param>
         /// <param name="namedIndex">The named index to re-create</param>
-        protected internal virtual void ResetIndex(string namedIndexingService, string namedIndex)
+        public void ResetIndex(string namedIndexingService, string namedIndex)
         {
             var serviceReference = GetNamedIndexingServiceReference(namedIndexingService);
 
@@ -115,19 +109,19 @@ namespace EPiServer.Search.Internal
 
             url = serviceReference.BaseUri + url;
 
-            XmlReader xmlReader = null;
-            SyndicationFeed feed = null;
             var namedIndexes = new Collection<string>();
 
             try
             {
                 MakeHttpRequest(url, "GET", serviceReference, null, (response) =>
                 {
-                    xmlReader = XmlReader.Create(response);
-                    feed = SyndicationFeed.Load(xmlReader);
-                    foreach (var item in feed.Items)
+                    using (var sr = new StreamReader(response))
                     {
-                        namedIndexes.Add(item.Title.Text);
+                        FeedModel feeds = JsonSerializer.Deserialize<FeedModel>(sr.ReadToEnd());
+                        foreach (var feed in feeds.Items)
+                        {
+                            namedIndexes.Add(feed.Title);
+                        }
                     }
                 });
             }
@@ -164,8 +158,8 @@ namespace EPiServer.Search.Internal
             }
 
             parameterMapper.Add("{q}", query);
-            parameterMapper.Add("{namedindexes}", indexes);
-            parameterMapper.Add("{accesskey}", serviceReference.AccessKey);
+            parameterMapper.Add("{namedIndexes}", indexes);
+            parameterMapper.Add("{accessKey}", serviceReference.AccessKey);
 
             parameterMapper.Add("{offset}", (_options.UseIndexingServicePaging ? offset.ToString(CultureInfo.InvariantCulture.NumberFormat) : "0"));
             parameterMapper.Add("{limit}", (_options.UseIndexingServicePaging ? limit.ToString(CultureInfo.InvariantCulture.NumberFormat) : _options.MaxHitsFromIndexingService.ToString(CultureInfo.InvariantCulture.NumberFormat)));
@@ -178,19 +172,13 @@ namespace EPiServer.Search.Internal
 
             url = serviceReference.BaseUri + url;
 
-            XmlTextReader xmlReader = null;
-
             _log.Debug(string.Format("Start get search results from service with url '{0}'", url));
 
             try
             {
                 MakeHttpRequest(url, "GET", serviceReference, null, (response) =>
                 {
-                    xmlReader = new XmlTextReader(response);
-                    xmlReader.DtdProcessing = DtdProcessing.Prohibit;
-                    xmlReader.Normalization = false;
-                    var feed = SyndicationFeed.Load(xmlReader);
-                    results = PopulateSearchResultsFromFeed(feed, offset, limit);
+                    results = PopulateSearchResultsFromFeed(response, offset, limit);
                 });
             }
             catch (Exception e)
@@ -226,174 +214,106 @@ namespace EPiServer.Search.Internal
             return reference;
         }
 
-        private SearchResults PopulateSearchResultsFromFeed(SyndicationFeed feed, int offset, int limit)
+        private SearchResults PopulateSearchResultsFromFeed(Stream stream, int offset, int limit)
         {
-            var resultsFiltered = new SearchResults();
-            int totalHits = 0;
-            int.TryParse(GetAttributeValue(feed, _options.SyndicationFeedAttributeNameTotalHits), out totalHits);
-            string version = GetAttributeValue(feed, _options.SyndicationFeedAttributeNameVersion);
-            foreach (var syndicationItem in feed.Items)
+            using (var sr = new StreamReader(stream))
             {
-                try
-                {
-                    var item = new IndexResponseItem(syndicationItem.Id);
-                    item.Title = (syndicationItem.Title != null) ? syndicationItem.Title.Text : null;
-                    item.DisplayText = (((TextSyndicationContent)syndicationItem.Content) != null) ? ((TextSyndicationContent)syndicationItem.Content).Text : null;
-                    item.Created = syndicationItem.PublishDate.DateTime;
-                    item.Modified = syndicationItem.LastUpdatedTime.DateTime;
-                    item.Uri = syndicationItem.BaseUri;
-                    item.Culture = GetAttributeValue(syndicationItem, _options.SyndicationItemAttributeNameCulture);
-                    item.ItemType = GetAttributeValue(syndicationItem, _options.SyndicationItemAttributeNameType); ;
-                    item.NamedIndex = GetAttributeValue(syndicationItem, _options.SyndicationItemAttributeNameNamedIndex);
-                    item.Metadata = GetElementValue(syndicationItem, _options.SyndicationItemElementNameMetadata);
+                FeedModel feeds = JsonSerializer.Deserialize<FeedModel>(sr.ReadToEnd());
 
-                    DateTime publicationEnd;
-                    if (DateTime.TryParse(GetAttributeValue(syndicationItem, _options.SyndicationItemAttributeNamePublicationEnd), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out publicationEnd))
+                var resultsFiltered = new SearchResults();
+                int totalHits = 0;
+
+                int.TryParse(feeds.AttributeExtensions[_options.SyndicationFeedAttributeNameTotalHits], out totalHits);
+                string version = feeds.AttributeExtensions[_options.SyndicationFeedAttributeNameVersion];
+
+                foreach (FeedItemModel feed in feeds.Items)
+                {
+                    try
                     {
+                        var item = new IndexResponseItem(feed.Id);
+                        item.Title = feed.Title;
+                        item.DisplayText = feed.DisplayText;
+                        item.Created = feed.Created;
+                        item.Modified = feed.Modified;
+                        item.Uri = feed.Uri;
+
+                        item.Culture = feed.AttributeExtensions[_options.SyndicationItemAttributeNameCulture];
+                        item.ItemType = feed.AttributeExtensions[_options.SyndicationItemAttributeNameType];
+                        item.NamedIndex = feed.AttributeExtensions[_options.SyndicationItemAttributeNameNamedIndex];
+                        item.Metadata = feed.AttributeExtensions[_options.SyndicationItemElementNameMetadata];
+
+                        DateTime publicationEnd;
+                        DateTime.TryParse(feed.AttributeExtensions[_options.SyndicationItemAttributeNamePublicationEnd], CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out publicationEnd);
                         item.PublicationEnd = publicationEnd;
-                    }
 
-                    DateTime publicationStart;
-                    if (DateTime.TryParse(GetAttributeValue(syndicationItem, _options.SyndicationItemAttributeNamePublicationStart), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out publicationStart))
+                        DateTime publicationStart;
+                        DateTime.TryParse(feed.AttributeExtensions[_options.SyndicationItemAttributeNamePublicationStart], CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out publicationStart);
+                        item.PublicationStart = publicationEnd;
+
+                        //Boost factor
+                        float fltBoostFactor = 1;
+                        item.BoostFactor = (float.TryParse(feed.AttributeExtensions[_options.SyndicationItemAttributeNameBoostFactor], out fltBoostFactor)) ? fltBoostFactor : 1;
+
+                        // Data Uri
+                        Uri uri = null;
+                        item.DataUri = ((Uri.TryCreate(feed.AttributeExtensions[_options.SyndicationItemAttributeNameDataUri],
+                            UriKind.RelativeOrAbsolute, out uri)) ? uri : null);
+
+                        //Score
+                        float score = 0;
+                        item.Score = (float.TryParse(feed.AttributeExtensions[_options.SyndicationItemAttributeNameScore], out score)) ? score : 0;
+
+                        
+                        foreach (string author in feed.Authors)
+                        {
+                            item.Authors.Add(author);
+                        }
+
+                        foreach (string category in feed.Categories)
+                        {
+                            item.Categories.Add(category);
+                        }
+
+                        foreach (var acl in (Collection<string>)feed.ElementExtensions[_options.SyndicationItemElementNameAcl])
+                        {
+                            item.AccessControlList.Add(acl);
+                        }
+
+                        foreach (var virtualpath in (Collection<string>)feed.ElementExtensions[_options.SyndicationItemElementNameVirtualPath])
+                        {
+                            item.VirtualPathNodes.Add(virtualpath);
+                        }
+
+                        if (SearchResultFilterHandler.Include(item))
+                        {
+                            resultsFiltered.IndexResponseItems.Add(item);
+                        }
+                    }
+                    catch (Exception e)
                     {
-                        item.PublicationStart = publicationStart;
-                    }
-
-                    //Boost factor
-                    float fltBoostFactor = 1;
-                    item.BoostFactor =
-                        ((float.TryParse(GetAttributeValue(syndicationItem, _options.SyndicationItemAttributeNameBoostFactor),
-                        out fltBoostFactor)) ? fltBoostFactor : 1);
-
-                    // Data Uri
-                    Uri uri = null;
-                    item.DataUri = ((Uri.TryCreate(GetAttributeValue(syndicationItem, _options.SyndicationItemAttributeNameDataUri),
-                        UriKind.RelativeOrAbsolute, out uri)) ? uri : null);
-
-                    //Score
-                    float score = 0;
-                    item.Score = ((float.TryParse(GetAttributeValue(syndicationItem, _options.SyndicationItemAttributeNameScore), out score)) ? score : 0);
-
-                    AddAuthorsToIndexItem(syndicationItem, item);
-                    AddCategoriesToIndexItem(syndicationItem, item);
-                    AddACLToIndexItem(syndicationItem, item);
-                    AddVirtualPathToIndexItem(syndicationItem, item);
-
-                    if (SearchResultFilterHandler.Include(item))
-                    {
-                        resultsFiltered.IndexResponseItems.Add(item);
+                        _log.Error(string.Format("Could not populate search results for syndication item with id '{0}'. Message: {1}{2}", feed.Id, e.Message, e.StackTrace));
                     }
                 }
-                catch (Exception e)
+
+                // if we are using server side paging we can return filtered result using total hits returned from service 
+                if (_options.UseIndexingServicePaging)
                 {
-                    _log.Error(string.Format("Could not populate search results for syndication item with id '{0}'. Message: {1}{2}", syndicationItem.Id, e.Message, e.StackTrace));
+                    resultsFiltered.TotalHits = totalHits;
+                    resultsFiltered.Version = version;
+                    return resultsFiltered;
                 }
-            }
 
-            // if we are using server side paging we can return filtered result using total hits returned from service 
-            if (_options.UseIndexingServicePaging)
-            {
-                resultsFiltered.TotalHits = totalHits;
-                resultsFiltered.Version = version;
-                return resultsFiltered;
-            }
-
-            // If we are using client paging we need to page the filtered results
-            var resultsPaged = new SearchResults();
-            resultsPaged.TotalHits = resultsFiltered.IndexResponseItems.Count;
-            foreach (var item in resultsFiltered.IndexResponseItems.Skip(offset).Take(limit))
-            {
-                resultsPaged.IndexResponseItems.Add(item);
-            }
-
-            resultsPaged.Version = version;
-            return resultsPaged;
-        }
-
-        private void AddAuthorsToIndexItem(SyndicationItem syndicationItem, IndexItemBase item)
-        {
-            if (syndicationItem.Authors != null)
-            {
-                foreach (var person in syndicationItem.Authors)
+                // If we are using client paging we need to page the filtered results
+                var resultsPaged = new SearchResults();
+                resultsPaged.TotalHits = resultsFiltered.IndexResponseItems.Count;
+                foreach (var item in resultsFiltered.IndexResponseItems.Skip(offset).Take(limit))
                 {
-                    item.Authors.Add(person.Name);
+                    resultsPaged.IndexResponseItems.Add(item);
                 }
+
+                resultsPaged.Version = version;
+                return resultsPaged;
             }
-        }
-
-        private void AddCategoriesToIndexItem(SyndicationItem syndicationItem, IndexItemBase item)
-        {
-            if (syndicationItem.Categories != null)
-            {
-                foreach (var category in syndicationItem.Categories)
-                {
-                    item.Categories.Add(category.Name);
-                }
-            }
-        }
-
-        private void AddACLToIndexItem(SyndicationItem syndicationItem, IndexItemBase item)
-        {
-            var elements = syndicationItem.ElementExtensions.ReadElementExtensions<XElement>
-                    (_options.SyndicationItemElementNameAcl,
-                    _options.XmlQualifiedNamespace);
-
-            if (elements.Count > 0)
-            {
-                var element = elements.ElementAt<XElement>(0);
-                foreach (var e in element.Elements())
-                {
-                    item.AccessControlList.Add(e.Value);
-                }
-            }
-        }
-
-        private void AddVirtualPathToIndexItem(SyndicationItem syndicationItem, IndexItemBase item)
-        {
-            var elements = syndicationItem.ElementExtensions.ReadElementExtensions<XElement>
-                    (_options.SyndicationItemElementNameVirtualPath,
-                    _options.XmlQualifiedNamespace);
-
-            if (elements.Count > 0)
-            {
-                var element = elements.ElementAt<XElement>(0);
-                foreach (var e in element.Elements())
-                {
-                    item.VirtualPathNodes.Add(e.Value);
-                }
-            }
-        }
-
-        private string GetAttributeValue(SyndicationItem syndicationItem, string attributeName)
-        {
-            string value = string.Empty;
-            if (syndicationItem.AttributeExtensions.ContainsKey(new XmlQualifiedName(attributeName, _options.XmlQualifiedNamespace)))
-            {
-                value = syndicationItem.AttributeExtensions[new XmlQualifiedName(attributeName, _options.XmlQualifiedNamespace)];
-            }
-            return value;
-        }
-
-        private string GetAttributeValue(SyndicationFeed syndicationFeed, string attributeName)
-        {
-            string value = string.Empty;
-            if (syndicationFeed.AttributeExtensions.ContainsKey(new XmlQualifiedName(attributeName, _options.XmlQualifiedNamespace)))
-            {
-                value = syndicationFeed.AttributeExtensions[new XmlQualifiedName(attributeName, _options.XmlQualifiedNamespace)];
-            }
-            return value;
-        }
-
-        private string GetElementValue(SyndicationItem syndicationItem, string elementName)
-        {
-            var elements = syndicationItem.ElementExtensions.ReadElementExtensions<string>(elementName, _options.XmlQualifiedNamespace);
-            string value = "";
-            if (elements.Count > 0)
-            {
-                value = syndicationItem.ElementExtensions.ReadElementExtensions<string>(elementName, _options.XmlQualifiedNamespace).ElementAt<string>(0);
-            }
-
-            return value;
         }
 
         private static void CopyStream(Stream input, Stream output)
@@ -433,7 +353,7 @@ namespace EPiServer.Search.Internal
             request.Method = method;
             if (method == "POST" || method == "DELETE" || method == "PUT")
             {
-                request.ContentType = "application/xml";
+                request.ContentType = "application/json";
                 if (postData != null)
                 {
                     request.ContentLength = postData.Length;
@@ -454,7 +374,7 @@ namespace EPiServer.Search.Internal
             }
             else if (method == "GET")
             {
-                request.ContentType = "application/xml";
+                request.ContentType = "application/json";
 
                 var response = request.GetResponse();
                 responseStreamHandler?.Invoke(response.GetResponseStream());

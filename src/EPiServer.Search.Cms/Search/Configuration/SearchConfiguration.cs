@@ -53,20 +53,20 @@ namespace EPiServer.Search.Configuration
         /// Gets and sets the uri template for update reqeuest to the indexing service
         /// </summary>
         /// <remarks>Default value is '/update/?accesskey={accesskey}'</remarks>
-        public string UpdateUriTemplate { get; set; } = "/update/?accesskey={accesskey}";
+        public string UpdateUriTemplate { get; set; } = "/update?accessKey={accessKey}";
 
         /// <summary>
         /// Gets and sets the uri template for search requests to the indexing service. The Http method is always GET
         /// Required replaceables: "{q}", {namedIndexes}
         /// </summary>
-        /// <remarks>Default value is '/search/?q={q}&amp;namedindexes={namedindexes}&amp;offset={offset}&amp;limit={limit}&amp;format=xml&amp;accesskey={accesskey}'</remarks>
-        public string SearchUriTemplate { get; set; } = "/search/?q={q}&namedindexes={namedindexes}&offset={offset}&limit={limit}&format=xml&accesskey={accesskey}";
+        /// <remarks>Default value is '/search/?q={q}&amp;namedindexes={namedindexes}&amp;offset={offset}&amp;limit={limit}&amp;accesskey={accesskey}'</remarks>
+        public string SearchUriTemplate { get; set; } = "/search?q={q}&namedIndexes={namedIndexes}&offset={offset}&limit={limit}&accessKey={accessKey}";
 
         /// <summary>
         /// Gets and sets the uri template for reset index request to the indexing service
         /// </summary>
         /// <remarks>Default value is '/reset/?namedindex={namedindex}&amp;accesskey={accesskey}'</remarks>
-        public string ResetUriTemplate { get; set; } = "/reset/?namedindex={namedindex}&accesskey={accesskey}";
+        public string ResetUriTemplate { get; set; } = "/reset?namedIndex={namedIndex}&accessKey={accessKey}";
 
         /// <summary>
         /// Gets and sets the Http method for Reset index requests to the indexing service
@@ -78,7 +78,7 @@ namespace EPiServer.Search.Configuration
         /// Gets and sets the uri template for getting all named indexes
         /// </summary>
         /// <remarks>Default value is '/namedindexes/?accesskey={accesskey}'</remarks>
-        public string NamedIndexesUriTemplate { get; set; } = "/namedindexes/?accesskey={accesskey}";
+        public string NamedIndexesUriTemplate { get; set; } = "/namedIndexes?accessKey={accessKey}";
 
         /// <summary>
         /// Gets and sets the namespace for XmlQualifiedName

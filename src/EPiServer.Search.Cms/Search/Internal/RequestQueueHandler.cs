@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.ServiceModel.Syndication;
+using System.Text.Json;
 using System.Xml;
 using EPiServer.Framework;
 using EPiServer.Logging;
 using EPiServer.Search.Data;
+using EPiServer.Search.IndexingService;
 
 namespace EPiServer.Search.Internal
 {
@@ -48,7 +50,7 @@ namespace EPiServer.Search.Internal
                 IndexItemId = item.Id,
                 NamedIndex = item.NamedIndex,
                 NamedIndexingService = namedIndexingService,
-                SyndicationItemXml = item.ToSyndicationItemXml(_options),
+                FeedItemJson = item.ToFeedItemJson(_options),
                 Timestamp = DateTime.Now
             };
 
@@ -132,9 +134,9 @@ namespace EPiServer.Search.Internal
             }
         }
 
-        private SyndicationFeed GetUnprocessedFeed(IEnumerable<IndexRequestQueueItem> queueItems)
+        private FeedModel GetUnprocessedFeed(IEnumerable<IndexRequestQueueItem> queueItems)
         {
-            var feed = new SyndicationFeed
+            var feed = new FeedModel
             {
                 Id = RequestFeedId,
                 LastUpdatedTime = _timeProvider?.UtcNow ?? DateTime.UtcNow
@@ -143,7 +145,7 @@ namespace EPiServer.Search.Internal
             // Add client version as an attribute extension to this feed
             var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
             feed.AttributeExtensions.Add(
-                new XmlQualifiedName(_options.SyndicationItemAttributeNameVersion, _options.XmlQualifiedNamespace),
+                _options.SyndicationItemAttributeNameVersion,
                 $"EPiServer.Search v.{version.Major}.{version.Minor}.{version.Build}.{version.Revision}");
 
             feed.Items = queueItems.Select(ConstructSyndicationItem);
@@ -151,16 +153,11 @@ namespace EPiServer.Search.Internal
             return feed;
         }
 
-        private SyndicationItem ConstructSyndicationItem(IndexRequestQueueItem queueItem)
+        private FeedItemModel ConstructSyndicationItem(IndexRequestQueueItem queueItem)
         {
-            using (var stringReader = new StringReader(queueItem.SyndicationItemXml))
-            {
-                var xmlReader = new XmlTextReader(stringReader) { Normalization = false };
-                xmlReader.DtdProcessing = DtdProcessing.Prohibit;
-                var item = SyndicationItem.Load(xmlReader);
+            FeedItemModel item = JsonSerializer.Deserialize<FeedItemModel>(queueItem.FeedItemJson);
 
-                return item;
-            }
+            return item;
         }
 
         private void Timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)

@@ -34,7 +34,7 @@ namespace EPiServer.Search.Data
             set;
         }
 
-        public string SyndicationItemXml
+        public string FeedItemJson
         {
             get;
             set;
