@@ -466,8 +466,8 @@ namespace EPiServer.Search.Internal
             var changeTrackable = content as IChangeTrackable;
 
             item.Title = content.Name;
-            item.Created = changeTrackable != null ? changeTrackable.Created : DateTime.MinValue;
-            item.Modified = changeTrackable != null ? changeTrackable.Changed : DateTime.MinValue;
+            item.Created = changeTrackable != null ? new DateTimeOffset(changeTrackable.Created) : DateTimeOffset.MinValue;
+            item.Modified = changeTrackable != null ? new DateTimeOffset(changeTrackable.Changed) : DateTimeOffset.MinValue;
             item.Culture = languageData != null ? GetCultureIdentifier(languageData.Language) : String.Empty;
             item.ItemType = GetItemType(content.GetOriginalType());
             item.Authors.Add(changeTrackable != null ? changeTrackable.CreatedBy : String.Empty);

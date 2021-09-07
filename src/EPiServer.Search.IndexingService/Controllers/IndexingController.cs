@@ -61,21 +61,7 @@ namespace EPiServer.Search.IndexingService.Controllers
             return Ok();
         }
 
-        //GET: search/xml?q={q}&namedIndexes={namedIndexes}&offset={offset}&limit={limit}&accessKey={accessKey}
-        [HttpGet]
-        [Route("search/xml")]
-        [Produces("application/xml")]
-        public IActionResult GetSearchResultsXml(string q, string namedIndexes, string offset, string limit, string accessKey)
-        {
-            if (!_securityHandler.IsAuthenticated(accessKey, AccessLevel.Read))
-            {
-                _responseExceptionHelper.HandleServiceUnauthorized("Unauthorized");
-            }
-
-            return Ok(_indexingServiceHandler.GetSearchResults(q, namedIndexes, Int32.Parse(offset, CultureInfo.InvariantCulture), Int32.Parse(limit, CultureInfo.InvariantCulture)));
-        }
-
-        //GET: search/json?q={q}&namedIndexes={namedIndexes}&offset={offset}&limit={limit}&accessKey={accessKey}
+        //GET: search?q={q}&namedIndexes={namedIndexes}&offset={offset}&limit={limit}&accessKey={accessKey}
         [HttpGet]
         [Route("search/json")]
         public IActionResult GetSearchResultsJson(string q, string namedIndexes, string offset, string limit, string accessKey)

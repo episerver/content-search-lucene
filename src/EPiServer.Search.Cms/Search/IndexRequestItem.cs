@@ -1,11 +1,11 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.ServiceModel.Syndication;
 using System.Text;
-using System.Xml;
-using System.Xml.Linq;
+using System.Text.Json;
 
 namespace EPiServer.Search
 {
@@ -34,14 +34,14 @@ namespace EPiServer.Search
         /// Serialize this <see cref="IndexRequestItem"/> to an XML fragment with an Atom Feed entry element.
         /// </summary>
         /// <returns>An XML fragment string with an Atom feed entry element.</returns>
-        public virtual string ToSyndicationItemXml(SearchOptions options)
+        public virtual string ToFeedItemJson(SearchOptions options)
         {
             // Add index action (add, update or remove) as an attribute extension
-            var key = new XmlQualifiedName(options.SyndicationItemAttributeNameIndexAction, options.XmlQualifiedNamespace);
+            var key = options.SyndicationItemAttributeNameIndexAction;
             SyndicationItem.AttributeExtensions[key] = SearchSettings.GetIndexActionName(IndexAction);
 
             // Add AutoUpdateVirtualPath if set
-            key = new XmlQualifiedName(options.SyndicationItemAttributeNameAutoUpdateVirtualPath, options.XmlQualifiedNamespace);
+            key = options.SyndicationItemAttributeNameAutoUpdateVirtualPath;
             if (AutoUpdateVirtualPath.HasValue)
             {
                 SyndicationItem.AttributeExtensions[key] = AutoUpdateVirtualPath.Value.ToString(CultureInfo.InvariantCulture);
@@ -51,70 +51,59 @@ namespace EPiServer.Search
                 SyndicationItem.AttributeExtensions.Remove(key);
             }
 
-            SyndicationItem.AttributeExtensions.Add(new XmlQualifiedName(options.SyndicationItemAttributeNameBoostFactor, options.XmlQualifiedNamespace), BoostFactor.ToString(CultureInfo.InvariantCulture.NumberFormat));
-            SyndicationItem.AttributeExtensions.Add(new XmlQualifiedName(options.SyndicationItemAttributeNameType, options.XmlQualifiedNamespace), ItemType);
-            SyndicationItem.AttributeExtensions.Add(new XmlQualifiedName(options.SyndicationItemAttributeNameCulture, options.XmlQualifiedNamespace), Culture);
-            SyndicationItem.AttributeExtensions.Add(new XmlQualifiedName(options.SyndicationItemAttributeNameNamedIndex, options.XmlQualifiedNamespace), NamedIndex);
-            SyndicationItem.AttributeExtensions.Add(new XmlQualifiedName(options.SyndicationItemAttributeNameReferenceId, options.XmlQualifiedNamespace), ReferenceId);
-            SyndicationItem.AttributeExtensions.Add(new XmlQualifiedName(options.SyndicationItemAttributeNameItemStatus, options.XmlQualifiedNamespace), ((int)ItemStatus).ToString(CultureInfo.InvariantCulture));
+            SyndicationItem.AttributeExtensions.Add(options.SyndicationItemAttributeNameBoostFactor, BoostFactor.ToString(CultureInfo.InvariantCulture.NumberFormat));
+            SyndicationItem.AttributeExtensions.Add(options.SyndicationItemAttributeNameType, ItemType);
+            SyndicationItem.AttributeExtensions.Add(options.SyndicationItemAttributeNameCulture, Culture);
+            SyndicationItem.AttributeExtensions.Add(options.SyndicationItemAttributeNameNamedIndex, NamedIndex);
+            SyndicationItem.AttributeExtensions.Add(options.SyndicationItemAttributeNameReferenceId, ReferenceId);
+            SyndicationItem.AttributeExtensions.Add(options.SyndicationItemAttributeNameItemStatus, ((int)ItemStatus).ToString(CultureInfo.InvariantCulture));
 
             if (PublicationEnd.HasValue)
             {
-                SyndicationItem.AttributeExtensions.Add(new XmlQualifiedName(options.SyndicationItemAttributeNamePublicationEnd, options.XmlQualifiedNamespace), PublicationEnd.Value.ToUniversalTime().ToString("u", CultureInfo.InvariantCulture));
+                SyndicationItem.AttributeExtensions.Add(options.SyndicationItemAttributeNamePublicationEnd, PublicationEnd.Value.ToUniversalTime().ToString("u", CultureInfo.InvariantCulture));
             }
 
             if (PublicationStart.HasValue)
             {
-                SyndicationItem.AttributeExtensions.Add(new XmlQualifiedName(options.SyndicationItemAttributeNamePublicationStart, options.XmlQualifiedNamespace), PublicationStart.Value.ToUniversalTime().ToString("u", CultureInfo.InvariantCulture));
+                SyndicationItem.AttributeExtensions.Add(options.SyndicationItemAttributeNamePublicationStart, PublicationStart.Value.ToUniversalTime().ToString("u", CultureInfo.InvariantCulture));
             }
 
             if (DataUri != null)
             {
-                SyndicationItem.AttributeExtensions.Add(new XmlQualifiedName(options.SyndicationItemAttributeNameDataUri, options.XmlQualifiedNamespace), DataUri.ToString());
+                SyndicationItem.AttributeExtensions.Add(options.SyndicationItemAttributeNameDataUri, DataUri.ToString());
             }
 
             // Add metadata extension element
-            SyndicationItem.ElementExtensions.Add(
-                new SyndicationElementExtension(options.SyndicationItemElementNameMetadata,
-                options.XmlQualifiedNamespace, Metadata));
+            SyndicationItem.ElementExtensions.Add(options.SyndicationItemElementNameMetadata, Metadata);
 
             foreach (string categoryName in Categories.Where(c => !string.IsNullOrEmpty(c)))
             {
-                SyndicationItem.Categories.Add(new SyndicationCategory(categoryName));
+                SyndicationItem.Categories.Add(categoryName);
             }
 
             foreach (string author in Authors.Where(a => !string.IsNullOrEmpty(a)))
             {
-                SyndicationItem.Authors.Add(new SyndicationPerson("", author, ""));
+                SyndicationItem.Authors.Add(author);
             }
 
-            XNamespace ns = options.XmlQualifiedNamespace;
-            // Add Read Access Control List element
-            XElement element = new XElement(ns + "ACL");
+            Collection<string> acessControlList = new Collection<string>();
             foreach (string access in AccessControlList.Distinct(StringComparer.OrdinalIgnoreCase))
             {
-                element.Add(new XElement(ns + "Item", access));
+                acessControlList.Add(access);
             }
-            SyndicationItem.ElementExtensions.Add(element.CreateReader());
+
+            SyndicationItem.ElementExtensions.Add(SearchSettings.Options.SyndicationItemElementNameAcl, acessControlList);
 
             // Add virtual path element
-            element = new XElement(ns + "VirtualPath");
+            Collection<string> virtualpaths = new Collection<string>();
             foreach (string item in VirtualPathNodes)
             {
-                element.Add(new XElement(ns + "Item", item.Replace(" ", "")));
+                virtualpaths.Add(item.Replace(" ", ""));
             }
-            SyndicationItem.ElementExtensions.Add(element.CreateReader());
+            SyndicationItem.ElementExtensions.Add(SearchSettings.Options.SyndicationItemElementNameVirtualPath, virtualpaths);
 
-            // Get XML string for SyndicationItem
-            StringBuilder sb = new StringBuilder();
-            XmlWriterSettings xws = new XmlWriterSettings();
-            xws.CheckCharacters = false;
-            using (XmlWriter writer = XmlWriter.Create(sb, xws))
-            {
-                SyndicationItem.GetAtom10Formatter().WriteTo(writer);
-            }
-
-            return sb.ToString();
+            // Get Json string for SyndicationItem
+            return JsonSerializer.Serialize(SyndicationItem);
         }
     }
 }

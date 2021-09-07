@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.ServiceModel.Syndication;
+using EPiServer.Search.IndexingService;
 using EPiServer.Search.Internal;
 
 namespace EPiServer.Search
 {
     public abstract class IndexItemBase
     {
-        private SyndicationItem _syndicationItem;
+        private FeedItemModel _syndicationItem;
         private Collection<string> _categories = new Collection<string>();
         private Collection<string> _authors = new Collection<string>();
         private Collection<string> _accessControlList = new Collection<string>();
@@ -18,11 +19,11 @@ namespace EPiServer.Search
         protected IndexItemBase(string id) 
         {
             _indexHtmlFilter = new IndexHtmlFilter();
-            _syndicationItem = new SyndicationItem();
+            _syndicationItem = new FeedItemModel();
             Id = id;
             BoostFactor = 1;
-            Created = DateTime.Now;
-            Modified = DateTime.Now;
+            Created = DateTimeOffset.Now;
+            Modified = DateTimeOffset.Now;
             Title = string.Empty;
             DisplayText = string.Empty;
             Metadata = string.Empty;
@@ -51,17 +52,17 @@ namespace EPiServer.Search
         /// <summary>
         /// Gets and sets the creation date for this <see cref="IndexItemBase"/>
         /// </summary>
-        public DateTime Created
+        public DateTimeOffset Created
         {
             get
             {
-                return SyndicationItem.PublishDate.DateTime;
+                return SyndicationItem.Created.DateTime;
             }
             set
             {
-                if (value != DateTime.MinValue)
+                if (value != DateTimeOffset.MinValue)
                 {
-                    SyndicationItem.PublishDate = new DateTimeOffset(value);
+                    SyndicationItem.Created = value;
                 }
             }
         }
@@ -74,17 +75,11 @@ namespace EPiServer.Search
         {
             get
             {
-                if (SyndicationItem.Title != null)
-                    return SyndicationItem.Title.Text;
-                else
-                    return null;
+                return SyndicationItem.Title;
             }
             set
             {
-                if (value != null)
-                    SyndicationItem.Title = new TextSyndicationContent(SearchSettings.Options.HtmlStripTitle ? _indexHtmlFilter.StripHtml(value) : value);
-                else
-                    SyndicationItem.Title = null;
+                SyndicationItem.Title = value;
             }
         }
 
@@ -96,34 +91,28 @@ namespace EPiServer.Search
         {
             get
             {
-                if (SyndicationItem.Content != null)
-                    return ((TextSyndicationContent)SyndicationItem.Content).Text;
-                else
-                    return null;
+                return SyndicationItem.DisplayText;
             }
             set
             {
-                if (value != null)
-                    SyndicationItem.Content = new TextSyndicationContent(SearchSettings.Options.HtmlStripDisplayText ? _indexHtmlFilter.StripHtml(value) : value);
-                else
-                    SyndicationItem.Content = null;
+                SyndicationItem.DisplayText = value;
             }
         }
 
         /// <summary>
         /// Gets and sets the last modified date for this <see cref="IndexItemBase"/>
         /// </summary>
-        public DateTime Modified
+        public DateTimeOffset Modified
         {
             get
             {
-                return SyndicationItem.LastUpdatedTime.DateTime;
+                return SyndicationItem.Modified;
             }
             set
             {
-                if (value != DateTime.MinValue)
+                if (value != DateTimeOffset.MinValue)
                 {
-                    SyndicationItem.LastUpdatedTime = new DateTimeOffset(value);
+                    SyndicationItem.Modified = value;
                 }
             }
         }
@@ -217,11 +206,11 @@ namespace EPiServer.Search
         {
             get
             {
-                return SyndicationItem.BaseUri;
+                return SyndicationItem.Uri;
             }
             set
             {
-                SyndicationItem.BaseUri = value;
+                SyndicationItem.Uri = value;
             }
         }
 
@@ -289,7 +278,7 @@ namespace EPiServer.Search
             }
         }
 
-        protected SyndicationItem SyndicationItem
+        protected FeedItemModel SyndicationItem
         {
             get
             {
