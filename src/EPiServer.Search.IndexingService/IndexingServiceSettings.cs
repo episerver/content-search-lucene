@@ -6,6 +6,7 @@ using System.Threading;
 using EPiServer.Logging.Compatibility;
 using EPiServer.Search.IndexingService.Configuration;
 using EPiServer.Search.IndexingService.Controllers;
+using EPiServer.Search.IndexingService.Helpers;
 using Lucene.Net.Analysis;
 using Lucene.Net.Analysis.Core;
 using Lucene.Net.Analysis.Miscellaneous;
@@ -81,22 +82,22 @@ namespace EPiServer.Search.IndexingService
         private static IList<string> _lowercaseFields = new List<string>() { DefaultFieldName, TitleFieldName, DisplayTextFieldName, AuthorsFieldName };
 
         private readonly IndexingServiceOptions _indexingServiceOpts;
-        private readonly IIndexingServiceHandler _indexingServiceHandler;
         private readonly IHostEnvironment _hostEnvironment;
         private EpiserverFrameworkOptions _episerverFrameworkOpts;
+        private readonly ILuceneHelper _luceneHelper;
         #endregion
 
         #region Construct and Init
 
         public IndexingServiceSettings(IOptions<IndexingServiceOptions> indexingServiceOpts,
-             IIndexingServiceHandler indexingServiceHandler,
              IHostEnvironment hostEnvironment, 
-             IOptions<EpiserverFrameworkOptions> episerverFrameworkOpts)
+             IOptions<EpiserverFrameworkOptions> episerverFrameworkOpts,
+             ILuceneHelper luceneHelper)
         {
             _indexingServiceOpts = indexingServiceOpts.Value;
-            _indexingServiceHandler = indexingServiceHandler;
             _hostEnvironment = hostEnvironment;
             _episerverFrameworkOpts = episerverFrameworkOpts.Value;
+            _luceneHelper = luceneHelper;
 
             Init();
         }
@@ -357,7 +358,7 @@ namespace EPiServer.Search.IndexingService
                     if (!directoryMain.Exists)
                     {
                         directoryMain.Create();
-                        Directory dir = _indexingServiceHandler.CreateIndex(e.Name, directoryMain);
+                        Directory dir = _luceneHelper.CreateIndex(e.Name, directoryMain);
                         NamedIndexDirectories.Add(e.Name, dir);
                     }
                     else
@@ -368,7 +369,7 @@ namespace EPiServer.Search.IndexingService
                     if (!directoryRef.Exists)
                     {
                         directoryRef.Create();
-                        Directory refDir = _indexingServiceHandler.CreateIndex(e.Name + RefIndexSuffix, directoryRef);
+                        Directory refDir = _luceneHelper.CreateIndex(e.Name + RefIndexSuffix, directoryRef);
                         ReferenceIndexDirectories.Add(e.Name, refDir);
                     }
                     else
@@ -394,26 +395,26 @@ namespace EPiServer.Search.IndexingService
 
         private static void LoadFieldProperties()
         {
-            _fieldProperties.Add(IdFieldName, new FieldProperties() { FieldStore = Field.Store.YES, FieldIndex = Field.Index.NOT_ANALYZED });
-            _fieldProperties.Add(TitleFieldName, new FieldProperties() { FieldStore = Field.Store.YES, FieldIndex = Field.Index.ANALYZED });
-            _fieldProperties.Add(DisplayTextFieldName, new FieldProperties() { FieldStore = Field.Store.YES, FieldIndex = Field.Index.ANALYZED });
-            _fieldProperties.Add(CreatedFieldName, new FieldProperties() { FieldStore = Field.Store.YES, FieldIndex = Field.Index.NOT_ANALYZED });
-            _fieldProperties.Add(ModifiedFieldName, new FieldProperties() { FieldStore = Field.Store.YES, FieldIndex = Field.Index.NOT_ANALYZED });
-            _fieldProperties.Add(PublicationEndFieldName, new FieldProperties() { FieldStore = Field.Store.YES, FieldIndex = Field.Index.NOT_ANALYZED });
-            _fieldProperties.Add(PublicationStartFieldName, new FieldProperties() { FieldStore = Field.Store.YES, FieldIndex = Field.Index.NOT_ANALYZED });
-            _fieldProperties.Add(UriFieldName, new FieldProperties() { FieldStore = Field.Store.YES, FieldIndex = Field.Index.NO });
-            _fieldProperties.Add(MetadataFieldName, new FieldProperties() { FieldStore = Field.Store.YES, FieldIndex = Field.Index.NO });
-            _fieldProperties.Add(CategoriesFieldName, new FieldProperties() { FieldStore = Field.Store.YES, FieldIndex = Field.Index.ANALYZED });
-            _fieldProperties.Add(CultureFieldName, new FieldProperties() { FieldStore = Field.Store.YES, FieldIndex = Field.Index.NOT_ANALYZED });
-            _fieldProperties.Add(AuthorsFieldName, new FieldProperties() { FieldStore = Field.Store.YES, FieldIndex = Field.Index.ANALYZED });
-            _fieldProperties.Add(TypeFieldName, new FieldProperties() { FieldStore = Field.Store.YES, FieldIndex = Field.Index.ANALYZED });
-            _fieldProperties.Add(ReferenceIdFieldName, new FieldProperties() { FieldStore = Field.Store.YES, FieldIndex = Field.Index.NOT_ANALYZED });
-            _fieldProperties.Add(AclFieldName, new FieldProperties() { FieldStore = Field.Store.YES, FieldIndex = Field.Index.ANALYZED });
-            _fieldProperties.Add(VirtualPathFieldName, new FieldProperties() { FieldStore = Field.Store.YES, FieldIndex = Field.Index.ANALYZED });
-            _fieldProperties.Add(AuthorStorageFieldName, new FieldProperties() { FieldStore = Field.Store.YES, FieldIndex = Field.Index.NOT_ANALYZED });
-            _fieldProperties.Add(NamedIndexFieldName, new FieldProperties() { FieldStore = Field.Store.YES, FieldIndex = Field.Index.NOT_ANALYZED });
-            _fieldProperties.Add(DefaultFieldName, new FieldProperties() { FieldStore = Field.Store.NO, FieldIndex = Field.Index.ANALYZED });
-            _fieldProperties.Add(ItemStatusFieldName, new FieldProperties() { FieldStore = Field.Store.YES, FieldIndex = Field.Index.NOT_ANALYZED });
+            _fieldProperties.Add(IdFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=NOT_ANALYZED
+            _fieldProperties.Add(TitleFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=ANALYZED
+            _fieldProperties.Add(DisplayTextFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=ANALYZED
+            _fieldProperties.Add(CreatedFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=NOT_ANALYZED
+            _fieldProperties.Add(ModifiedFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=NOT_ANALYZED
+            _fieldProperties.Add(PublicationEndFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=NOT_ANALYZED
+            _fieldProperties.Add(PublicationStartFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=NOT_ANALYZED
+            _fieldProperties.Add(UriFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=NO
+            _fieldProperties.Add(MetadataFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=NO
+            _fieldProperties.Add(CategoriesFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=ANALYZED
+            _fieldProperties.Add(CultureFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=NOT_ANALYZED
+            _fieldProperties.Add(AuthorsFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=ANALYZED
+            _fieldProperties.Add(TypeFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=ANALYZED
+            _fieldProperties.Add(ReferenceIdFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=NOT_ANALYZED
+            _fieldProperties.Add(AclFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=ANALYZED
+            _fieldProperties.Add(VirtualPathFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=ANALYZED
+            _fieldProperties.Add(AuthorStorageFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=NOT_ANALYZED
+            _fieldProperties.Add(NamedIndexFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=NOT_ANALYZED
+            _fieldProperties.Add(DefaultFieldName, new FieldProperties() { FieldStore = Field.Store.NO });//FieldIndex=ANALYZED
+            _fieldProperties.Add(ItemStatusFieldName, new FieldProperties() { FieldStore = Field.Store.YES });//FieldIndex=NOT_ANALYZED
         }
 
         private static void LoadAnalyzer()

@@ -30,11 +30,4 @@ namespace EPiServer.Search.IndexingService
         public Collection<string> Categories { get; } = new Collection<string>();
         public Collection<string> Authors { get; } = new Collection<string>();        
     }
-    
-    public enum ItemStatus
-    {
-        Approved = 1,
-        Pending = 2,
-        Removed = 4
-    }
 }

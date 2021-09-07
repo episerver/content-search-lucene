@@ -1,5 +1,6 @@
 using EPiServer.Framework;
 using EPiServer.Search.IndexingService.Configuration;
+using EPiServer.Search.IndexingService.Helpers;
 using EPiServer.Search.IndexingService.Security;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -32,6 +33,11 @@ namespace EPiServer.Search.IndexingService
             //register
             services.AddSingleton<IIndexingServiceSettings, IndexingServiceSettings>();
             services.AddSingleton<IIndexingServiceHandler, IndexingServiceHandler>();
+            services.AddSingleton<IResponseExceptionHelper, ResponseExceptionHelper>();
+            services.AddSingleton<ICommonFunc, CommonFunc>();
+            services.AddSingleton<IFeedHelper, FeedHelper>();
+            services.AddSingleton<ILuceneHelper, LuceneHelper>();
+            services.AddSingleton<ClientElementHandler>();
 
             //register configuration
             services.Configure<IndexingServiceOptions>(Configuration.GetSection("EPiServer:episerver.search.indexingservice"));
