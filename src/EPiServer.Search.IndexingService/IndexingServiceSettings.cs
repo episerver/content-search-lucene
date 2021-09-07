@@ -12,6 +12,7 @@ using Lucene.Net.Analysis.Miscellaneous;
 using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Documents;
 using Lucene.Net.Store;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
 namespace EPiServer.Search.IndexingService
@@ -81,15 +82,21 @@ namespace EPiServer.Search.IndexingService
 
         private readonly IndexingServiceOptions _indexingServiceOpts;
         private readonly IIndexingServiceHandler _indexingServiceHandler;
+        private readonly IHostEnvironment _hostEnvironment;
+        private EpiserverFrameworkOptions _episerverFrameworkOpts;
         #endregion
 
         #region Construct and Init
 
         public IndexingServiceSettings(IOptions<IndexingServiceOptions> indexingServiceOpts,
-             IIndexingServiceHandler indexingServiceHandler)
+             IIndexingServiceHandler indexingServiceHandler,
+             IHostEnvironment hostEnvironment, 
+             IOptions<EpiserverFrameworkOptions> episerverFrameworkOpts)
         {
             _indexingServiceOpts = indexingServiceOpts.Value;
             _indexingServiceHandler = indexingServiceHandler;
+            _hostEnvironment = hostEnvironment;
+            _episerverFrameworkOpts = episerverFrameworkOpts.Value;
 
             Init();
         }
@@ -339,8 +346,8 @@ namespace EPiServer.Search.IndexingService
         {
             foreach (NamedIndexElement e in NamedIndexElements.Values)
             {
-                System.IO.DirectoryInfo directoryMain = new System.IO.DirectoryInfo(System.IO.Path.Combine(e.GetDirectoryPath(), "Main"));
-                System.IO.DirectoryInfo directoryRef = new System.IO.DirectoryInfo(System.IO.Path.Combine(e.GetDirectoryPath(), "Ref"));
+                System.IO.DirectoryInfo directoryMain = new System.IO.DirectoryInfo(System.IO.Path.Combine(GetDirectoryPath(e.DirectoryPath), "Main"));
+                System.IO.DirectoryInfo directoryRef = new System.IO.DirectoryInfo(System.IO.Path.Combine(GetDirectoryPath(e.DirectoryPath), "Ref"));
 
                 ReaderWriterLocks.Add(e.Name, new ReaderWriterLockSlim());
                 ReaderWriterLocks.Add(e.Name + RefIndexSuffix, new ReaderWriterLockSlim());
@@ -443,6 +450,28 @@ namespace EPiServer.Search.IndexingService
             _analyzer = perf;
         }
 
+        public const String AppDataPathKey = "[appDataPath]";
+
+        public String GetDirectoryPath(string directoryPath)
+        {
+            string path = directoryPath;
+
+            if (path.StartsWith(AppDataPathKey, StringComparison.OrdinalIgnoreCase))
+            {
+                string basePath = _episerverFrameworkOpts.AppDataPath;
+                if (String.IsNullOrEmpty(basePath))
+                {
+                    basePath = "App_Data";
+                }
+                path = System.IO.Path.Combine(basePath, path.Substring(AppDataPathKey.Length).TrimStart('\\', '/'));
+            }
+            path = Environment.ExpandEnvironmentVariables(path);
+            if (!System.IO.Path.IsPathRooted(path))
+            {
+                path = System.IO.Path.Combine(_hostEnvironment.ContentRootPath ?? AppDomain.CurrentDomain.BaseDirectory, path);
+            }
+            return path;
+        }
 
         #endregion
     }

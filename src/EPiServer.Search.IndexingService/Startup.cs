@@ -34,7 +34,7 @@ namespace EPiServer.Search.IndexingService
             services.AddSingleton<IIndexingServiceHandler, IndexingServiceHandler>();
 
             //register configuration
-            services.Configure<IndexingServiceOptions>(Configuration.GetSection("EPiServer::episerver.search.indexingservice"));
+            services.Configure<IndexingServiceOptions>(Configuration.GetSection("EPiServer:episerver.search.indexingservice"));
             services.AddOptions<EpiserverFrameworkOptions>().PostConfigure<IHostEnvironment>((options, hosting) =>
             {
                 if (options.AppDataPath == null)

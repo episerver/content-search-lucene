@@ -10,16 +10,23 @@ namespace EPiServer.Search.IndexingService.Configuration
 {
     public class ClientElement
     {
-        object _lockObj = new object();
-        List<IPAddress> _localIps = null;
-        List<IPRange> _ip6Ranges = null;
-        List<IPRange> _ip4Ranges = null;
-
         public string Name { get; set; }
 
         public string Description { get; set; }
 
         public string IPAddress { get; set; }
+
+        public bool AllowLocal { get; set; }
+
+        public bool ReadOnly { get; set; }
+    }
+
+    public class ClientElementHandler: ClientElement
+    {
+        object _lockObj = new object();
+        List<IPAddress> _localIps = null;
+        List<IPRange> _ip6Ranges = null;
+        List<IPRange> _ip4Ranges = null;
 
         public string IP6Address
         {
@@ -30,10 +37,6 @@ namespace EPiServer.Search.IndexingService.Configuration
                 _ip6Ranges = ParseIPRangeList(System.Net.Sockets.AddressFamily.InterNetworkV6, value);
             }
         }
-
-        public bool AllowLocal { get; set; }
-
-        public bool ReadOnly { get; set; }
 
         private List<IPRange> ParseIPRangeList(System.Net.Sockets.AddressFamily addressFamily, string list)
         {
