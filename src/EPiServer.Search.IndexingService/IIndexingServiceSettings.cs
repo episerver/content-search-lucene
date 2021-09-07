@@ -8,8 +8,6 @@ namespace EPiServer.Search.IndexingService
 {
     public interface IIndexingServiceSettings
     {
-        ILog IndexingServiceServiceLog { get; set; }
-
-        void HandleServiceError(string errorMessage);
+        static ILog IndexingServiceServiceLog { get; set; }
     }
 }
