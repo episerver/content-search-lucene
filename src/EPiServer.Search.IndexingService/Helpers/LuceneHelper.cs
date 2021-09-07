@@ -26,13 +26,16 @@ namespace EPiServer.Search.IndexingService.Helpers
         private readonly IFeedHelper _feedHelper;
         private readonly IResponseExceptionHelper _responseExceptionHelper;
         private readonly ICommonFunc _commonFunc;
+        private readonly IDocumentHelper _documentHelper;
         public LuceneHelper(IFeedHelper feedHelper,
             IResponseExceptionHelper responseExceptionHelper,
-            ICommonFunc commonFunc)
+            ICommonFunc commonFunc,
+            IDocumentHelper documentHelper)
         {
             _feedHelper = feedHelper;
             _responseExceptionHelper = responseExceptionHelper;
             _commonFunc = commonFunc;
+            _documentHelper = documentHelper;
         }
 
         public Document GetDocumentFromSyndicationItem(FeedItemModel feedItem, NamedIndex namedIndex)
@@ -175,7 +178,7 @@ namespace EPiServer.Search.IndexingService.Helpers
                 namedIndex = new NamedIndex(namedIndex.Name, true);
                 int totalHits = 0;
                 Collection<ScoreDocument> scoreDocuments =
-                    SingleIndexSearch(String.Format("{0}:{1}",
+                    _documentHelper.SingleIndexSearch(String.Format("{0}:{1}",
                     IndexingServiceSettings.ReferenceIdFieldName, QueryParser.Escape(referenceId)), namedIndex, IndexingServiceSettings.MaxHitsForReferenceSearch, out totalHits);
 
                 foreach (ScoreDocument scoreDocument in scoreDocuments)
@@ -198,14 +201,14 @@ namespace EPiServer.Search.IndexingService.Helpers
             return sb.ToString();
         }
 
-        public void UpdateReference(string referenceId, string itemId, NamedIndex mainNamedIndex)
+        public bool UpdateReference(string referenceId, string itemId, NamedIndex mainNamedIndex)
         {
-            Document mainDoc = GetDocumentById(referenceId, mainNamedIndex);
+            Document mainDoc = _documentHelper.GetDocumentById(referenceId, mainNamedIndex);
 
             if (mainDoc == null)
             {
                 IndexingServiceSettings.IndexingServiceServiceLog.Error(String.Format("Could not find main document with id: '{0}' for referencing item id '{1}'. Continuing anyway, index will heal when main document is added/updated.", referenceId, itemId));
-                return;
+                return false;
             }
 
             AddAllSearchableContentsFieldToDocument(mainDoc, mainNamedIndex);
@@ -214,30 +217,18 @@ namespace EPiServer.Search.IndexingService.Helpers
             Remove(referenceId, mainNamedIndex, false);
             // Add the man document again
             WriteToIndex(referenceId, mainDoc, mainNamedIndex);
+            return true;
         }
 
-        public Document GetDocumentById(string id, NamedIndex namedIndex)
-        {
-            int totalHits = 0;
-            Collection<ScoreDocument> docs = SingleIndexSearch(String.Format("{0}:{1}",
-                IndexingServiceSettings.IdFieldName,
-                QueryParser.Escape(id)), namedIndex, 1, out totalHits);
-
-            if (docs.Count > 0)
-                return docs[0].Document;
-            else
-                return null;
-        }
-
-        public void WriteToIndex(string itemId, Document doc, NamedIndex namedIndex)
+        public bool WriteToIndex(string itemId, Document doc, NamedIndex namedIndex)
         {
             IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("Start writing document with id '{0}' to index '{1}' with analyzer '{2}'", itemId, namedIndex.Name, IndexingServiceSettings.Analyzer.ToString()));
 
             // Write to Directory
-            if (DocumentExists(itemId, namedIndex))
+            if (_documentHelper.DocumentExists(itemId, namedIndex))
             {
                 IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("Failed to write to index: '{0}'. Document with id: '{1}' already exists", namedIndex.Name, itemId));
-                return;
+                return false;
             }
 
             ReaderWriterLockSlim rwl = IndexingServiceSettings.ReaderWriterLocks[namedIndex.Name];
@@ -256,7 +247,7 @@ namespace EPiServer.Search.IndexingService.Helpers
             catch (Exception e)
             {
                 _responseExceptionHelper.HandleServiceError(String.Format("Failed to write to index: '{0}'. Message: {1}{2}{3}", namedIndex.Name, e.Message, Environment.NewLine, e.StackTrace));
-                return;
+                return false;
             }
             finally
             {
@@ -264,12 +255,13 @@ namespace EPiServer.Search.IndexingService.Helpers
             }
 
             IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("End writing to index"));
+            return true;
         }
 
-        public void Add(FeedItemModel item, NamedIndex namedIndex)
+        public bool Add(FeedItemModel item, NamedIndex namedIndex)
         {
             if (item == null)
-                return;
+                return false;
 
             string id = item.Id;
 
@@ -278,14 +270,14 @@ namespace EPiServer.Search.IndexingService.Helpers
             if (String.IsNullOrEmpty(id))
             {
                 _responseExceptionHelper.HandleServiceError(String.Format("Failed to add Document. id field is missing."));
-                return;
+                return false;
             }
 
             //Check if the document already exists.
-            if (DocumentExists(id, namedIndex))
+            if (_documentHelper.DocumentExists(id, namedIndex))
             {
                 IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("Document already exists. Skipping."));
-                return;
+                return false;
             }
 
             Document doc = GetDocumentFromSyndicationItem(item, namedIndex);
@@ -293,69 +285,14 @@ namespace EPiServer.Search.IndexingService.Helpers
             //Fire adding event
             IndexingController.OnDocumentAdding(this, new AddUpdateEventArgs(doc, namedIndex.Name));
 
-            WriteToIndex(id, doc, namedIndex);
+            var result = WriteToIndex(id, doc, namedIndex);
 
             IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("End adding document with id field: '{0}' to index: '{1}'", id, namedIndex.Name));
 
             //Fire added event
             IndexingController.OnDocumentAdded(this, new AddUpdateEventArgs(doc, namedIndex.Name));
-        }
 
-        /// <summary>
-        /// return true or false depending on if the <see cref="Document"/> exists in the supplied named index <see cref="NamedIndex.Name"/>
-        /// </summary>
-        /// <param name="id">The <see cref="SearchableItem"/> ID to check for existance</param>
-        /// <param name="namedIndex">The <see cref="NamedIndex"/> telling which index to search</param>
-        /// <returns></returns>
-        public bool DocumentExists(string itemId, NamedIndex namedIndex)
-        {
-            try
-            {
-                if (GetDocumentById(itemId, namedIndex) != null)
-                    return true;
-            }
-            catch (Exception e)
-            {
-                _responseExceptionHelper.HandleServiceError(String.Format("Could not verify document existense for id: '{0}'. Message: {1}{2}{3}", itemId, e.Message, Environment.NewLine, e.StackTrace));
-            }
-            return false;
-        }
-
-        public Collection<ScoreDocument> SingleIndexSearch(string q, NamedIndex namedIndex, int maxHits, out int totalHits)
-        {
-            Collection<ScoreDocument> scoreDocuments = new Collection<ScoreDocument>();
-            totalHits = 0;
-            ReaderWriterLockSlim rwl = IndexingServiceSettings.ReaderWriterLocks[namedIndex.Name];
-            rwl.EnterReadLock();
-
-            try
-            {
-                IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("Creating Lucene QueryParser for index '{0}' with expression '{1}' with analyzer '{2}'", namedIndex.Name, q, IndexingServiceSettings.Analyzer.ToString()));
-                QueryParser parser = new PerFieldQueryParserWrapper(IndexingServiceSettings.LuceneVersion, IndexingServiceSettings.DefaultFieldName, IndexingServiceSettings.Analyzer, IndexingServiceSettings.LowercaseFields);
-                Query baseQuery = parser.Parse(q);
-                using (IndexReader reader = DirectoryReader.Open(namedIndex.Directory))
-                {
-                    var searcher = new IndexSearcher(reader);
-
-                    TopDocs topDocs = searcher.Search(baseQuery, maxHits);
-                    totalHits = topDocs.TotalHits;
-                    ScoreDoc[] docs = topDocs.ScoreDocs;
-                    for (int i = 0; i < docs.Length; i++)
-                    {
-                        scoreDocuments.Add(new ScoreDocument(searcher.Doc(docs[i].Doc), docs[i].Score));
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                _responseExceptionHelper.HandleServiceError(String.Format("Failed to search index '{0}'. Index seems to be corrupt! Message: {1}{2}{3}", namedIndex.Name, e.Message, Environment.NewLine, e.StackTrace));
-            }
-            finally
-            {
-                rwl.ExitReadLock();
-            }
-
-            return scoreDocuments;
+            return result;
         }
 
         public void Remove(FeedItemModel feedItem, NamedIndex namedIndex)
@@ -395,11 +332,11 @@ namespace EPiServer.Search.IndexingService.Helpers
             }
         }
 
-        public void RemoveByVirtualPath(string virtualPath)
+        public bool RemoveByVirtualPath(string virtualPath)
         {
             if (string.IsNullOrEmpty(virtualPath))
             {
-                return;
+                return false;
             }
 
             IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("Start removing all items under virtual path '{0}'.", virtualPath));
@@ -427,78 +364,7 @@ namespace EPiServer.Search.IndexingService.Helpers
             }
 
             IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("End removing by virtual path."));
-        }
-
-        public Collection<ScoreDocument> MultiIndexSearch(string q, Collection<NamedIndex> namedIndexes, int maxHits, out int totalHits)
-        {
-            //Prepare queries for MultiSearcher
-            string defaultFieldName = IndexingServiceSettings.DefaultFieldName;
-            IndexReader[] readers = new IndexReader[namedIndexes.Count];
-            Collection<ReaderWriterLockSlim> locks = new Collection<ReaderWriterLockSlim>();
-
-            //Modify queries for other indexes with other field names
-            int i = 0;
-            foreach (NamedIndex namedIndex in namedIndexes)
-            {
-                ReaderWriterLockSlim rwl = IndexingServiceSettings.ReaderWriterLocks[namedIndex.Name];
-                locks.Add(rwl);
-                rwl.EnterReadLock();
-
-                try
-                {
-                    IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("Creating Lucene QueryParser for index '{0}' with expression '{1}' with analyzer '{2}'", namedIndex.Name, q, IndexingServiceSettings.Analyzer.ToString()));
-                    readers[i] = DirectoryReader.Open(namedIndex.Directory);
-                }
-                catch (Exception e)
-                {
-                    _responseExceptionHelper.HandleServiceError(String.Format("Failed to create sub searcher for index '{0}' Message: {1}{2}{3}", namedIndex.Name, e.Message, Environment.NewLine, e.StackTrace));
-                }
-                finally
-                {
-                    rwl.ExitReadLock();
-                }
-
-                i++;
-            }
-
-            QueryParser parser = new PerFieldQueryParserWrapper(IndexingServiceSettings.LuceneVersion, defaultFieldName, IndexingServiceSettings.Analyzer, IndexingServiceSettings.LowercaseFields);
-            Query query = parser.Parse(q);
-            Collection<ScoreDocument> scoreDocuments = new Collection<ScoreDocument>();
-            totalHits = 0;
-
-            // Read locks
-            foreach (ReaderWriterLockSlim rwl in locks)
-            {
-                rwl.EnterReadLock();
-            }
-
-            try
-            {
-                using (MultiReader multiReader = new MultiReader(readers))
-                {
-                    IndexSearcher searcher = new IndexSearcher(multiReader);
-                    TopDocs topDocs = searcher.Search(query, maxHits);
-                    totalHits = topDocs.TotalHits;
-                    ScoreDoc[] docs = topDocs.ScoreDocs;
-                    for (int j = 0; j < docs.Length; j++)
-                    {
-                        scoreDocuments.Add(new ScoreDocument(searcher.Doc(docs[j].Doc), docs[j].Score));
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                _responseExceptionHelper.HandleServiceError(String.Format("Failed to get hits from MultiSearcher! Message: {0}{1}{2}", e.Message, Environment.NewLine, e.StackTrace));
-            }
-            finally
-            {
-                foreach (ReaderWriterLockSlim rwl in locks)
-                {
-                    rwl.ExitReadLock();
-                }
-            }
-
-            return scoreDocuments;
+            return true;
         }
 
         public Collection<ScoreDocument> GetScoreDocuments(string q, bool excludeNotPublished, Collection<NamedIndex> namedIndexes, int offset, int limit, int maxHits, out int totalHits)
@@ -519,11 +385,11 @@ namespace EPiServer.Search.IndexingService.Helpers
 
             if (namedIndexes.Count == 1)
             {
-                scoreDocuments = SingleIndexSearch(q, namedIndexes[0], maxHits, out totalHits);
+                scoreDocuments = _documentHelper.SingleIndexSearch(q, namedIndexes[0], maxHits, out totalHits);
             }
             else
             {
-                scoreDocuments = MultiIndexSearch(q, namedIndexes, maxHits, out totalHits);
+                scoreDocuments = _documentHelper.MultiIndexSearch(q, namedIndexes, maxHits, out totalHits);
             }
 
             Collection<ScoreDocument> results = new Collection<ScoreDocument>();
@@ -537,41 +403,6 @@ namespace EPiServer.Search.IndexingService.Helpers
             return results;
         }
 
-        public void OptimizeIndex(NamedIndex namedIndex)
-        {
-            ReaderWriterLockSlim rwl = IndexingServiceSettings.ReaderWriterLocks[namedIndex.Name];
-
-            rwl.EnterWriteLock();
-
-            try
-            {
-                IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("Start optimizing index"));
-
-                IndexWriterConfig iwc = new IndexWriterConfig(IndexingServiceSettings.LuceneVersion, IndexingServiceSettings.Analyzer);
-                iwc.OpenMode = OpenMode.CREATE_OR_APPEND;
-                using (var iWriter = new IndexWriter(namedIndex.Directory, iwc))
-                {
-                    iWriter.ForceMerge(1);
-                }
-
-                IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("End optimizing index"));
-
-            }
-            catch (Exception e)
-            {
-                IndexingServiceSettings.IndexingServiceServiceLog.Error(String.Format("Failed to optimize index: '{0}'. Message: {1}{2}{3}", namedIndex.Name, e.Message, Environment.NewLine, e.StackTrace));
-            }
-            finally
-            {
-                rwl.ExitWriteLock();
-            }
-
-            //Fire event
-            IndexingController.OnIndexedOptimized(this, new OptimizedEventArgs(namedIndex.Name));
-
-            IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("Optimized index: '{0}'", namedIndex.Name));
-        }
-
         public bool DeleteFromIndex(NamedIndex namedIndex, string itemId, bool deleteRef)
         {
             ReaderWriterLockSlim rwl = IndexingServiceSettings.ReaderWriterLocks[namedIndex.Name];
@@ -583,12 +414,11 @@ namespace EPiServer.Search.IndexingService.Helpers
             int i = 0;
             int pendingDeletions = 0;
 
-            IndexWriterConfig iwc = new IndexWriterConfig(IndexingServiceSettings.LuceneVersion, IndexingServiceSettings.Analyzer);
-            iwc.OpenMode = OpenMode.CREATE_OR_APPEND;
-
             rwl.EnterWriteLock();
             try
             {
+                IndexWriterConfig iwc = new IndexWriterConfig(IndexingServiceSettings.LuceneVersion, IndexingServiceSettings.Analyzer);
+                iwc.OpenMode = OpenMode.CREATE_OR_APPEND;
                 using (IndexWriter iWriter = new IndexWriter(namedIndex.Directory, iwc))
                 {
                     using (var reader = DirectoryReader.Open(namedIndex.Directory))
@@ -628,6 +458,8 @@ namespace EPiServer.Search.IndexingService.Helpers
 
                     try
                     {
+                        IndexWriterConfig iwc = new IndexWriterConfig(IndexingServiceSettings.LuceneVersion, IndexingServiceSettings.Analyzer);
+                        iwc.OpenMode = OpenMode.CREATE_OR_APPEND;
                         using (IndexWriter iWriter = new IndexWriter(namedIndex.ReferenceDirectory, iwc))
                         {
                             Term refTerm = new Term(IndexingServiceSettings.ReferenceIdFieldName, itemId);
@@ -653,7 +485,7 @@ namespace EPiServer.Search.IndexingService.Helpers
                 if ((namedIndex.PendingDeletesOptimizeThreshold > 0) &&
                     (pendingDeletions >= namedIndex.PendingDeletesOptimizeThreshold))
                 {
-                    OptimizeIndex(namedIndex);
+                    _documentHelper.OptimizeIndex(namedIndex);
                 }
 
                 return true;
@@ -668,7 +500,7 @@ namespace EPiServer.Search.IndexingService.Helpers
 
             if (_feedHelper.GetAutoUpdateVirtualPathValue(feedItem))
             {
-                Document doc = GetDocumentById(feedItem.Id, namedIndex);
+                Document doc = _documentHelper.GetDocumentById(feedItem.Id, namedIndex);
 
                 if (doc != null)
                 {
@@ -683,11 +515,11 @@ namespace EPiServer.Search.IndexingService.Helpers
             UpdateVirtualPaths(oldVirtualPath, newVirtualPath);
         }
 
-        public void UpdateVirtualPaths(string oldVirtualPath, string newVirtualPath)
+        public bool UpdateVirtualPaths(string oldVirtualPath, string newVirtualPath)
         {
             if (String.IsNullOrEmpty(newVirtualPath) || newVirtualPath.Equals(oldVirtualPath, StringComparison.InvariantCulture))
             {
-                return;
+                return false;
             }
 
             IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("Start updating virtual paths from old path: '{0}' to new path '{1}'", oldVirtualPath, newVirtualPath));
@@ -728,168 +560,7 @@ namespace EPiServer.Search.IndexingService.Helpers
             }
 
             IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("End updating virtual paths"));
-        }
-
-        public FeedItemModel GetSyndicationItemFromDocument(ScoreDocument scoreDocument)
-        {
-            Document doc = scoreDocument.Document;
-
-            // Create namedIndex for this document
-            NamedIndex namedIndex = new NamedIndex(doc.Get(IndexingServiceSettings.NamedIndexFieldName));
-
-            //Create search result object and add it to result collection
-            FeedItemModel feedItem = new FeedItemModel();
-
-            // ID field
-            feedItem.Id = namedIndex.IncludeInResponse(IndexingServiceSettings.IdFieldName) ? doc.Get(IndexingServiceSettings.IdFieldName) : "";
-
-            // Title field
-            feedItem.Title = namedIndex.IncludeInResponse(IndexingServiceSettings.TitleFieldName) ? doc.Get(IndexingServiceSettings.TitleFieldName) : "";
-
-            // DisplayText field
-            feedItem.DisplayText = namedIndex.IncludeInResponse(IndexingServiceSettings.DisplayTextFieldName) ? doc.Get(IndexingServiceSettings.DisplayTextFieldName) : "";
-
-            // Modified field
-            if (namedIndex.IncludeInResponse(IndexingServiceSettings.ModifiedFieldName))
-            {
-                feedItem.Modified = new DateTimeOffset(Convert.ToDateTime(Regex.Replace(doc.Get(IndexingServiceSettings.ModifiedFieldName), @"(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})", "$1-$2-$3 $4:$5:$6"), CultureInfo.InvariantCulture));
-            }
-
-            // Created field
-            if (namedIndex.IncludeInResponse(IndexingServiceSettings.CreatedFieldName))
-            {
-                feedItem.Created = new DateTimeOffset(Convert.ToDateTime(Regex.Replace(doc.Get(IndexingServiceSettings.CreatedFieldName), @"(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})", "$1-$2-$3 $4:$5:$6"), CultureInfo.InvariantCulture));
-            }
-
-            // Uri field
-            Uri uri;
-            if (Uri.TryCreate(doc.Get(IndexingServiceSettings.UriFieldName), UriKind.RelativeOrAbsolute, out uri))
-            {
-                feedItem.Uri = namedIndex.IncludeInResponse(IndexingServiceSettings.UriFieldName) ? uri : null;
-            }
-
-            // Culture field
-            if (namedIndex.IncludeInResponse(IndexingServiceSettings.CultureFieldName))
-            {
-                feedItem.AttributeExtensions.Add(IndexingServiceSettings.SyndicationItemAttributeNameCulture, doc.Get(IndexingServiceSettings.CultureFieldName));
-            }
-
-            // ItemStatus field
-            if (namedIndex.IncludeInResponse(IndexingServiceSettings.ItemStatusFieldName))
-            {
-                feedItem.AttributeExtensions.Add(IndexingServiceSettings.SyndicationItemAttributeNameItemStatus, doc.Get(IndexingServiceSettings.ItemStatusFieldName));
-            }
-
-            // Type field
-            if (namedIndex.IncludeInResponse(IndexingServiceSettings.TypeFieldName))
-            {
-                feedItem.AttributeExtensions.Add(IndexingServiceSettings.SyndicationItemAttributeNameType, doc.Get(IndexingServiceSettings.TypeFieldName));
-            }
-
-            // Score field not optional. Always included
-            feedItem.AttributeExtensions.Add(IndexingServiceSettings.SyndicationItemAttributeNameScore, scoreDocument.Score.ToString(CultureInfo.InvariantCulture));
-
-            // Data Uri not optional. Always included
-            feedItem.AttributeExtensions.Add(IndexingServiceSettings.SyndicationItemAttributeNameDataUri, doc.Get(IndexingServiceSettings.SyndicationItemAttributeNameDataUri));
-
-            // Boost factor not optional. Always included
-            feedItem.AttributeExtensions.Add(IndexingServiceSettings.SyndicationItemAttributeNameBoostFactor, doc.Fields[1].Boost.ToString(CultureInfo.InvariantCulture));
-
-            // Named index not optional. Always included
-            feedItem.AttributeExtensions.Add(IndexingServiceSettings.SyndicationItemAttributeNameNamedIndex, doc.Get(IndexingServiceSettings.NamedIndexFieldName));
-
-            // PublicationEnd field
-            if (namedIndex.IncludeInResponse(IndexingServiceSettings.PublicationEndFieldName))
-            {
-                string publicationEnd = doc.Get(IndexingServiceSettings.PublicationEndFieldName);
-                if (!publicationEnd.Equals("no"))
-                {
-                    feedItem.AttributeExtensions.Add(IndexingServiceSettings.SyndicationItemAttributeNamePublicationEnd, Convert.ToDateTime(Regex.Replace(publicationEnd, @"(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})", "$1-$2-$3 $4:$5:$6Z"), CultureInfo.InvariantCulture).ToUniversalTime().ToString("u", CultureInfo.InvariantCulture));
-                }
-            }
-
-            // PublicationStart field
-            if (namedIndex.IncludeInResponse(IndexingServiceSettings.PublicationStartFieldName))
-            {
-                string publicationStart = doc.Get(IndexingServiceSettings.PublicationStartFieldName);
-                if (!publicationStart.Equals("no"))
-                {
-                    feedItem.AttributeExtensions.Add(IndexingServiceSettings.SyndicationItemAttributeNamePublicationStart, Convert.ToDateTime(Regex.Replace(publicationStart, @"(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})", "$1-$2-$3 $4:$5:$6Z"), CultureInfo.InvariantCulture).ToUniversalTime().ToString("u", CultureInfo.InvariantCulture));
-                }
-            }
-
-            //Metadata field
-            if (namedIndex.IncludeInResponse(IndexingServiceSettings.MetadataFieldName))
-            {
-                feedItem.ElementExtensions.Add(IndexingServiceSettings.SyndicationItemElementNameMetadata, doc.Get(IndexingServiceSettings.MetadataFieldName));
-            }
-
-            // Categories
-            if (namedIndex.IncludeInResponse(IndexingServiceSettings.CategoriesFieldName))
-            {
-                string fieldStoreValue = doc.Get(IndexingServiceSettings.CategoriesFieldName);
-                new CategoriesFieldStoreSerializer
-                    (fieldStoreValue).
-                    AddFieldStoreValueToSyndicationItem(feedItem);
-            }
-
-            //Authors 
-            if (namedIndex.IncludeInResponse(IndexingServiceSettings.AuthorsFieldName))
-            {
-                string fieldStoreValue = doc.Get(IndexingServiceSettings.AuthorStorageFieldName);
-                new AuthorsFieldStoreSerializer
-                    (fieldStoreValue).AddFieldStoreValueToSyndicationItem(feedItem);
-            }
-
-            //RACL to syndication item
-            if (namedIndex.IncludeInResponse(IndexingServiceSettings.AclFieldName))
-            {
-                string fieldStoreValue = doc.Get(IndexingServiceSettings.AclFieldName);
-                new AclFieldStoreSerializer
-                    (fieldStoreValue).AddFieldStoreValueToSyndicationItem(feedItem);
-            }
-
-            //Virtual path to syndication item
-            if (namedIndex.IncludeInResponse(IndexingServiceSettings.VirtualPathFieldName))
-            {
-                string fieldStoreValue = doc.Get(IndexingServiceSettings.VirtualPathFieldName);
-                new VirtualPathFieldStoreSerializer
-                    (fieldStoreValue).
-                    AddFieldStoreValueToSyndicationItem(feedItem);
-            }
-
-            return feedItem;
-        }
-
-        public Lucene.Net.Store.Directory CreateIndex(string name, System.IO.DirectoryInfo directoryInfo)
-        {
-            Lucene.Net.Store.Directory dir = null;
-
-            IndexingServiceSettings.ReaderWriterLocks[name].EnterWriteLock();
-
-            try
-            {
-                //Create directory
-                dir = Lucene.Net.Store.FSDirectory.Open(directoryInfo);
-                //Create index
-                IndexWriterConfig iwc = new IndexWriterConfig(IndexingServiceSettings.LuceneVersion, IndexingServiceSettings.Analyzer);
-                iwc.OpenMode = OpenMode.CREATE;
-                using (IndexWriter iWriter = new IndexWriter(dir, iwc))
-                {
-                }
-            }
-            catch (Exception e)
-            {
-                IndexingServiceSettings.IndexingServiceServiceLog.Error(String.Format("Failed to create index for path: '{0}'. Message: {1}{2}'", directoryInfo.FullName, e.Message, e.StackTrace));
-            }
-            finally
-            {
-                IndexingServiceSettings.ReaderWriterLocks[name].ExitWriteLock();
-            }
-
-            IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("Created index for path: '{0}'", directoryInfo.FullName));
-
-            return dir;
+            return true;
         }
 
         /// <summary>
@@ -904,7 +575,7 @@ namespace EPiServer.Search.IndexingService.Helpers
             // Contruct the reference named index for the passed named index
             NamedIndex refNamedIndex = new NamedIndex(namedIndex.Name, true);
 
-            Document doc = GetDocumentById(itemId, refNamedIndex);
+            Document doc = _documentHelper.GetDocumentById(itemId, refNamedIndex);
             if (doc == null)
             {
                 return null;
@@ -918,7 +589,7 @@ namespace EPiServer.Search.IndexingService.Helpers
         /// </summary>
         /// <param name="item">The <see cref="SyndicationItem"/> passed to the index</param>
         /// <param name="namedIndex">The <see cref="NamedIndex"/> to use</param>
-        public void HandleDataUri(FeedItemModel item, NamedIndex namedIndex)
+        public bool HandleDataUri(FeedItemModel item, NamedIndex namedIndex)
         {
             // Get the uri string
             string uriString = _feedHelper.GetAttributeValue(item, IndexingServiceSettings.SyndicationItemAttributeNameDataUri);
@@ -931,7 +602,7 @@ namespace EPiServer.Search.IndexingService.Helpers
             if (!Uri.TryCreate(uriString, UriKind.RelativeOrAbsolute, out uri))
             {
                 _responseExceptionHelper.HandleServiceError(String.Format("Data Uri callback failed. Uri '{0}' is not well formed", uriString));
-                return;
+                return false;
             }
 
             string content = String.Empty;
@@ -941,7 +612,7 @@ namespace EPiServer.Search.IndexingService.Helpers
                 if (!File.Exists(uri.LocalPath))
                 {
                     _responseExceptionHelper.HandleServiceError(String.Format("File for uri '{0}' does not exist", uri.ToString()));
-                    return;
+                    return false;
                 }
 
                 content = _commonFunc.GetFileUriContent(uri);
@@ -1002,6 +673,7 @@ namespace EPiServer.Search.IndexingService.Helpers
             }
 
             IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("End data uri callback"));
+            return true;
         }
     }
 }

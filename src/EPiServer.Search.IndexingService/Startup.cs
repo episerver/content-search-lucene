@@ -36,6 +36,7 @@ namespace EPiServer.Search.IndexingService
             services.AddSingleton<IResponseExceptionHelper, ResponseExceptionHelper>();
             services.AddSingleton<ICommonFunc, CommonFunc>();
             services.AddSingleton<IFeedHelper, FeedHelper>();
+            services.AddSingleton<IDocumentHelper, DocumentHelper>();
             services.AddSingleton<ILuceneHelper, LuceneHelper>();
             services.AddSingleton<ClientElementHandler>();
 
