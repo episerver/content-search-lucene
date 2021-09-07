@@ -15,15 +15,12 @@ namespace EPiServer.Search.IndexingService.Controllers
     public class IndexingController : ControllerBase
     {
         private readonly SecurityHandler _securityHandler;
-        private IIndexingServiceSettings _indexingServiceSettings;
         private IIndexingServiceHandler _indexingServiceHandler;
 
         public IndexingController(SecurityHandler securityHandler, 
-            IIndexingServiceSettings indexingServiceSettings,
             IIndexingServiceHandler indexingServiceHandler)
         {
             _securityHandler = securityHandler;
-            _indexingServiceSettings = indexingServiceSettings;
             _indexingServiceHandler = indexingServiceHandler;
         }
 
@@ -32,7 +29,7 @@ namespace EPiServer.Search.IndexingService.Controllers
         [Route("reset")]
         public IActionResult ResetIndex(string namedIndex, string accessKey)
         {
-            _indexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("Reset of index: {0} requested", namedIndex));
+            IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("Reset of index: {0} requested", namedIndex));
 
             if (!_securityHandler.IsAuthenticated(accessKey, AccessLevel.Modify))
             {
@@ -101,7 +98,7 @@ namespace EPiServer.Search.IndexingService.Controllers
 
         private FeedModel GetSearchResults(string q, string namedIndexes, int offset, int limit)
         {
-            _indexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("Request for search with query parser with expression: {0} in named indexes: {1}", q, namedIndexes));
+            IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("Request for search with query parser with expression: {0} in named indexes: {1}", q, namedIndexes));
 
             //Parse named indexes string from request
             string[] namedIndexesArr = null;
