@@ -16,6 +16,9 @@ using System.Linq;
 using System.Threading;
 using HostType = EPiServer.Framework.Initialization.HostType;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+using EPiServer.Search.Configuration;
+using EPiServer.Search.Configuration.Transform.Internal;
 
 namespace EPiServer.Search.Initialization
 {
@@ -29,26 +32,33 @@ namespace EPiServer.Search.Initialization
         private SearchEventHandler _eventHandler;
         private static object _lock = new object();
         private static readonly ILogger _log = LogManager.GetLogger();
+        private IConfiguration _configuration;
+
+        public SearchInitialization(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
 
         /// <inherit-doc/>
         public void ConfigureContainer(ServiceConfigurationContext context)
         {
             context.Services //TO BE UPDATED
-              //  .AddTransient<IConfigurationTransform>(s => new SearchOptionsTransform(s.GetInstance<SearchOptions>(), SearchSection.Instance))
-              //  .AddTransient<IConfigurationTransform>(s => new SearchIndexConfigTransformation(s.GetInstance<SearchIndexConfig>(), ConfigurationSource.Instance))
+                             //.AddTransient<IConfigurationTransform>(s => new SearchIndexConfigTransformation(s.GetInstance<SearchIndexConfig>(), ConfigurationSource.Instance))
+                .Configure<SearchConfiguration>(_configuration.GetSection("EPiServer:episerver.search"))
                 .AddSingleton<SearchHandler>()
                 .AddSingleton<RequestHandler>()
                 .AddSingleton<RequestQueue>()
                 .AddSingleton<RequestQueueHandler>()
                 .AddSingleton<ReIndexManager>()
                 .Forward<ReIndexManager, IReIndexManager>();
-
         }
 
         /// <inherit-doc/>
         public void Initialize(InitializationEngine context)
         {
-            var searchOptions = context.Locate.Advanced.GetInstance<SearchOptions>();
+            var searchConfiguration = context.Locate.Advanced.GetInstance<SearchConfiguration>();
+            var searchOptions = new SearchOptions();
+            SearchOptionsTransform.Transform(searchConfiguration, searchOptions);
             SearchSettings.Options = searchOptions;
             if (!searchOptions.Active)
             {
@@ -59,15 +69,14 @@ namespace EPiServer.Search.Initialization
             SearchSettings.LoadSearchResultFilterProviders(searchOptions, context.Locate.Advanced);
 
             // Provoke a certificate error if user configured an invalid certificate
-            // TO BE UPDATED
-            //foreach (var serviceReference in searchOptions.IndexingServiceReferences)
-            //{
-            //    if (!serviceReference.BaseUri.IsWellFormedOriginalString())
-            //    {
-            //        throw new ArgumentException($"The Base uri is not well formed '{serviceReference.BaseUri}'");
-            //    }
-            //    serviceReference.GetClientCertificate();
-            //}
+            foreach (var serviceReference in searchOptions.IndexingServiceReferences)
+            {
+                if (!serviceReference.BaseUri.IsWellFormedOriginalString())
+                {
+                    throw new ArgumentException($"The Base uri is not well formed '{serviceReference.BaseUri}'");
+                }
+                serviceReference.GetClientCertificate();
+            }
 
             // Avoid starting the Queue flush timer during installation, since it risks breaking appdomain unloading
             // (it may stall in unmanaged code (socket/http request) causing an UnloadAppDomainException)
@@ -84,7 +93,7 @@ namespace EPiServer.Search.Initialization
             //Fire event telling that the default configuration is loaded
             SearchSettings.OnInitializationCompleted();
 
-            if (context.Locate.Advanced.GetInstance<IDatabaseMode>().DatabaseMode ==  DatabaseMode.ReadOnly)
+            if (context.Locate.Advanced.GetInstance<IDatabaseMode>().DatabaseMode == DatabaseMode.ReadOnly)
             {
                 _log.Debug("Unable to indexing of content because the database is in the ReadOnly mode");
                 return;

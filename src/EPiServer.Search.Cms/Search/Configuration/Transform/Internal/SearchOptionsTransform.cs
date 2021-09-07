@@ -7,18 +7,9 @@ using System.Reflection;
 
 namespace EPiServer.Search.Configuration.Transform.Internal
 {
-    public class SearchOptionsTransform : IConfigurationTransform
+    public class SearchOptionsTransform
     {
-        private readonly SearchOptions _options;
-        private readonly SearchSection _section;
-
-        public SearchOptionsTransform(SearchOptions options, SearchSection section)
-        {
-            _options = options;
-            _section = section;
-        }
-
-        public void Transform()
+        public static void Transform(SearchConfiguration _section, SearchOptions _options)
         {
             _options.Active = _section.Active;
             _options.QueueFlushInterval = _section.QueueFlushInterval;
@@ -67,8 +58,8 @@ namespace EPiServer.Search.Configuration.Transform.Internal
             _options.UseIndexingServicePaging = _options.UseIndexingServicePaging;
             _options.XmlQualifiedNamespace = _section.XmlQualifiedNamespace;
 
-            _options.SearchResultFilterDefaultInclude = (_section.SearchResultFilterElement?.SearchResultFilterDefaultInclude).GetValueOrDefault();
-            foreach (var filterProvider in _section.SearchResultFilterElement?.Providers?.OfType<ProviderSettings>() ?? Enumerable.Empty<ProviderSettings>())
+            _options.SearchResultFilterDefaultInclude = (_section.SearchResultFilter?.SearchResultFilterDefaultInclude).GetValueOrDefault();
+            foreach (var filterProvider in _section.SearchResultFilter?.Providers)
             {
                 _options.FilterProviders.Add(filterProvider.Name, (s) =>
                 {
@@ -89,9 +80,9 @@ namespace EPiServer.Search.Configuration.Transform.Internal
             }
 
             _options.DefaultIndexingServiceName = _section.NamedIndexingServices?.DefaultService;
-            foreach (var indexingReference in _section.NamedIndexingServices?.NamedIndexingServices?.OfType<NamedIndexingServiceElement>() ?? Enumerable.Empty<NamedIndexingServiceElement>())
+            foreach (var indexingReference in _section.NamedIndexingServices?.Services?.OfType<IndexingServiceReference>() ?? Enumerable.Empty<IndexingServiceReference>())
             {
-                var reference = new IndexingServiceReference()
+                var reference = new IndexingServiceReferenceTransform()
                 {
                     AccessKey = indexingReference.AccessKey,
                     BaseUri = indexingReference.BaseUri,

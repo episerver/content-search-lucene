@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EPiServer.Search.Cms.Search.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
@@ -32,5 +33,10 @@ namespace EPiServer.Search.Configuration
         ///  Gets or sets the type of X.509 search to be executed.
         /// </summary>
         public X509FindType X509FindType { get; set; } = X509FindType.FindBySubjectDistinguishedName;
+
+        /// <summary>
+        /// Gets or sets the value of element information
+        /// </summary>
+        public ElementInformation ElementInformation { get; set; }
     }
 }
