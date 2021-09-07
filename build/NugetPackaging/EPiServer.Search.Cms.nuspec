@@ -24,8 +24,8 @@
     <file src="build\NugetPackaging\Tools\EPiServer.Search.Cms.Install.ps1" target="tools\install.ps1" />
     <file src="build\NugetPackaging\Tools\Search.psm1" target="tools\Search.psm1" />
     <file src="build\NugetPackaging\EPiServer.Search.Cms.config.install.xdt" target="content\web.config.install.xdt" />
-    <file src="EPiServer.Search.Cms\bin\$Configuration$\net5.0\EPiServer.Search.Cms.dll" target="lib\net5.0\EPiServer.Search.Cms.dll" />
-    <file src="EPiServer.Search.Cms\bin\$Configuration$\net5.0\EPiServer.Search.Cms.pdb" target="lib\net5.0\EPiServer.Search.Cms.pdb" />
-    <file src="EPiServer.Search.Cms\**\*.cs" exclude="src\EPiServer.Search.Cms\obj\**\*" target="src\EPiServer.Search.Cms" />
+    <file src="src\EPiServer.Search.Cms\bin\$Configuration$\net5.0\EPiServer.Search.Cms.dll" target="lib\net5.0\EPiServer.Search.Cms.dll" />
+    <file src="src\EPiServer.Search.Cms\bin\$Configuration$\net5.0\EPiServer.Search.Cms.pdb" target="lib\net5.0\EPiServer.Search.Cms.pdb" />
+    <file src="src\EPiServer.Search.Cms\**\*.cs" exclude="src\EPiServer.Search.Cms\obj\**\*" target="src\EPiServer.Search.Cms" />
   </files>
 </package>

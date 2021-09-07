@@ -25,7 +25,7 @@
     <file src="build\NugetPackaging\Tools\EPiServer.Search.IndexingService.Install.ps1" target="tools\install.ps1" />
     <file src="build\NugetPackaging\Tools\Search.psm1" target="tools\Search.psm1" />
     <file src="build\NugetPackaging\EPiServer.Search.IndexingService.config.install.xdt" target="content\web.config.install.xdt" />
-    <file src="EPiServer.Search.IndexingApi\bin\$Configuration$\net5.0\EPiServer.Search.IndexingService.dll" target="lib\net5.0\EPiServer.Search.IndexingService.dll" />
-    <file src="EPiServer.Search.IndexingApi\bin\$Configuration$\net5.0\EPiServer.Search.IndexingService.pdb" target="lib\net5.0\EPiServer.Search.IndexingService.pdb" />
+    <file src="src\EPiServer.Search.IndexingService\bin\$Configuration$\net5.0\EPiServer.Search.IndexingService.dll" target="lib\net5.0\EPiServer.Search.IndexingService.dll" />
+    <file src="src\EPiServer.Search.IndexingService\bin\$Configuration$\net5.0\EPiServer.Search.IndexingService.pdb" target="lib\net5.0\EPiServer.Search.IndexingService.pdb" />
   </files>
 </package>
