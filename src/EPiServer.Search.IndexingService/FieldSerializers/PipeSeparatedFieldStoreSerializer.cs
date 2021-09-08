@@ -6,6 +6,7 @@ using System.Text;
 using System.Xml.Linq;
 using System.ServiceModel.Syndication;
 using System.Collections.ObjectModel;
+using System.Text.Json;
 
 namespace EPiServer.Search.IndexingService.FieldSerializers
 {
@@ -27,11 +28,11 @@ namespace EPiServer.Search.IndexingService.FieldSerializers
             {
                 StringBuilder sb = new StringBuilder();
 
-                var element = FeedItem.ElementExtensions[syndicationItemElementExtensionName];
+                var element = TryParseCollection(FeedItem.ElementExtensions[syndicationItemElementExtensionName]);
 
                 if (element != null)
                 {
-                    foreach (string e in (Collection<string>)element)
+                    foreach (string e in element)
                     {
                         sb.Append(e);
                         sb.Append("|");
@@ -56,7 +57,7 @@ namespace EPiServer.Search.IndexingService.FieldSerializers
                 Collection<string> element = new Collection<string>();
 
                 string[] nodes = SplitFieldStoreValue();
-
+                
                 foreach (string node in nodes)
                 {
                     element.Add(node);
@@ -73,6 +74,20 @@ namespace EPiServer.Search.IndexingService.FieldSerializers
         {
             char[] delimiter = { '|' };
             return FieldStoreValue.Split(delimiter);
+        }
+        private Collection<string> TryParseCollection(object o)
+        {
+            Collection<string> c = new Collection<string>();
+            if (o is JsonElement)
+            {
+                var json = ((JsonElement)o).GetRawText();
+                c = JsonSerializer.Deserialize<Collection<string>>(json);
+            }
+            else if (o is Collection<string>)
+            {
+                c = o as Collection<string>;
+            }
+            return c;
         }
     }
 }

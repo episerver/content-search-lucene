@@ -63,7 +63,7 @@ namespace EPiServer.Search.IndexingService.Controllers
 
         //GET: search?q={q}&namedIndexes={namedIndexes}&offset={offset}&limit={limit}&accessKey={accessKey}
         [HttpGet]
-        [Route("search/json")]
+        [Route("search")]
         public IActionResult GetSearchResultsJson(string q, string namedIndexes, string offset, string limit, string accessKey)
         {
             if (!_securityHandler.IsAuthenticated(accessKey, AccessLevel.Read))

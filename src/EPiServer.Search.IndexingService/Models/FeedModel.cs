@@ -11,8 +11,8 @@ namespace EPiServer.Search.IndexingService
         public string Id { get; set; }
         public DateTimeOffset LastUpdatedTime { get; set; }
         public IEnumerable<FeedItemModel> Items { get; set; }
-        public Dictionary<string, string> AttributeExtensions { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        public Dictionary<string, object> ElementExtensions { get; } = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, string> AttributeExtensions { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, object> ElementExtensions { get; set; } = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
     }
     public class FeedItemModel
     {
@@ -25,9 +25,9 @@ namespace EPiServer.Search.IndexingService
         public string ItemType { get; set; }
         public string DisplayText { get; set; }
 
-        public Dictionary<string,string> AttributeExtensions { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        public Dictionary<string, object> ElementExtensions { get; } = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-        public Collection<string> Categories { get; } = new Collection<string>();
-        public Collection<string> Authors { get; } = new Collection<string>();        
+        public Dictionary<string,string> AttributeExtensions { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, object> ElementExtensions { get; set; } = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+        public Collection<string> Categories { get; set; } = new Collection<string>();
+        public Collection<string> Authors { get; set; } = new Collection<string>();        
     }
 }

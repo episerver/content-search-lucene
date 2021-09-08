@@ -35,7 +35,8 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.DocumentHelper
             doc.Add(new TextField(IndexingServiceSettings.PublicationStartFieldName, Regex.Replace(DateTime.Now.AddDays(-1).ToString("u", CultureInfo.InvariantCulture), @"\D", ""), Field.Store.YES));
             doc.Add(new TextField(IndexingServiceSettings.MetadataFieldName, "Metadata", Field.Store.YES));
             doc.Add(new TextField(IndexingServiceSettings.CategoriesFieldName, "[[cat1]] [[cat2]]", Field.Store.YES));
-            doc.Add(new TextField(IndexingServiceSettings.AuthorsFieldName, "author1|author2", Field.Store.YES));
+            doc.Add(new TextField(IndexingServiceSettings.AuthorsFieldName, "author1 author2", Field.Store.YES));
+            doc.Add(new TextField(IndexingServiceSettings.AuthorStorageFieldName, "author1|author2", Field.Store.YES));
             doc.Add(new TextField(IndexingServiceSettings.AclFieldName, "[[group1]] [[group2]]", Field.Store.YES));
             doc.Add(new TextField(IndexingServiceSettings.VirtualPathFieldName, "vp1|vp2", Field.Store.YES));
 
