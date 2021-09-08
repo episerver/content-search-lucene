@@ -16,27 +16,19 @@ namespace EPiServer.Search.IndexingService.Configuration
 
         public string IPAddress { get; set; }
 
+        public string IP6Address { get; set; }
+
         public bool AllowLocal { get; set; }
 
         public bool ReadOnly { get; set; }
     }
 
-    public class ClientElementHandler: ClientElement
+    public class ClientElementHandler
     {
         object _lockObj = new object();
         List<IPAddress> _localIps = null;
         List<IPRange> _ip6Ranges = null;
         List<IPRange> _ip4Ranges = null;
-
-        public string IP6Address
-        {
-            get { return IP6Address; }
-            set
-            {
-                IP6Address = value;
-                _ip6Ranges = ParseIPRangeList(System.Net.Sockets.AddressFamily.InterNetworkV6, value);
-            }
-        }
 
         private List<IPRange> ParseIPRangeList(System.Net.Sockets.AddressFamily addressFamily, string list)
         {
@@ -72,9 +64,9 @@ namespace EPiServer.Search.IndexingService.Configuration
             return localIps;
         }
 
-        internal bool IsIPAddressAllowed(IPAddress ipAddress)
+        internal bool IsIPAddressAllowed(ClientElement clientElement, IPAddress ipAddress)
         {
-            if (AllowLocal)
+            if (clientElement.AllowLocal)
             {
                 if (_localIps == null)
                 {
@@ -107,7 +99,7 @@ namespace EPiServer.Search.IndexingService.Configuration
                     {
                         if (_ip4Ranges == null)
                         {
-                            _ip4Ranges = ParseIPRangeList(System.Net.Sockets.AddressFamily.InterNetwork, IPAddress);
+                            _ip4Ranges = ParseIPRangeList(System.Net.Sockets.AddressFamily.InterNetwork, clientElement.IPAddress);
                         }
                     }
                 }
@@ -130,7 +122,7 @@ namespace EPiServer.Search.IndexingService.Configuration
                     {
                         if (_ip6Ranges == null)
                         {
-                            _ip6Ranges = ParseIPRangeList(System.Net.Sockets.AddressFamily.InterNetworkV6, IP6Address);
+                            _ip6Ranges = ParseIPRangeList(System.Net.Sockets.AddressFamily.InterNetworkV6, clientElement.IP6Address);
                         }
                     }
                 }
