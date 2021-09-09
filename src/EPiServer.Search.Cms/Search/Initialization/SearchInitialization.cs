@@ -32,19 +32,11 @@ namespace EPiServer.Search.Initialization
         private SearchEventHandler _eventHandler;
         private static object _lock = new object();
         private static readonly ILogger _log = LogManager.GetLogger();
-        private IConfiguration _configuration;
-
-        public SearchInitialization(IConfiguration configuration)
-        {
-            _configuration = configuration;
-        }
 
         /// <inherit-doc/>
         public void ConfigureContainer(ServiceConfigurationContext context)
         {
-            context.Services //TO BE UPDATED
-                             //.AddTransient<IConfigurationTransform>(s => new SearchIndexConfigTransformation(s.GetInstance<SearchIndexConfig>(), ConfigurationSource.Instance))
-                .Configure<SearchConfiguration>(_configuration.GetSection("EPiServer:episerver.search"))
+            context.Services
                 .AddSingleton<SearchHandler>()
                 .AddSingleton<RequestHandler>()
                 .AddSingleton<RequestQueue>()
@@ -56,7 +48,10 @@ namespace EPiServer.Search.Initialization
         /// <inherit-doc/>
         public void Initialize(InitializationEngine context)
         {
-            var searchConfiguration = context.Locate.Advanced.GetInstance<SearchConfiguration>();
+            var configuration = ServiceLocator.Current.GetInstance<IConfiguration>();
+            var searchConfiguration = new SearchConfiguration();
+            configuration.GetSection("EPiServer:episerver.search").Bind(searchConfiguration);
+
             var searchOptions = new SearchOptions();
             SearchOptionsTransform.Transform(searchConfiguration, searchOptions);
             SearchSettings.Options = searchOptions;
