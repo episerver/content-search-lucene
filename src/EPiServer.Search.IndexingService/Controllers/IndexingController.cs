@@ -15,12 +15,12 @@ namespace EPiServer.Search.IndexingService.Controllers
     [ApiController]
     public class IndexingController : ControllerBase
     {
-        private readonly SecurityHandler _securityHandler;
+        private readonly ISecurityHandler _securityHandler;
         private readonly IIndexingServiceHandler _indexingServiceHandler;
         private readonly IIndexingServiceSettings _indexingServiceSettings;
         private readonly IResponseExceptionHelper _responseExceptionHelper;
 
-        public IndexingController(SecurityHandler securityHandler, 
+        public IndexingController(ISecurityHandler securityHandler, 
             IIndexingServiceHandler indexingServiceHandler,
             IIndexingServiceSettings indexingServiceSettings,
             IResponseExceptionHelper responseExceptionHelper)

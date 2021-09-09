@@ -50,7 +50,7 @@ namespace EPiServer.Search.IndexingService.DependencyInjection
                 options.Filters.Add(new HttpResponseExceptionFilter()));
 
             services.AddHttpContextAccessor();
-            services.AddSingleton<SecurityHandler>();
+            services.AddSingleton<ISecurityHandler, SecurityHandler>();
 
             return services;
         }
