@@ -7,8 +7,8 @@ using System.Text.Json;
 using System.Xml;
 using EPiServer.Framework;
 using EPiServer.Logging;
+using EPiServer.Models;
 using EPiServer.Search.Data;
-using EPiServer.Search.IndexingService;
 
 namespace EPiServer.Search.Internal
 {

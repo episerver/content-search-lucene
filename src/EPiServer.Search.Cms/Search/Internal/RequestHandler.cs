@@ -9,10 +9,10 @@ using System.ServiceModel.Syndication;
 using System.Text;
 using System.Text.Json;
 using EPiServer.Logging;
+using EPiServer.Models;
 using EPiServer.Search.Configuration;
 //using EPiServer.Search.Configuration;
 using EPiServer.Search.Filter;
-using EPiServer.Search.IndexingService;
 using EPiServer.Web;
 
 namespace EPiServer.Search.Internal
