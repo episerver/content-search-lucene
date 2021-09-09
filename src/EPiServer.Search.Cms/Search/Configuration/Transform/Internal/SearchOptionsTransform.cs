@@ -59,7 +59,7 @@ namespace EPiServer.Search.Configuration.Transform.Internal
             _options.XmlQualifiedNamespace = _section.XmlQualifiedNamespace;
 
             _options.SearchResultFilterDefaultInclude = (_section.SearchResultFilter?.SearchResultFilterDefaultInclude).GetValueOrDefault();
-            foreach (var filterProvider in _section.SearchResultFilter?.Providers)
+            foreach (var filterProvider in _section.SearchResultFilter?.Providers?.OfType<ProviderElement>() ?? Enumerable.Empty<ProviderElement>())
             {
                 _options.FilterProviders.Add(filterProvider.Name, (s) =>
                 {
