@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.ServiceModel.Syndication;
-using EPiServer.Search.IndexingService;
+using EPiServer.Models;
 using EPiServer.Search.Internal;
 
 namespace EPiServer.Search

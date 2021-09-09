@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EPiServer.Search.Cms.Search.Configuration
+namespace EPiServer.Search.Configuration
 {
     public class ElementInformation
     {

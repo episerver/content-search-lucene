@@ -1,4 +1,4 @@
-﻿using EPiServer.Search.Cms.Search.Configuration;
+﻿using EPiServer.Search.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
