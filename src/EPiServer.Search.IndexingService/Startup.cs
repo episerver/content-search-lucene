@@ -54,7 +54,7 @@ namespace EPiServer.Search.IndexingService
                 options.Filters.Add(new HttpResponseExceptionFilter()));
 
             services.AddHttpContextAccessor();
-            services.AddSingleton<SecurityHandler>();
+            services.AddSingleton<ISecurityHandler,SecurityHandler>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

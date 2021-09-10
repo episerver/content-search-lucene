@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace EPiServer.Search.IndexingService.Security
 {
-    public class SecurityHandler
+    public class SecurityHandler : ISecurityHandler
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ClientElementHandler _clientElementHandler;
@@ -18,7 +18,7 @@ namespace EPiServer.Search.IndexingService.Security
             _clientElementHandler = clientElementHandler;
         }
 
-        protected internal virtual bool IsAuthenticated(string accessKey, AccessLevel accessLevel)
+        public bool IsAuthenticated(string accessKey, AccessLevel accessLevel)
         {
             IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("Request for authorization for access key '{0}'", accessKey));
 
