@@ -73,16 +73,15 @@ namespace EPiServer.Search.Initialization
                 serviceReference.GetClientCertificate();
             }
 
-            // Avoid starting the Queue flush timer during installation, since it risks breaking appdomain unloading
-            // (it may stall in unmanaged code (socket/http request) causing an UnloadAppDomainException)
+            // TO BE UPDATED: investigate why old code need to check installer
             if (context == null)
             {
-                var queueHandler = context.Locate.Advanced.GetInstance<RequestQueueHandler>();
-                queueHandler.StartQueueFlushTimer();
+                _log.Information("Didn't start the Queue Flush timer, since context is null");
             }
             else
             {
-                _log.Information("Didn't start the Queue Flush timer, since context is null");
+                var queueHandler = context.Locate.Advanced.GetInstance<RequestQueueHandler>();
+                queueHandler.StartQueueFlushTimer();
             }
 
             //Fire event telling that the default configuration is loaded
