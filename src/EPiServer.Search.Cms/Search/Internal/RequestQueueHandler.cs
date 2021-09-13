@@ -24,11 +24,11 @@ namespace EPiServer.Search.Internal
         private readonly SearchOptions _options;
         private readonly ITimeProvider _timeProvider;
 
-        public RequestQueueHandler(RequestHandler requestHandler, RequestQueue queue, SearchOptions options, ITimeProvider timeProvider)
+        public RequestQueueHandler(RequestHandler requestHandler, RequestQueue queue, ITimeProvider timeProvider)
         {
             _requestHandler = requestHandler;
             _queue = queue;
-            _options = options;
+            _options = SearchSettings.Options;
             _timeProvider = timeProvider;
 
             _queueFlushTimer = new System.Timers.Timer(_options.QueueFlushInterval * 1000)

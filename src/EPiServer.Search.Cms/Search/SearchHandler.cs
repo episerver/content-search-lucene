@@ -17,11 +17,11 @@ namespace EPiServer.Search
         /// <summary>
         /// Initializes a new instance of the <see cref="SearchHandler"/> class.
         /// </summary>
-        public SearchHandler(RequestHandler requestHandler, RequestQueueHandler requestQueueHandler, SearchOptions options)
+        public SearchHandler(RequestHandler requestHandler, RequestQueueHandler requestQueueHandler)
         {
             _requestHandler = requestHandler;
             _requestQueueHandler = requestQueueHandler;
-            _options = options;
+            _options = SearchSettings.Options;
         }
 
         [Obsolete("Request the SearchHandler from the service container.")]
