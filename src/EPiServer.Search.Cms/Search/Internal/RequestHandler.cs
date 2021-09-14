@@ -243,7 +243,7 @@ namespace EPiServer.Search.Internal
 
                     DateTime publicationStart;
                     DateTime.TryParse(feed.AttributeExtensions[_options.SyndicationItemAttributeNamePublicationStart], CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out publicationStart);
-                    item.PublicationStart = publicationEnd;
+                    item.PublicationStart = publicationStart;
 
                     //Boost factor
                     float fltBoostFactor = 1;

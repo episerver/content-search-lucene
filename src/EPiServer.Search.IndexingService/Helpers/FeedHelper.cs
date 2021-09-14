@@ -39,6 +39,11 @@ namespace EPiServer.Search.IndexingService.Helpers
             {
                 value = item.AttributeExtensions[attributeName];
             }
+
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                value = String.Empty;
+            }
             return value;
         }
 
