@@ -189,7 +189,7 @@ namespace EPiServer.Search.Internal
             return results;
         }
 
-        private IndexingServiceReferenceTransform GetNamedIndexingServiceReference(string name, bool fallbackToDefault = true)
+        private IndexingServiceReference GetNamedIndexingServiceReference(string name, bool fallbackToDefault = true)
         {
             // Use default indexing service name if passed serviceName is null or empty
             if (string.IsNullOrEmpty(name) && fallbackToDefault)
@@ -310,7 +310,7 @@ namespace EPiServer.Search.Internal
             return resultsPaged;
         }
 
-        internal async virtual System.Threading.Tasks.Task<string> MakeHttpRequest(string url, string method, IndexingServiceReferenceTransform indexingServiceReference, string postData = null, Action<Stream> responseStreamHandler = null)
+        internal async virtual System.Threading.Tasks.Task<string> MakeHttpRequest(string url, string method, IndexingServiceReference indexingServiceReference, string postData = null, Action<Stream> responseStreamHandler = null)
         {
             using (var client = new HttpClient())
             {

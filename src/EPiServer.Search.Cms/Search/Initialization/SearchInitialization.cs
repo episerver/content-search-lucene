@@ -63,16 +63,6 @@ namespace EPiServer.Search.Initialization
             //Load search result filter providers
             SearchSettings.LoadSearchResultFilterProviders(searchOptions, context.Locate.Advanced);
 
-            // Provoke a certificate error if user configured an invalid certificate
-            foreach (var serviceReference in searchOptions.IndexingServiceReferences)
-            {
-                if (!serviceReference.BaseUri.IsWellFormedOriginalString())
-                {
-                    throw new ArgumentException($"The Base uri is not well formed '{serviceReference.BaseUri}'");
-                }
-                serviceReference.GetClientCertificate();
-            }
-
             // TO BE UPDATED: investigate why old code need to check installer
             if (context == null)
             {
