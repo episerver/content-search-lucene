@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Security.Cryptography.X509Certificates;
 
 namespace EPiServer.Search.Configuration
 {
@@ -22,15 +21,5 @@ namespace EPiServer.Search.Configuration
         /// Gets or sets the access key for the indexing service
         /// </summary>
         public string AccessKey { get; set; }
-
-        /// <summary>
-        /// Gets or sets the reference of the certificate to use
-        /// </summary>
-        public CertificateReference Certificate { get; set; }
-
-        /// <summary>
-        /// Gets or set if untrusted certificates should be allowed
-        /// </summary>
-        public bool CertificateAllowUntrusted { get; set; }
     }
 }

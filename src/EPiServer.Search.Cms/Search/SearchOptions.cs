@@ -312,7 +312,7 @@ namespace EPiServer.Search
         /// <summary>
         /// Contains a list of references for indexing services.
         /// </summary>
-        public List<IndexingServiceReferenceTransform> IndexingServiceReferences { get; } = new List<IndexingServiceReferenceTransform>();
+        public List<IndexingServiceReference> IndexingServiceReferences { get; } = new List<IndexingServiceReference>();
 
         /// <summary>
         /// The name of the default indexing service in <see cref="IndexingServiceReferences"/>

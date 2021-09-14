@@ -5,15 +5,13 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.ServiceModel.Syndication;
+using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using EPiServer.Logging;
 using EPiServer.Models;
 using EPiServer.Search.Configuration;
-//using EPiServer.Search.Configuration;
 using EPiServer.Search.Filter;
-using EPiServer.Web;
 
 namespace EPiServer.Search.Internal
 {
@@ -41,11 +39,11 @@ namespace EPiServer.Search.Internal
                     string jsonData = JsonSerializer.Serialize(feed);
                     sw.Write(jsonData);
 
-                    string url = serviceReference.BaseUri + _options.UpdateUriTemplate.Replace("{accesskey}", serviceReference.AccessKey);
+                    string url = serviceReference.BaseUri + _options.UpdateUriTemplate.Replace("{accessKey}", serviceReference.AccessKey);
 
                     try
                     {
-                        MakeHttpRequest(url, "POST", serviceReference, stream, null);
+                        MakeHttpRequest(url, "POST", serviceReference, jsonData, null).Wait();
 
                         return true;
                     }
@@ -69,7 +67,7 @@ namespace EPiServer.Search.Internal
 
             var parameterMapper = new Dictionary<string, string>();
             parameterMapper.Add("{namedindex}", namedIndex);
-            parameterMapper.Add("{accesskey}", serviceReference.AccessKey);
+            parameterMapper.Add("{accessKey}", serviceReference.AccessKey);
 
             string url = _options.ResetUriTemplate;
             foreach (string key in parameterMapper.Keys)
@@ -81,7 +79,7 @@ namespace EPiServer.Search.Internal
 
             try
             {
-                MakeHttpRequest(url, _options.ResetHttpMethod, serviceReference, null, null);
+                MakeHttpRequest(url, _options.ResetHttpMethod, serviceReference, null, null).Wait();
             }
             catch (Exception e)
             {
@@ -113,17 +111,12 @@ namespace EPiServer.Search.Internal
 
             try
             {
-                MakeHttpRequest(url, "GET", serviceReference, null, (response) =>
+                var responseString = MakeHttpRequest(url, "GET", serviceReference, null, null).Result;
+                var feeds = JsonSerializer.Deserialize<FeedModel>(responseString);
+                foreach (var feed in feeds.Items)
                 {
-                    using (var sr = new StreamReader(response))
-                    {
-                        FeedModel feeds = JsonSerializer.Deserialize<FeedModel>(sr.ReadToEnd());
-                        foreach (var feed in feeds.Items)
-                        {
-                            namedIndexes.Add(feed.Title);
-                        }
-                    }
-                });
+                    namedIndexes.Add(feed.Title);
+                }
             }
             catch (Exception e)
             {
@@ -176,10 +169,14 @@ namespace EPiServer.Search.Internal
 
             try
             {
-                MakeHttpRequest(url, "GET", serviceReference, null, (response) =>
-                {
-                    results = PopulateSearchResultsFromFeed(response, offset, limit);
-                });
+                var responseString = MakeHttpRequest(url, "GET", serviceReference, null, null).Result;
+
+                results = PopulateSearchResultsFromFeed(responseString, offset, limit);
+
+                //MakeHttpRequest(url, "GET", serviceReference, null, (response) =>
+                //{
+                //    results = PopulateSearchResultsFromFeed(response, offset, limit);
+                //});
             }
             catch (Exception e)
             {
@@ -192,7 +189,7 @@ namespace EPiServer.Search.Internal
             return results;
         }
 
-        private IndexingServiceReferenceTransform GetNamedIndexingServiceReference(string name, bool fallbackToDefault = true)
+        private IndexingServiceReference GetNamedIndexingServiceReference(string name, bool fallbackToDefault = true)
         {
             // Use default indexing service name if passed serviceName is null or empty
             if (string.IsNullOrEmpty(name) && fallbackToDefault)
@@ -214,171 +211,124 @@ namespace EPiServer.Search.Internal
             return reference;
         }
 
-        private SearchResults PopulateSearchResultsFromFeed(Stream stream, int offset, int limit)
+        private SearchResults PopulateSearchResultsFromFeed(string response, int offset, int limit)
         {
-            using (var sr = new StreamReader(stream))
+            FeedModel feeds = JsonSerializer.Deserialize<FeedModel>(response);
+
+            var resultsFiltered = new SearchResults();
+            int totalHits = 0;
+
+            int.TryParse(feeds.AttributeExtensions[_options.SyndicationFeedAttributeNameTotalHits], out totalHits);
+            string version = feeds.AttributeExtensions[_options.SyndicationFeedAttributeNameVersion];
+
+            foreach (FeedItemModel feed in feeds.Items)
             {
-                FeedModel feeds = JsonSerializer.Deserialize<FeedModel>(sr.ReadToEnd());
-
-                var resultsFiltered = new SearchResults();
-                int totalHits = 0;
-
-                int.TryParse(feeds.AttributeExtensions[_options.SyndicationFeedAttributeNameTotalHits], out totalHits);
-                string version = feeds.AttributeExtensions[_options.SyndicationFeedAttributeNameVersion];
-
-                foreach (FeedItemModel feed in feeds.Items)
+                try
                 {
-                    try
+                    var item = new IndexResponseItem(feed.Id);
+                    item.Title = feed.Title;
+                    item.DisplayText = feed.DisplayText;
+                    item.Created = feed.Created;
+                    item.Modified = feed.Modified;
+                    item.Uri = feed.Uri;
+
+                    item.Culture = feed.AttributeExtensions[_options.SyndicationItemAttributeNameCulture];
+                    item.ItemType = feed.AttributeExtensions[_options.SyndicationItemAttributeNameType];
+                    item.NamedIndex = feed.AttributeExtensions[_options.SyndicationItemAttributeNameNamedIndex];
+                    item.Metadata = feed.AttributeExtensions[_options.SyndicationItemElementNameMetadata];
+
+                    DateTime publicationEnd;
+                    DateTime.TryParse(feed.AttributeExtensions[_options.SyndicationItemAttributeNamePublicationEnd], CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out publicationEnd);
+                    item.PublicationEnd = publicationEnd;
+
+                    DateTime publicationStart;
+                    DateTime.TryParse(feed.AttributeExtensions[_options.SyndicationItemAttributeNamePublicationStart], CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out publicationStart);
+                    item.PublicationStart = publicationStart;
+
+                    //Boost factor
+                    float fltBoostFactor = 1;
+                    item.BoostFactor = (float.TryParse(feed.AttributeExtensions[_options.SyndicationItemAttributeNameBoostFactor], out fltBoostFactor)) ? fltBoostFactor : 1;
+
+                    // Data Uri
+                    Uri uri = null;
+                    item.DataUri = ((Uri.TryCreate(feed.AttributeExtensions[_options.SyndicationItemAttributeNameDataUri],
+                        UriKind.RelativeOrAbsolute, out uri)) ? uri : null);
+
+                    //Score
+                    float score = 0;
+                    item.Score = (float.TryParse(feed.AttributeExtensions[_options.SyndicationItemAttributeNameScore], out score)) ? score : 0;
+
+
+                    foreach (string author in feed.Authors)
                     {
-                        var item = new IndexResponseItem(feed.Id);
-                        item.Title = feed.Title;
-                        item.DisplayText = feed.DisplayText;
-                        item.Created = feed.Created;
-                        item.Modified = feed.Modified;
-                        item.Uri = feed.Uri;
-
-                        item.Culture = feed.AttributeExtensions[_options.SyndicationItemAttributeNameCulture];
-                        item.ItemType = feed.AttributeExtensions[_options.SyndicationItemAttributeNameType];
-                        item.NamedIndex = feed.AttributeExtensions[_options.SyndicationItemAttributeNameNamedIndex];
-                        item.Metadata = feed.AttributeExtensions[_options.SyndicationItemElementNameMetadata];
-
-                        DateTime publicationEnd;
-                        DateTime.TryParse(feed.AttributeExtensions[_options.SyndicationItemAttributeNamePublicationEnd], CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out publicationEnd);
-                        item.PublicationEnd = publicationEnd;
-
-                        DateTime publicationStart;
-                        DateTime.TryParse(feed.AttributeExtensions[_options.SyndicationItemAttributeNamePublicationStart], CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out publicationStart);
-                        item.PublicationStart = publicationEnd;
-
-                        //Boost factor
-                        float fltBoostFactor = 1;
-                        item.BoostFactor = (float.TryParse(feed.AttributeExtensions[_options.SyndicationItemAttributeNameBoostFactor], out fltBoostFactor)) ? fltBoostFactor : 1;
-
-                        // Data Uri
-                        Uri uri = null;
-                        item.DataUri = ((Uri.TryCreate(feed.AttributeExtensions[_options.SyndicationItemAttributeNameDataUri],
-                            UriKind.RelativeOrAbsolute, out uri)) ? uri : null);
-
-                        //Score
-                        float score = 0;
-                        item.Score = (float.TryParse(feed.AttributeExtensions[_options.SyndicationItemAttributeNameScore], out score)) ? score : 0;
-
-                        
-                        foreach (string author in feed.Authors)
-                        {
-                            item.Authors.Add(author);
-                        }
-
-                        foreach (string category in feed.Categories)
-                        {
-                            item.Categories.Add(category);
-                        }
-
-                        foreach (var acl in (Collection<string>)feed.ElementExtensions[_options.SyndicationItemElementNameAcl])
-                        {
-                            item.AccessControlList.Add(acl);
-                        }
-
-                        foreach (var virtualpath in (Collection<string>)feed.ElementExtensions[_options.SyndicationItemElementNameVirtualPath])
-                        {
-                            item.VirtualPathNodes.Add(virtualpath);
-                        }
-
-                        if (SearchResultFilterHandler.Include(item))
-                        {
-                            resultsFiltered.IndexResponseItems.Add(item);
-                        }
+                        item.Authors.Add(author);
                     }
-                    catch (Exception e)
+
+                    foreach (string category in feed.Categories)
                     {
-                        _log.Error(string.Format("Could not populate search results for syndication item with id '{0}'. Message: {1}{2}", feed.Id, e.Message, e.StackTrace));
+                        item.Categories.Add(category);
+                    }
+
+                    foreach (var acl in (Collection<string>)feed.ElementExtensions[_options.SyndicationItemElementNameAcl])
+                    {
+                        item.AccessControlList.Add(acl);
+                    }
+
+                    foreach (var virtualpath in (Collection<string>)feed.ElementExtensions[_options.SyndicationItemElementNameVirtualPath])
+                    {
+                        item.VirtualPathNodes.Add(virtualpath);
+                    }
+
+                    if (SearchResultFilterHandler.Include(item))
+                    {
+                        resultsFiltered.IndexResponseItems.Add(item);
                     }
                 }
-
-                // if we are using server side paging we can return filtered result using total hits returned from service 
-                if (_options.UseIndexingServicePaging)
+                catch (Exception e)
                 {
-                    resultsFiltered.TotalHits = totalHits;
-                    resultsFiltered.Version = version;
-                    return resultsFiltered;
+                    _log.Error(string.Format("Could not populate search results for syndication item with id '{0}'. Message: {1}{2}", feed.Id, e.Message, e.StackTrace));
                 }
-
-                // If we are using client paging we need to page the filtered results
-                var resultsPaged = new SearchResults();
-                resultsPaged.TotalHits = resultsFiltered.IndexResponseItems.Count;
-                foreach (var item in resultsFiltered.IndexResponseItems.Skip(offset).Take(limit))
-                {
-                    resultsPaged.IndexResponseItems.Add(item);
-                }
-
-                resultsPaged.Version = version;
-                return resultsPaged;
             }
+
+            // if we are using server side paging we can return filtered result using total hits returned from service 
+            if (_options.UseIndexingServicePaging)
+            {
+                resultsFiltered.TotalHits = totalHits;
+                resultsFiltered.Version = version;
+                return resultsFiltered;
+            }
+
+            // If we are using client paging we need to page the filtered results
+            var resultsPaged = new SearchResults();
+            resultsPaged.TotalHits = resultsFiltered.IndexResponseItems.Count;
+            foreach (var item in resultsFiltered.IndexResponseItems.Skip(offset).Take(limit))
+            {
+                resultsPaged.IndexResponseItems.Add(item);
+            }
+
+            resultsPaged.Version = version;
+            return resultsPaged;
         }
 
-        private static void CopyStream(Stream input, Stream output)
+        internal async virtual System.Threading.Tasks.Task<string> MakeHttpRequest(string url, string method, IndexingServiceReference indexingServiceReference, string postData = null, Action<Stream> responseStreamHandler = null)
         {
-            var buffer = new byte[32768];
-            while (true)
+            using (var client = new HttpClient())
             {
-                int read = input.Read(buffer, 0, buffer.Length);
-                if (read <= 0)
-                    return;
-                output.Write(buffer, 0, read);
-            }
-        }
-
-        internal virtual void MakeHttpRequest(string url, string method, IndexingServiceReferenceTransform indexingServiceReference, Stream postData = null, Action<Stream> responseStreamHandler = null)
-        {
-            var request = WebRequest.Create(url) as HttpWebRequest;
-            request.UseDefaultCredentials = true;
-
-            if (request is HttpWebRequest)
-            {
-                var hwr = request;
-                var cert = indexingServiceReference.GetClientCertificate();
-                if (cert != null)
+                if (method == "POST" || method == "DELETE" || method == "PUT")
                 {
-                    hwr.ClientCertificates.Add(cert);
-                }
-                if (indexingServiceReference.CertificateAllowUntrusted)
-                {
-                    ServicePointManager.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) =>
-                    {
-                        return true;
-                    };
-                }
-            }
-
-            request.Method = method;
-            if (method == "POST" || method == "DELETE" || method == "PUT")
-            {
-                request.ContentType = "application/json";
-                if (postData != null)
-                {
-                    request.ContentLength = postData.Length;
-
-                    var dataStream = request.GetRequestStream();
-                    CopyStream(postData, dataStream);
-                    dataStream.Close();
+                    var content = new StringContent(
+                        postData,
+                        Encoding.UTF8,
+                        "application/json"
+                    );
+                    var result = await client.PostAsync(url, content);
+                    return await result.Content.ReadAsStringAsync();
                 }
                 else
                 {
-                    request.ContentLength = 0;
+                    var result = await client.GetAsync(url);
+                    return await result.Content.ReadAsStringAsync();
                 }
-
-                // Get the response.
-                var response = request.GetResponse();
-                responseStreamHandler?.Invoke(response.GetResponseStream());
-                response.Close();
-            }
-            else if (method == "GET")
-            {
-                request.ContentType = "application/json";
-
-                var response = request.GetResponse();
-                responseStreamHandler?.Invoke(response.GetResponseStream());
-                response.Close();
             }
         }
     }

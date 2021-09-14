@@ -82,21 +82,12 @@ namespace EPiServer.Search.Configuration.Transform.Internal
             _options.DefaultIndexingServiceName = _section.NamedIndexingServices?.DefaultService;
             foreach (var indexingReference in _section.NamedIndexingServices?.Services?.OfType<IndexingServiceReference>() ?? Enumerable.Empty<IndexingServiceReference>())
             {
-                var reference = new IndexingServiceReferenceTransform()
+                var reference = new IndexingServiceReference()
                 {
                     AccessKey = indexingReference.AccessKey,
                     BaseUri = indexingReference.BaseUri,
-                    CertificateAllowUntrusted = indexingReference.CertificateAllowUntrusted,
                     Name = indexingReference.Name
                 };
-                if (indexingReference.Certificate != null && indexingReference.Certificate.ElementInformation.IsPresent)
-                    reference.Certificate = new CertificateReference
-                    {
-                        FindValue = indexingReference.Certificate.FindValue,
-                        StoreLocation = indexingReference.Certificate.StoreLocation,
-                        StoreName = indexingReference.Certificate.StoreName,
-                        X509FindType = indexingReference.Certificate.X509FindType
-                    };
 
                 _options.IndexingServiceReferences.Add(reference);
             }

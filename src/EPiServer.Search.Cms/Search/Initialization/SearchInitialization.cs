@@ -63,26 +63,15 @@ namespace EPiServer.Search.Initialization
             //Load search result filter providers
             SearchSettings.LoadSearchResultFilterProviders(searchOptions, context.Locate.Advanced);
 
-            // Provoke a certificate error if user configured an invalid certificate
-            foreach (var serviceReference in searchOptions.IndexingServiceReferences)
-            {
-                if (!serviceReference.BaseUri.IsWellFormedOriginalString())
-                {
-                    throw new ArgumentException($"The Base uri is not well formed '{serviceReference.BaseUri}'");
-                }
-                serviceReference.GetClientCertificate();
-            }
-
-            // Avoid starting the Queue flush timer during installation, since it risks breaking appdomain unloading
-            // (it may stall in unmanaged code (socket/http request) causing an UnloadAppDomainException)
+            // TO BE UPDATED: investigate why old code need to check installer
             if (context == null)
             {
-                var queueHandler = context.Locate.Advanced.GetInstance<RequestQueueHandler>();
-                queueHandler.StartQueueFlushTimer();
+                _log.Information("Didn't start the Queue Flush timer, since context is null");
             }
             else
             {
-                _log.Information("Didn't start the Queue Flush timer, since context is null");
+                var queueHandler = context.Locate.Advanced.GetInstance<RequestQueueHandler>();
+                queueHandler.StartQueueFlushTimer();
             }
 
             //Fire event telling that the default configuration is loaded
