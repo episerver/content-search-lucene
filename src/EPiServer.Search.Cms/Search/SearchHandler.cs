@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using EPiServer.Search.Internal;
 using EPiServer.Search.Queries;
 using EPiServer.ServiceLocation;
+using Microsoft.Extensions.Options;
 
 namespace EPiServer.Search
 {
@@ -17,11 +18,11 @@ namespace EPiServer.Search
         /// <summary>
         /// Initializes a new instance of the <see cref="SearchHandler"/> class.
         /// </summary>
-        public SearchHandler(RequestHandler requestHandler, RequestQueueHandler requestQueueHandler)
+        public SearchHandler(RequestHandler requestHandler, RequestQueueHandler requestQueueHandler, IOptions<SearchOptions> options)
         {
             _requestHandler = requestHandler;
             _requestQueueHandler = requestQueueHandler;
-            _options = SearchSettings.Options;
+            _options = options.Value;
         }
 
         [Obsolete("Request the SearchHandler from the service container.")]

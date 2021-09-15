@@ -9,6 +9,7 @@ using EPiServer.Framework;
 using EPiServer.Logging;
 using EPiServer.Models;
 using EPiServer.Search.Data;
+using Microsoft.Extensions.Options;
 
 namespace EPiServer.Search.Internal
 {
@@ -24,11 +25,11 @@ namespace EPiServer.Search.Internal
         private readonly SearchOptions _options;
         private readonly ITimeProvider _timeProvider;
 
-        public RequestQueueHandler(RequestHandler requestHandler, RequestQueue queue, ITimeProvider timeProvider)
+        public RequestQueueHandler(RequestHandler requestHandler, RequestQueue queue, IOptions<SearchOptions> options, ITimeProvider timeProvider)
         {
             _requestHandler = requestHandler;
             _queue = queue;
-            _options = SearchSettings.Options;
+            _options = options.Value;
             _timeProvider = timeProvider;
 
             _queueFlushTimer = new System.Timers.Timer(_options.QueueFlushInterval * 1000)
