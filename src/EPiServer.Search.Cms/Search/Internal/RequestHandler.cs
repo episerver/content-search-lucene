@@ -12,6 +12,7 @@ using EPiServer.Logging;
 using EPiServer.Models;
 using EPiServer.Search.Configuration;
 using EPiServer.Search.Filter;
+using Microsoft.Extensions.Options;
 
 namespace EPiServer.Search.Internal
 {
@@ -21,10 +22,11 @@ namespace EPiServer.Search.Internal
     public class RequestHandler
     {
         private static ILogger _log = LogManager.GetLogger();
-        private readonly SearchOptions _options = SearchSettings.Options;
+        private readonly SearchOptions _options;
 
-        public RequestHandler()
+        public RequestHandler(IOptions<SearchOptions> options)
         {
+            _options = options.Value;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times")]
