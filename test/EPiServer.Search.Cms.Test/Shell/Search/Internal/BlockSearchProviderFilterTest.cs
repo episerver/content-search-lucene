@@ -19,6 +19,7 @@ using EPiServer.Shell;
 using EPiServer.Shell.Search;
 using EPiServer.Web;
 using EPiServer.Web.Routing;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -43,7 +44,7 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
             AddBlock(Block1Guid, Block1ContentRef, CultureInfo.CreateSpecificCulture("en"));
             AddBlock(Block2Guid, Block2ContentRef, CultureInfo.CreateSpecificCulture("en"));
 
-            _languageResolver.Setup(x => x.GetPreferredCulture()).Returns(CultureInfo.CreateSpecificCulture("en"));
+            _languageResolver.Setup(x => x.Language).Returns(CultureInfo.CreateSpecificCulture("en"));
 
             _results = _searchProvider.Search(new Query("yo"));
         }
@@ -100,7 +101,7 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
         {
             base.Initialize();
 
-            _languageResolver.Setup(x => x.GetPreferredCulture()).Returns(CultureInfo.CreateSpecificCulture("en-US"));
+            _languageResolver.Setup(x => x.Language).Returns(CultureInfo.CreateSpecificCulture("en-US"));
 
             AddBlock(Block1Guid, Block1ContentRef, CultureInfo.CreateSpecificCulture("en-US"));
             AddBlock(Block2Guid, Block1ContentRef, CultureInfo.CreateSpecificCulture("sv-SE"), true);
@@ -154,7 +155,7 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
         protected Mock<ContentSearchHandler> _contentSearchHandler;
         protected Mock<IContentTypeRepository<BlockType>> _contentTypeRepository;
         protected Mock<ISiteDefinitionResolver> _siteDefinitionResolver;
-        protected Mock<LanguageResolver> _languageResolver;
+        protected Mock<IContentLanguageAccessor> _languageResolver;
 
         protected Guid Block1Guid = new Guid("{979E6C95-94DE-4DE7-A08D-DFBAF15F18D7}");
         protected ContentReference Block1ContentRef = new ContentReference(1);
@@ -173,7 +174,7 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
 
         public virtual void Initialize()
         {
-            _searchHandler = new Mock<SearchHandler>(null, null, new SearchOptions());
+            _searchHandler = new Mock<SearchHandler>(null, null, Options.Create(new SearchOptions()));
             _contentTypeRepository = new Mock<IContentTypeRepository<BlockType>>();
 
             _contentRepository = new Mock<IContentRepository>();
@@ -187,7 +188,7 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
 
             _searchHandler.Setup(s => s.GetSearchResults(It.IsAny<GroupQuery>(), It.IsAny<string>(), It.IsAny<Collection<string>>(), It.IsAny<int>(), It.IsAny<int>())).Returns(GetSearchResults);
 
-            _languageResolver = new Mock<LanguageResolver>();
+            _languageResolver = new Mock<IContentLanguageAccessor>();
 
             var uiDescriptorRegistry = new Mock<UIDescriptorRegistry>(null, null);
 
@@ -231,7 +232,7 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
             securable.Setup(x => x.GetSecurityDescriptor())
                 .Returns(new ContentAccessControlList
                 {
-                    new AccessControlEntry(PrincipalInfo.Current.Name, AccessLevel.Administer | AccessLevel.Read, SecurityEntityType.User)
+                    new AccessControlEntry(PrincipalInfo.CurrentPrincipal.Identity.Name, AccessLevel.Administer | AccessLevel.Read, SecurityEntityType.User)
                 });
 
             var localizable = content.As<ILocalizable>();

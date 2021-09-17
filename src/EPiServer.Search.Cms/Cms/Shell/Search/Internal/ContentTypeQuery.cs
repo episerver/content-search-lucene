@@ -5,7 +5,7 @@ using EPiServer.Search.Queries.Lucene;
 
 namespace EPiServer.Cms.Shell.Search.Internal
 {
-    internal class ContentTypeQuery : IQueryExpression
+    public class ContentTypeQuery : IQueryExpression
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ContentTypeQuery"/> class.

@@ -312,7 +312,7 @@ namespace EPiServer.Search.Internal
             return resultsPaged;
         }
 
-        internal async virtual System.Threading.Tasks.Task<string> MakeHttpRequest(string url, string method, IndexingServiceReference indexingServiceReference, string postData = null, Action<Stream> responseStreamHandler = null)
+        protected async virtual System.Threading.Tasks.Task<string> MakeHttpRequest(string url, string method, IndexingServiceReference indexingServiceReference, string postData = null, Action<Stream> responseStreamHandler = null)
         {
             using (var client = new HttpClient())
             {

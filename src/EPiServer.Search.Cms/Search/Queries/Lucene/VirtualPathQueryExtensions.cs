@@ -19,7 +19,7 @@ namespace EPiServer.Search.Queries.Lucene
             query.AddContentNodes(contentLink, ServiceLocator.Current.GetInstance<ContentSearchHandler>());
         }
 
-        internal static void AddContentNodes(this VirtualPathQuery query, ContentReference contentLink, ContentSearchHandler searchHandler)
+        public static void AddContentNodes(this VirtualPathQuery query, ContentReference contentLink, ContentSearchHandler searchHandler)
         {
             if (ContentReference.IsNullOrEmpty(contentLink))
             {

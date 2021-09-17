@@ -14,6 +14,7 @@ using EPiServer.Search.Queries.Lucene;
 using EPiServer.Shell.Search;
 using EPiServer.Web;
 using EPiServer.Web.Routing;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -76,7 +77,7 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
             _searchHandlerMock
                 .Verify(handler => handler.GetSearchResults(
                     It.Is<GroupQuery>(groupQuery => GetQueryExpressionsRecursive<VirtualPathQuery>(groupQuery).Count() == 0),
-                    null,null, It.IsAny<int>(),
+                    null, null, It.IsAny<int>(),
                     It.IsAny<int>()));
         }
 
@@ -101,7 +102,7 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
 
         private void SetupTestSubject()
         {
-            _searchHandlerMock = new Mock<SearchHandler>(null, null, new SearchOptions());
+            _searchHandlerMock = new Mock<SearchHandler>(null, null, Options.Create<SearchOptions>(new SearchOptions()));
             var contentTypeRepositoryMock = new Mock<IContentTypeRepository<BlockType>>();
             var contentRepositoryMock = new Mock<IContentRepository>();
             var contentMock = new Mock<IContent>();
@@ -123,14 +124,14 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
                 new Mock<ISiteDefinitionResolver>().Object,
                 contentTypeRepositoryMock.Object,
                 null,
-                ()=> new FakeSiteDefinition(),
+                () => new FakeSiteDefinition(),
                 contentRepositoryMock.Object,
                 languageBranchRepositoryMock.Object,
                 _searchHandlerMock.Object,
                 contentSearchHandler.Object,
                 new SearchIndexConfig(),
                 null,
-                Mock.Of<LanguageResolver>(),
+                Mock.Of<IContentLanguageAccessor>(),
                 Mock.Of<UrlResolver>(),
                 Mock.Of<TemplateResolver>(),
                 Mock.Of<IBlobResolver>());

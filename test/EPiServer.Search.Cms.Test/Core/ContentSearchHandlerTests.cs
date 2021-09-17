@@ -8,6 +8,7 @@ using EPiServer.Search.Queries;
 using EPiServer.Search.Queries.Lucene;
 using EPiServer.Security;
 using EPiServer.SpecializedProperties;
+using Microsoft.Extensions.Options;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -82,6 +83,8 @@ namespace EPiServer.Core
 
             var block = sharedBlockCreator.CreateSharedBlock(typeof(BlockData));
             block.ContentGuid = Guid.NewGuid();
+            (block as IChangeTrackable).Created = DateTime.Now.ToUniversalTime();
+            (block as IChangeTrackable).Changed = DateTime.Now.ToUniversalTime();
             (block as ILocalizable).Language = CultureInfo.GetCultureInfo("en");
 
             _testSubject.UpdateItem(block);
@@ -99,6 +102,8 @@ namespace EPiServer.Core
 
             var block = sharedBlockCreator.CreateSharedBlock(typeof(BlockData));
             block.ContentGuid = Guid.NewGuid();
+            (block as IChangeTrackable).Created = DateTime.Now.ToUniversalTime();
+            (block as IChangeTrackable).Changed = DateTime.Now.ToUniversalTime();
             (block as ILocalizable).Language = CultureInfo.GetCultureInfo("en");
             block.Name = "My Awesome Block";
 
@@ -545,7 +550,7 @@ namespace EPiServer.Core
         private class MockSearchHandler : SearchHandler
         {
             public MockSearchHandler()
-                : base(null, null, new SearchOptions()) { }
+                : base(null, null, Options.Create<SearchOptions>(new SearchOptions())) { }
 
             public IndexItemBase UpdatedIndexItem { get; set; }
             public IQueryExpression ExecutedSearchQuery { get; set; }

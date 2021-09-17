@@ -10,7 +10,7 @@ namespace EPiServer.Search.Internal
     /// <summary>
     /// Parses out indexeable text from HTML
     /// </summary>
-    internal class IndexHtmlFilter
+    public class IndexHtmlFilter
     {
         /// <summary>
         /// A list of HTML 5 block tags that semantically for text can be translated to a line break
@@ -20,7 +20,7 @@ namespace EPiServer.Search.Internal
                 "br", "p", "pre", "section", "td", "div", "h1", "h2", "h3", "h4", "h5", "h6", "li", "hr", "blockquote", "address", "nav", "article", "main", "aside", "header", "footer", "figcaption"
             };
 
-        internal string StripHtml(string input)
+        public string StripHtml(string input)
         {
             bool newLineWritten = true;
 

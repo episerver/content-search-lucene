@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Web;
+using EPiServer.Authorization;
 using EPiServer.Cms.Shell.Search.Internal;
 using EPiServer.Core;
 using EPiServer.DataAbstraction;
@@ -44,7 +45,7 @@ namespace EPiServer.Cms.Shell.Search
         /// </summary>
         protected EPiServerSearchProviderBase(LocalizationService localizationService, ISiteDefinitionResolver siteDefinitionResolver, IContentTypeRepository<TContentType> contentTypeRepository, EditUrlResolver editUrlResolver,
             ServiceAccessor<SiteDefinition> currentSiteDefinition, IContentRepository contentRepository, ILanguageBranchRepository languageBranchRepository, SearchHandler searchHandler, ContentSearchHandler contentSearchHandler,
-            SearchIndexConfig searchIndexConfig, UIDescriptorRegistry uiDescriptorRegistry, LanguageResolver languageResolver, UrlResolver urlResolver, TemplateResolver templateResolver)
+            SearchIndexConfig searchIndexConfig, UIDescriptorRegistry uiDescriptorRegistry, IContentLanguageAccessor languageResolver, UrlResolver urlResolver, TemplateResolver templateResolver)
             : base(localizationService, siteDefinitionResolver, contentTypeRepository, editUrlResolver, currentSiteDefinition, languageResolver, urlResolver, templateResolver, uiDescriptorRegistry)
         {
             Validator.ThrowIfNull("contentRepository", contentRepository);
@@ -56,18 +57,18 @@ namespace EPiServer.Cms.Shell.Search
             _searchIndexConfig = searchIndexConfig;
             _uiDescriptorRegistry = uiDescriptorRegistry;
 
-            HasAdminAccess = () => PrincipalInfo.HasAdminAccess;
+            HasAdminAccess = () => PrincipalInfo.CurrentPrincipal.IsInRole(Roles.Administrators);
         }
 
         /// <summary>
         /// Delegate to make PrincipalInfo testable
         /// </summary>
-        internal Func<bool> HasAdminAccess { get; set; }
+        public Func<bool> HasAdminAccess { get; set; }
 
         /// <summary>
         /// If search is active, for testability only.
         /// </summary>
-        protected internal virtual bool IsSearchActive
+        public virtual bool IsSearchActive
         {
             get { return !_isSearchActive.HasValue ? ServiceLocation.ServiceLocator.Current.GetInstance<SearchOptions>().Active : _isSearchActive.Value; }
             set { _isSearchActive = value; }
@@ -202,7 +203,7 @@ namespace EPiServer.Cms.Shell.Search
             if (!HasAdminAccess())
             {
                 var aclQuery = new AccessControlListQuery();
-                aclQuery.AddAclForUser(PrincipalInfo.Current, HttpContext.Current);
+                aclQuery.AddAclForUser(new AccessControlList());
                 groupQuery.QueryExpressions.Add(aclQuery);
             }
 
@@ -267,7 +268,7 @@ namespace EPiServer.Cms.Shell.Search
             if (query.FilterOnCulture)
             {
                 //If we should filter on culture, only get hits on current language.
-                cultureQuery.QueryExpressions.Add(new FieldQuery(LanguageResolver.GetPreferredCulture().Name, Field.Culture));
+                cultureQuery.QueryExpressions.Add(new FieldQuery(LanguageResolver.Language.Name, Field.Culture));
             }
             else
             {

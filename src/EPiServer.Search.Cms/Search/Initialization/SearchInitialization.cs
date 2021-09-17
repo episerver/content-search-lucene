@@ -183,7 +183,7 @@ namespace EPiServer.Search.Initialization
 
         #region Event handlers
 
-        internal class SearchEventHandler
+        public class SearchEventHandler
         {
             private const string DeletedVirtualPathNodes = "DeletedVirtualPathNodes";
 

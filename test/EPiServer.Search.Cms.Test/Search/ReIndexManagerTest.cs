@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using EPiServer.Search.Internal;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -65,7 +66,7 @@ namespace EPiServer.Search
 
         private static ReIndexManager ReIndexManager(params IReIndexable[] reIndexable)
         {
-            var searchHandler = new Mock<SearchHandler>(null, null, null).Object;
+            var searchHandler = new Mock<SearchHandler>(null, null, Options.Create(new SearchOptions())).Object;
             return new ReIndexManager(searchHandler, reIndexable ?? Enumerable.Empty<IReIndexable>());
         }
     }

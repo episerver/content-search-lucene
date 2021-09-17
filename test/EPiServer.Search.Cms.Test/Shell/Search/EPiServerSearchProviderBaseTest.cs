@@ -18,6 +18,7 @@ using EPiServer.Shell;
 using EPiServer.Shell.Search;
 using EPiServer.Web;
 using EPiServer.Web.Routing;
+using Microsoft.Extensions.Options;
 using Moq;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -36,7 +37,7 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
 
         public EPiServerSearchProviderBaseTest()
         {
-            _searchHandler = new Mock<SearchHandler>(null, null, new SearchOptions());
+            _searchHandler = new Mock<SearchHandler>(null, null, Options.Create(new SearchOptions()));
             _contentTypeRepository = new Mock<IContentTypeRepository>();
 
             _contentRepository = new Mock<IContentRepository>();
@@ -65,7 +66,7 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
                     new UIDescriptor(typeof (IContentVideo)),
                     new UIDescriptor(typeof (YouTubeVideo))
                 }, null),
-                Mock.Of<LanguageResolver>(),
+                Mock.Of<IContentLanguageAccessor>(),
                 Mock.Of<UrlResolver>(),
                 Mock.Of<TemplateResolver>());
             _searchProvider.HasAdminAccess = () => true;
@@ -309,7 +310,7 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
             ContentSearchHandler contentSearchHandler,
             SearchIndexConfig searchIndexConfig,
             UIDescriptorRegistry uiDescriptorRegistry,
-            LanguageResolver languageResolver,
+            IContentLanguageAccessor languageResolver,
             UrlResolver urlResolver,
             TemplateResolver templateResolver)
             : base(localizationService, siteDefinitionResolver, contentTypeRepository, null, currentSiteDefinition, contentRepository, languageBranchRepository, searchHandler, contentSearchHandler, searchIndexConfig, uiDescriptorRegistry, languageResolver, urlResolver, templateResolver)

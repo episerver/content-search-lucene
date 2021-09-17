@@ -25,7 +25,7 @@ namespace EPiServer.Cms.Shell.Search.Internal
         /// </summary>
         public BlockSearchProvider(LocalizationService localizationService, ISiteDefinitionResolver siteDefinitionResolver, IContentTypeRepository<BlockType> blockTypeRepository, EditUrlResolver editUrlResolver, 
             ServiceAccessor<SiteDefinition> currentSiteDefinition, IContentRepository contentRepository, ILanguageBranchRepository languageBranchRepository, SearchHandler searchHandler, ContentSearchHandler contentSearchHandler, 
-            SearchIndexConfig searchIndexConfig, UIDescriptorRegistry uiDescriptorRegistry, LanguageResolver languageResolver, UrlResolver urlResolver, TemplateResolver templateResolver, IBlobResolver blobResolver)
+            SearchIndexConfig searchIndexConfig, UIDescriptorRegistry uiDescriptorRegistry, IContentLanguageAccessor languageResolver, UrlResolver urlResolver, TemplateResolver templateResolver, IBlobResolver blobResolver)
            : base(localizationService, siteDefinitionResolver, blockTypeRepository, editUrlResolver, currentSiteDefinition, contentRepository, languageBranchRepository, searchHandler, contentSearchHandler, searchIndexConfig, uiDescriptorRegistry, languageResolver, urlResolver, templateResolver)
         {
             BlobResolver = new Injected<IBlobResolver>(blobResolver);
@@ -110,7 +110,7 @@ namespace EPiServer.Cms.Shell.Search.Internal
                 {
                     // If the content is in the preferred culture on is the master language branch return that
                     // otherwise let the system get the most appropriate version
-                    if (content.IsInCulture(LanguageResolver.GetPreferredCulture()) || content.IsMasterLanguageBranch())
+                    if (content.IsInCulture(LanguageResolver.Language) || content.IsMasterLanguageBranch())
                     {
                         filteredResults.Add(content);
                     }
@@ -118,7 +118,7 @@ namespace EPiServer.Cms.Shell.Search.Internal
                 else
                 {
                     //If one of the duplicates match the preferred culture return that
-                    var matchingPreferredCulture = duplicates.FirstOrDefault(d => d.IsInCulture(LanguageResolver.GetPreferredCulture()));
+                    var matchingPreferredCulture = duplicates.FirstOrDefault(d => d.IsInCulture(LanguageResolver.Language));
                     if (matchingPreferredCulture != null)
                     {
                         filteredResults.Add(matchingPreferredCulture);
