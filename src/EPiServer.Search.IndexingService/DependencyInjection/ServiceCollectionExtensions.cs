@@ -21,7 +21,7 @@ namespace EPiServer.Search.IndexingService.DependencyInjection
         /// <summary>
         /// Register services EPiServer.Search.IndexingService
         /// </summary>
-        public static IServiceCollection AddSearchIndexingService(this IServiceCollection services, IConfiguration serviceConfiguration)
+        public static IServiceCollection AddSearchIndexingService(this IServiceCollection services, IConfiguration configuration)
         {
             if (services == null)
                 throw new ArgumentNullException(nameof(services));
@@ -37,7 +37,7 @@ namespace EPiServer.Search.IndexingService.DependencyInjection
             services.AddSingleton<ClientElementHandler>();
 
             //register configuration
-            services.Configure<IndexingServiceOptions>(serviceConfiguration);
+            services.Configure<IndexingServiceOptions>(configuration.GetSection("EPiServer:episerver.search.indexingservice"));
             services.AddOptions<EpiserverFrameworkOptions>().PostConfigure<IHostEnvironment>((options, hosting) =>
             {
                 if (options.AppDataPath == null)

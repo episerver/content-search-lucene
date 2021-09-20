@@ -1,5 +1,6 @@
 using EPiServer.Framework;
 using EPiServer.Search.IndexingService.Configuration;
+using EPiServer.Search.IndexingService.DependencyInjection;
 using EPiServer.Search.IndexingService.Helpers;
 using EPiServer.Search.IndexingService.Security;
 using Microsoft.AspNetCore.Builder;
@@ -30,31 +31,7 @@ namespace EPiServer.Search.IndexingService
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            //register
-            services.AddSingleton<IIndexingServiceSettings, IndexingServiceSettings>();
-            services.AddSingleton<IIndexingServiceHandler, IndexingServiceHandler>();
-            services.AddSingleton<IResponseExceptionHelper, ResponseExceptionHelper>();
-            services.AddSingleton<ICommonFunc, CommonFunc>();
-            services.AddSingleton<IFeedHelper, FeedHelper>();
-            services.AddSingleton<IDocumentHelper, DocumentHelper>();
-            services.AddSingleton<ILuceneHelper, LuceneHelper>();
-            services.AddSingleton<ClientElementHandler>();
-
-            //register configuration
-            services.Configure<IndexingServiceOptions>(Configuration.GetSection("EPiServer:episerver.search.indexingservice"));
-            services.AddOptions<EpiserverFrameworkOptions>().PostConfigure<IHostEnvironment>((options, hosting) =>
-            {
-                if (options.AppDataPath == null)
-                {
-                    options.AppDataPath = Path.Combine(hosting.ContentRootPath, EnvironmentOptions.DefaultAppDataFolderName);
-                }
-            });
-
-            services.AddControllers(options =>
-                options.Filters.Add(new HttpResponseExceptionFilter()));
-
-            services.AddHttpContextAccessor();
-            services.AddSingleton<ISecurityHandler,SecurityHandler>();
+            services.AddSearchIndexingService(Configuration);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
