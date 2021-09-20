@@ -18,61 +18,75 @@ namespace EPiServer.Search.Internal
 
         public virtual void Add(IndexRequestQueueItem item)
         {
-            Store().Save(item);
+            if (Store() != null)
+            {
+                Store().Save(item);
+            }
         }
 
         public virtual IEnumerable<IndexRequestQueueItem> Get(string namedIndexingService, int maxCount)
         {
-            var queueItems =
+            if (Store() != null)
+            {
+                var queueItems =
                 (from queueItem in Store().Items<IndexRequestQueueItem>()
                  where queueItem.NamedIndexingService == namedIndexingService
                  orderby queueItem.Timestamp ascending
                  select queueItem).Take(maxCount);
 
-            return queueItems.ToList();
+                return queueItems.ToList();
+            }
+            else 
+                return null;
         }
 
         public virtual void Remove(IEnumerable<IndexRequestQueueItem> items)
         {
-            using (var dataStore = Store())
+            if (Store() != null)
             {
-                foreach (var item in items)
+                using (var dataStore = Store())
                 {
-                    dataStore.Delete(item.Id);
+                    foreach (var item in items)
+                    {
+                        dataStore.Delete(item.Id);
+                    }
                 }
             }
         }
 
         public virtual void Truncate()
         {
-            Store().DeleteAll();
+            if (Store() != null)
+            {
+                Store().DeleteAll();
+            }
         }
 
         public virtual void Truncate(string namedIndexingService, string namedIndex)
         {
-            List<IndexRequestQueueItem> queueItems = null;
-            do
+            if (Store() != null)
             {
-                queueItems = (from queueItem in Store().Items<IndexRequestQueueItem>()
-                              where queueItem.NamedIndexingService == namedIndexingService && queueItem.NamedIndex == namedIndex
-                              select queueItem)
-                              .Take(TruncateBatchSize)
-                              .ToList();
-
-                foreach (var queueItem in queueItems)
+                List<IndexRequestQueueItem> queueItems = null;
+                do
                 {
-                    Store().Delete(queueItem.Id);
-                }
-            } while (queueItems.Count > 0);
+                    queueItems = (from queueItem in Store().Items<IndexRequestQueueItem>()
+                                  where queueItem.NamedIndexingService == namedIndexingService && queueItem.NamedIndex == namedIndex
+                                  select queueItem)
+                                  .Take(TruncateBatchSize)
+                                  .ToList();
+
+                    foreach (var queueItem in queueItems)
+                    {
+                        Store().Delete(queueItem.Id);
+                    }
+                } while (queueItems.Count > 0);
+            }
 
         }
 
         private DynamicDataStore Store()
         {
-            var dataStore = DynamicDataStoreFactory.Instance.GetStore(_options.DynamicDataStoreName) ??
-                DynamicDataStoreFactory.Instance.CreateStore(_options.DynamicDataStoreName, typeof(IndexRequestQueueItem));
-
-            return dataStore;
+            return DynamicDataStoreFactory.Instance.GetStore(_options.DynamicDataStoreName) ?? null;
         }
     }
 }

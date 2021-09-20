@@ -103,8 +103,6 @@ namespace EPiServer.Search.Initialization
 
                 PageTypeConverter.PagesConverted += _eventHandler.PageTypeConverter_PagesConverted;
 
-                RequestQueueRemover requestQueueRemover = new RequestQueueRemover(context.Locate.Advanced.GetInstance<SearchHandler>());
-                ThreadPool.QueueUserWorkItem(new WaitCallback(state => { IndexAllOnce(contentSearchHandler, requestQueueRemover); }));
             }
         }
 
@@ -130,55 +128,6 @@ namespace EPiServer.Search.Initialization
             }
 
             SearchSettings.SearchResultFilterProviders.Clear();
-        }
-
-        private void IndexAllOnce(ContentSearchHandler contentSearchHandler, RequestQueueRemover requestQueueRemover)
-        {
-            lock (_lock)
-            {
-                try
-                {
-                    if (HasIndexingBeenExecuted())
-                    {
-                        return;
-                    }
-
-                    requestQueueRemover.TruncateQueue(new IReIndexable[] { contentSearchHandler });
-                    contentSearchHandler.IndexPublishedContent();
-
-                    Storage.Save(new IndexingInformation() { ExecutionDate = DateTime.Now });
-                }
-                catch (Exception e)
-                {
-                    // We do not want any type of exception left unhandled since we are running on a separete thread.
-                    _log.Warning("Error during full search indexing of content and files.", e);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether the indexing has been executed before.
-        /// </summary>
-        /// <value><c>true</c> if indexing was done; otherwise, <c>false</c>.</value>
-        private bool HasIndexingBeenExecuted()
-        {
-            IndexingInformation execution = Storage.LoadAll<IndexingInformation>().FirstOrDefault();
-
-            if (execution != null && execution.ExecutionDate > DateTime.MinValue)
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        private DynamicDataStore Storage
-        {
-            get
-            {
-                return DynamicDataStoreFactory.Instance.GetStore(typeof(IndexingInformation)) ??
-                    DynamicDataStoreFactory.Instance.CreateStore(typeof(IndexingInformation));
-            }
         }
 
         #region Event handlers
@@ -270,24 +219,5 @@ namespace EPiServer.Search.Initialization
 
         #endregion
 
-        private class RequestQueueRemover
-        {
-            private static readonly ILogger _log = LogManager.GetLogger();
-            private readonly SearchHandler _searchHandler;
-
-            public RequestQueueRemover(SearchHandler searchHandler)
-            {
-                _searchHandler = searchHandler;
-            }
-
-            public void TruncateQueue(IReIndexable[] reIndexables)
-            {
-                foreach (IReIndexable reIndexable in reIndexables)
-                {
-                    _log.Information("The RequestQueueRemover truncate queue with NamedIndexingService '{0}' and NamedIndex '{1}'", reIndexable.NamedIndexingService, reIndexable.NamedIndex);
-                    _searchHandler.TruncateQueue(reIndexable.NamedIndexingService, reIndexable.NamedIndex);
-                }
-            }
-        }
     }
 }
