@@ -22,14 +22,14 @@ namespace EPiServer.Search.Internal
 {
     [ServiceConfiguration(ServiceType = typeof(ContentSearchHandler))]
     [ServiceConfiguration(ServiceType = typeof(IReIndexable))]
-    internal class ContentSearchHandlerImplementation : ContentSearchHandler
+    public class ContentSearchHandlerImplementation : ContentSearchHandler
     {
         private static readonly ILog _log = LogManager.GetLogger(typeof(ContentSearchHandler));
         private const string IgnoreItemSearchId = "<IgnoreItemId>";
- 
-        internal const string ItemTypeSeparator = " ";
-        internal static readonly string BaseItemType = GetItemTypeSection<IContent>();
-        internal const char SearchItemIdSeparator = '|';
+
+        public const string ItemTypeSeparator = " ";
+        public static readonly string BaseItemType = GetItemTypeSection<IContent>();
+        public const char SearchItemIdSeparator = '|';
 
         private IContentTypeRepository _contentTypeRepository;
         private IContentRepository _contentRepository;

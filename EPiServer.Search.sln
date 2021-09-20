@@ -41,6 +41,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{D33CA17A
 		build\NugetPackaging\Tools\Search.psm1 = build\NugetPackaging\Tools\Search.psm1
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EPiServer.Search.Cms.Test", "test\EPiServer.Search.Cms.Test\EPiServer.Search.Cms.Test.csproj", "{0871A3DD-EC64-42C0-9613-1B925F88A73C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -59,6 +61,10 @@ Global
 		{4CA1AC2B-C56E-4BD9-A9A7-1DF5D92125B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4CA1AC2B-C56E-4BD9-A9A7-1DF5D92125B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4CA1AC2B-C56E-4BD9-A9A7-1DF5D92125B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0871A3DD-EC64-42C0-9613-1B925F88A73C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0871A3DD-EC64-42C0-9613-1B925F88A73C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0871A3DD-EC64-42C0-9613-1B925F88A73C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0871A3DD-EC64-42C0-9613-1B925F88A73C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -69,6 +75,7 @@ Global
 		{4CA1AC2B-C56E-4BD9-A9A7-1DF5D92125B3} = {77B389FC-5B38-412C-A3DD-9DF5C89A79B6}
 		{4E633AAF-E8B9-4EED-9C60-D8FBAEF1D4EC} = {300AF888-9BA4-493D-A743-B9EE5D5939D9}
 		{D33CA17A-28DA-4A9B-91AE-C00D87AFF81C} = {4E633AAF-E8B9-4EED-9C60-D8FBAEF1D4EC}
+		{0871A3DD-EC64-42C0-9613-1B925F88A73C} = {0A274FC2-A2E6-4DB2-8BCA-29BB56CF0AD5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1AEE7B9E-A1EF-4554-9D69-DDE6B166765E}

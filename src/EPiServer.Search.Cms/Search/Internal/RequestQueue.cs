@@ -2,6 +2,7 @@
 using System.Linq;
 using EPiServer.Data.Dynamic;
 using EPiServer.Search.Data;
+using Microsoft.Extensions.Options;
 
 namespace EPiServer.Search.Internal
 {
@@ -10,9 +11,9 @@ namespace EPiServer.Search.Internal
         private const int TruncateBatchSize = 100;
         private readonly SearchOptions _options;
 
-        public RequestQueue(SearchOptions options)
+        public RequestQueue(IOptions<SearchOptions> options)
         {
-            _options = options;
+            _options = options.Value;
         }
 
         public virtual void Add(IndexRequestQueueItem item)
