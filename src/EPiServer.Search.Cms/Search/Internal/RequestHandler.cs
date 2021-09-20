@@ -68,7 +68,7 @@ namespace EPiServer.Search.Internal
             var serviceReference = GetNamedIndexingServiceReference(namedIndexingService);
 
             var parameterMapper = new Dictionary<string, string>();
-            parameterMapper.Add("{namedindex}", namedIndex);
+            parameterMapper.Add("{namedIndex}", namedIndex);
             parameterMapper.Add("{accessKey}", serviceReference.AccessKey);
 
             string url = _options.ResetUriTemplate;
@@ -99,7 +99,7 @@ namespace EPiServer.Search.Internal
             var serviceReference = GetNamedIndexingServiceReference(namedIndexingService);
 
             var parameterMapper = new Dictionary<string, string>();
-            parameterMapper.Add("{accesskey}", serviceReference.AccessKey);
+            parameterMapper.Add("{accessKey}", serviceReference.AccessKey);
 
             string url = _options.NamedIndexesUriTemplate;
             foreach (string key in parameterMapper.Keys)

@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EPiServer.Search.Cms.Search.Initialization
+namespace EPiServer.Search.Initialization
 {
     public static class SearchServiceCollectionExtensions
     {
