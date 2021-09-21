@@ -83,27 +83,6 @@ namespace EPiServer.Search.Initialization
                 _log.Debug("Unable to indexing of content because the database is in the ReadOnly mode");
                 return;
             }
-
-            if (SearchSettings.Options.Active && (context.HostType == HostType.WebApplication || context.HostType == HostType.LegacyMirroringAppDomain))
-            {
-                var contentRepo = context.Locate.ContentRepository();
-                var contentSecurityRepo = context.Locate.ContentSecurityRepository();
-                var contentEvents = context.Locate.ContentEvents();
-
-                ContentSearchHandler contentSearchHandler = context.Locate.Advanced.GetInstance<ContentSearchHandler>();
-                _eventHandler = new SearchEventHandler(contentSearchHandler, contentRepo);
-
-                contentEvents.PublishedContent += _eventHandler.ContentEvents_PublishedContent;
-                contentEvents.MovedContent += _eventHandler.ContentEvents_MovedContent;
-                contentEvents.DeletingContent += _eventHandler.ContentEvents_DeletingContent;
-                contentEvents.DeletedContent += _eventHandler.ContentEvents_DeletedContent;
-                contentEvents.DeletedContentLanguage += _eventHandler.ContentEvents_DeletedContentLanguage;
-
-                contentSecurityRepo.ContentSecuritySaved += _eventHandler.ContentSecurityRepository_Saved;
-
-                PageTypeConverter.PagesConverted += _eventHandler.PageTypeConverter_PagesConverted;
-
-            }
         }
 
         /// <inherit-doc/>
