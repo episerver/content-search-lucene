@@ -84,7 +84,7 @@ namespace EPiServer.Job
                     ContentSearchHandler contentSearchHandler = ServiceLocator.Current.GetInstance<ContentSearchHandler>();
                     RequestQueueRemover requestQueueRemover = new RequestQueueRemover(ServiceLocator.Current.GetInstance<SearchHandler>());
 
-                    ThreadPool.QueueUserWorkItem(new WaitCallback(state => { IndexAllOnce(contentSearchHandler, requestQueueRemover); }));
+                    IndexAllOnce(contentSearchHandler, requestQueueRemover);
 
                     InitContentEvent();
 

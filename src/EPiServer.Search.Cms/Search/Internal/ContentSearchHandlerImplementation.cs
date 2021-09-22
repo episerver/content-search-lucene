@@ -17,6 +17,8 @@ using EPiServer.Web;
 using EPiServer.Core;
 using EPiServer.Search.Queries.Lucene.Internal;
 using EPiServer.Core.Internal;
+using Microsoft.Extensions.Options;
+using EPiServer.Search.Data;
 
 namespace EPiServer.Search.Internal
 {
@@ -39,13 +41,19 @@ namespace EPiServer.Search.Internal
         private readonly IPrincipalAccessor _principalAccessor;
         private bool? _searchActive;
         private readonly IAccessControlListQueryBuilder _queryBuilder;
+        private readonly SearchOptions _options;
+        private readonly RequestQueueHandler _requestQueueHandler;
+        private readonly RequestHandler _requestHandler;
 
         public ContentSearchHandlerImplementation(SearchHandler searchHandler,
             IContentRepository contentRepository,
             IContentTypeRepository contentTypeRepository,
             SearchIndexConfig searchIndexConfig,
             IPrincipalAccessor principalAccessor,
-            IAccessControlListQueryBuilder queryBuilder)
+            IAccessControlListQueryBuilder queryBuilder,
+            IOptions<SearchOptions> options,
+            RequestQueueHandler requestQueueHandler,
+            RequestHandler requestHandler)
         {
             Validator.ThrowIfNull("searchHandler", searchHandler);
             Validator.ThrowIfNull("contentRepository", contentRepository);
@@ -62,6 +70,9 @@ namespace EPiServer.Search.Internal
                 _namedIndexes = new Collection<string>();
                 _namedIndexes.Add(NamedIndex);
             }
+            _options = options.Value;
+            _requestQueueHandler = requestQueueHandler;
+            _requestHandler = requestHandler;
         }
 
 
@@ -77,6 +88,8 @@ namespace EPiServer.Search.Internal
 
             SlimContentReader reader = new SlimContentReader(_contentRepository, ContentReference.RootPage, c => { var s = c as ISearchable; return s == null ? true : s.AllowReIndexChildren; });
 
+            var requestQueueItems = new List<IndexRequestQueueItem>();
+
             while (reader.Next())
             {
                 if (!reader.Current.ContentLink.CompareToIgnoreWorkID(ContentReference.RootPage))
@@ -86,8 +99,27 @@ namespace EPiServer.Search.Internal
                     // If the content supports version status, we check that we don't index any non published content.
                     if (versionStatus == null || (versionStatus.Status == VersionStatus.Published))
                     {
-                        UpdateItem(reader.Current);
+                        var indexRequestItem = GetIndexRequestItem(reader.Current);
+                        if (indexRequestItem != null)
+                        {
+                            requestQueueItems.Add(indexRequestItem);
+                        }
                     }
+                }
+            }
+
+            foreach (var serviceReference in _options.IndexingServiceReferences)
+            {
+                try
+                {
+                    var feed = _requestQueueHandler.GetUnprocessedFeed(requestQueueItems);
+
+                    bool success = _requestHandler.SendRequest(feed, serviceReference.Name);
+                }
+                catch (Exception ex)
+                {
+                    _log.Error($"RequestQueue failed to retrieve unprocessed queue items.", ex);
+                    break;
                 }
             }
         }
@@ -100,27 +132,45 @@ namespace EPiServer.Search.Internal
         /// Note that only the exact language version that is provided is updated. If you want to 
         /// update all language versions of a page, use alternative method overload.
         /// </remarks>
+        private IndexRequestQueueItem GetIndexRequestItem(IContent contentItem)
+        {
+            var item = GetItemToIndex(contentItem);
+
+            if (item == null)
+            {
+                return null;
+            }
+
+            var namedIndexingService = string.IsNullOrEmpty(NamedIndexingService) ?
+                _options.DefaultIndexingServiceName :
+                NamedIndexingService;
+
+            return new IndexRequestQueueItem()
+            {
+                IndexItemId = item.Id,
+                NamedIndex = item.NamedIndex,
+                NamedIndexingService = namedIndexingService,
+                FeedItemJson = item.ToFeedItemJson(_options),
+                Timestamp = DateTime.Now
+            };
+        }
+
+        /// <summary>
+        /// Updates the search index representation of the provided content item.
+        /// </summary>
+        /// <param name="contentItem">The content item that should be re-indexed.</param>
+        /// <remarks>
+        /// Note that only the exact language version that is provided is updated. If you want to 
+        /// update all language versions of a page, use alternative method overload.
+        /// </remarks>
         public override void UpdateItem(IContent contentItem)
         {
-            Validator.ThrowIfNull("contentItem", contentItem);
+            var item = GetItemToIndex(contentItem);
 
-            if (!ServiceActive)
+            if (item == null)
             {
                 return;
             }
-
-            // Don't add item if ISearchable.IsSearchable return false
-            var searchable = contentItem as ISearchable;
-            if (searchable != null && !searchable.IsSearchable)
-            {
-                return;
-            }
-
-            string searchId = GetSearchId(contentItem);
-
-            IndexRequestItem item = new IndexRequestItem(searchId, IndexAction.Update);
-
-            ConvertContentToIndexItem(contentItem, item);
 
             _searchHandler.UpdateIndex(item, NamedIndexingService);
         }
@@ -293,8 +343,8 @@ namespace EPiServer.Search.Internal
             Guid contentGuid;
             if (Guid.TryParse(guidString, out contentGuid))
             {
-                var selector = filterOnCulture ? new LoaderOptions(){ LanguageLoaderOption.Fallback() } : GetLoaderOptions(indexItem.Culture);
-                
+                var selector = filterOnCulture ? new LoaderOptions() { LanguageLoaderOption.Fallback() } : GetLoaderOptions(indexItem.Culture);
+
                 try
                 {
                     return _contentRepository.Get<T>(contentGuid, selector);
@@ -349,7 +399,7 @@ namespace EPiServer.Search.Internal
 
                 groupQuery.QueryExpressions.Add(aclQuery);
             }
-            return _searchHandler.GetSearchResults(groupQuery, NamedIndexingService, _namedIndexes,  page, pageSize);
+            return _searchHandler.GetSearchResults(groupQuery, NamedIndexingService, _namedIndexes, page, pageSize);
         }
 
         public override bool ServiceActive
@@ -392,7 +442,7 @@ namespace EPiServer.Search.Internal
                 CultureInfo.InvariantCulture :
                 CultureInfo.GetCultureInfo(languageCode);
 
-            return new LoaderOptions(){ LanguageLoaderOption.Specific(culture) };
+            return new LoaderOptions() { LanguageLoaderOption.Specific(culture) };
         }
 
         private void ConvertContentToIndexItem(IContent content, IndexRequestItem item)
@@ -585,7 +635,7 @@ namespace EPiServer.Search.Internal
         /// </summary>
         public override string NamedIndex
         {
-            get { return _searchIndexConfig!= null ? _searchIndexConfig.CMSNamedIndex: null; }
+            get { return _searchIndexConfig != null ? _searchIndexConfig.CMSNamedIndex : null; }
         }
 
         /// <summary>
@@ -593,7 +643,32 @@ namespace EPiServer.Search.Internal
         /// </summary>
         public override string NamedIndexingService
         {
-            get { return _searchIndexConfig != null ? _searchIndexConfig.NamedIndexingService: null; }
+            get { return _searchIndexConfig != null ? _searchIndexConfig.NamedIndexingService : null; }
+        }
+
+        private IndexRequestItem GetItemToIndex(IContent contentItem)
+        {
+            Validator.ThrowIfNull("contentItem", contentItem);
+
+            if (!ServiceActive)
+            {
+                return null;
+            }
+
+            // Don't add item if ISearchable.IsSearchable return false
+            var searchable = contentItem as ISearchable;
+            if (searchable != null && !searchable.IsSearchable)
+            {
+                return null;
+            }
+
+            string searchId = GetSearchId(contentItem);
+
+            IndexRequestItem item = new IndexRequestItem(searchId, IndexAction.Update);
+
+            ConvertContentToIndexItem(contentItem, item);
+
+            return item;
         }
     }
 }

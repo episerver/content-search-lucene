@@ -29,7 +29,8 @@ namespace EPiServer.Core
         private Mock<IPrincipalAccessor> _principalAccessor;
         private PageReference _oldWasteBasketPage;
         private Mock<IAccessControlListQueryBuilder> _queryBuilder;
-  
+        private Mock<RequestQueueHandler> _requestQueueHandler;
+        private Mock<RequestHandler> _requestHandler;
 
         public ContentSearchHandlerTests()
         {
@@ -37,6 +38,8 @@ namespace EPiServer.Core
             _contentRepositoryMock = new Mock<IContentRepository>();
             _contentTypeRepositoryMock = new Mock<IContentTypeRepository>();
             _principalAccessor = new Mock<IPrincipalAccessor>();
+            _requestQueueHandler = new Mock<RequestQueueHandler>();
+            _requestHandler = new Mock<RequestHandler>();
 
             var count = 3;
             var contentList = new List<TestContent>();
@@ -52,13 +55,18 @@ namespace EPiServer.Core
             _contentRepositoryMock.Setup(cr => cr.GetAncestors(lastContent)).Returns(contentList.Take(count - 1).Reverse<IContent>());
             _contentRepositoryMock.Setup(cr => cr.Get<IContent>(lastContent)).Returns(contentList.Last());
          
+            var options = Options.Create(new SearchOptions());
 
             _testSubject = new ContentSearchHandlerImplementation(_searchHandler,
                 _contentRepositoryMock.Object,
                 _contentTypeRepositoryMock.Object,
                  new SearchIndexConfig(),
  				_principalAccessor.Object,
-                 _queryBuilder.Object);
+                 _queryBuilder.Object,
+                 options,
+                 _requestQueueHandler.Object,
+                 _requestHandler.Object
+                 );
 
             _oldRootPage = ContentReference.RootPage;
             ContentReference.RootPage = new PageReference(1);
