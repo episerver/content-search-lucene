@@ -15,6 +15,7 @@ namespace EPiServer.Job
         DisplayName = "EPiServer Basic Search Content Indexing Job",
         DefaultEnabled = true,
         Description = "This indexing job is used to reindex all content. During normal operation changes to content are being indexed as they are made without rerunning or scheduling of this job.",
+        LanguagePath = "/admin/databasejob/episerver.search",
         SortIndex = 0)]
     [ServiceConfiguration]
     class IndexingJob : Scheduler.ScheduledJobBase

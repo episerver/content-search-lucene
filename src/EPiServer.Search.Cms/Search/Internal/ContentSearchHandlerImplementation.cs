@@ -112,9 +112,25 @@ namespace EPiServer.Search.Internal
             {
                 try
                 {
-                    var feed = _requestQueueHandler.GetUnprocessedFeed(requestQueueItems);
+                    while (true)
+                    {
+                        if (requestQueueItems.Count == 0)
+                        {
+                            break;
+                        }
 
-                    bool success = _requestHandler.SendRequest(feed, serviceReference.Name);
+                        var contentRequestToIndex = requestQueueItems
+                            .OrderBy(x => x.IndexItemId)
+                            .Take(_options.DequeuePageSize);
+
+                        requestQueueItems = requestQueueItems
+                            .OrderBy(x => x.IndexItemId)
+                            .Skip(_options.DequeuePageSize).ToList();
+
+                        var feed = _requestQueueHandler.GetUnprocessedFeed(contentRequestToIndex);
+
+                        bool success = _requestHandler.SendRequest(feed, serviceReference.Name);
+                    }
                 }
                 catch (Exception ex)
                 {
