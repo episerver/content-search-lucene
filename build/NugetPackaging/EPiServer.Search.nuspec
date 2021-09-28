@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
-<package >
+<package>
   <metadata>
     <id>EPiServer.Search</id>
     <version>$version$</version>
     <title>EPiServer Search</title>
     <authors>EPiServer AB</authors>
     <owners>EPiServer</owners>
-    <licenseUrl>http://www.episerver.com/eula/</licenseUrl>
+    <license type="file">LICENSE.txt</license>
     <projectUrl>http://www.episerver.com/web-content-management/</projectUrl>
     <iconUrl>http://www.episerver.com/Framework/Styles/Images/Products/Integration.png</iconUrl>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
@@ -22,6 +22,7 @@
     </dependencies>
   </metadata>
   <files>
+    <file src="src\EPiServer.Search.IndexingService\license.txt" target="" />
     <file src="build\NugetPackaging\Tools\EPiServer.Search.IndexingService.Install.ps1" target="tools\install.ps1" />
     <file src="build\NugetPackaging\Tools\Search.psm1" target="tools\Search.psm1" />
     <file src="build\NugetPackaging\EPiServer.Search.IndexingService.config.install.xdt" target="content\web.config.install.xdt" />
