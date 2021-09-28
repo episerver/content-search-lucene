@@ -19,6 +19,9 @@
       <dependency id="EPiServer.CMS.AspNetCore.Templating" version="[12,13)" />
       <dependency id="Microsoft.Extensions.Configuration" version="[5]" />
     </dependencies>
+    <contentFiles>
+        <files include="any/any/modules/_protected/EPiServer.Search.Cms/EPiServer.Search.Cms.zip" buildAction="None" copyToOutput="true"  />
+      </contentFiles>
   </metadata>
   <files>
     <file src="build\NugetPackaging\Tools\EPiServer.Search.Cms.Install.ps1" target="tools\install.ps1" />
@@ -27,5 +30,7 @@
     <file src="src\EPiServer.Search.Cms\bin\$Configuration$\net5.0\EPiServer.Search.Cms.dll" target="lib\net5.0\EPiServer.Search.Cms.dll" />
     <file src="src\EPiServer.Search.Cms\bin\$Configuration$\net5.0\EPiServer.Search.Cms.pdb" target="lib\net5.0\EPiServer.Search.Cms.pdb" />
     <file src="src\EPiServer.Search.Cms\**\*.cs" exclude="src\EPiServer.Search.Cms\obj\**\*" target="src\EPiServer.Search.Cms" />
-  </files>
+    <file src="EPiServer.Search.Cms.zip" target="contentFiles\any\any\modules\_protected\EPiServer.Search.Cms" />
+    <file src="build\NugetPackaging\CopyZipFiles.targets" target="build\net5.0\EPiServer.Search.Cms.targets" />
+</files>
 </package>

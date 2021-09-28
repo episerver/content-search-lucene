@@ -1,7 +1,5 @@
-﻿using EPiServer.Configuration.Transform.Internal;
-using EPiServer.Core;
+﻿using EPiServer.Core;
 using EPiServer.Data;
-using EPiServer.Data.Dynamic;
 using EPiServer.DataAbstraction;
 using EPiServer.Framework;
 using EPiServer.Framework.Initialization;
@@ -9,16 +7,13 @@ using EPiServer.Logging;
 using EPiServer.Search.Internal;
 using EPiServer.Security;
 using EPiServer.ServiceLocation;
-using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
-using System.Threading;
-using HostType = EPiServer.Framework.Initialization.HostType;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using EPiServer.Search.Configuration;
 using EPiServer.Search.Configuration.Transform.Internal;
+using EPiServer.Shell.Modules;
 
 namespace EPiServer.Search.Initialization
 {
@@ -48,7 +43,14 @@ namespace EPiServer.Search.Initialization
                 .AddSingleton<RequestQueue>()
                 .AddSingleton<RequestQueueHandler>()
                 .AddSingleton<ReIndexManager>()
-                .Forward<ReIndexManager, IReIndexManager>();
+                .Forward<ReIndexManager, IReIndexManager>()
+                .Configure<ProtectedModuleOptions>(o =>
+                 {
+                     if (!o.Items.Any(x => x.Name.Equals("EPiServer.Search.Cms")))
+                     {
+                         o.Items.Add(new ModuleDetails() { Name = "EPiServer.Search.Cms" });
+                     }
+                 });
         }
 
         /// <inherit-doc/>
