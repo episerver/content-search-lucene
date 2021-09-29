@@ -171,3 +171,6 @@ $RECYCLE.BIN/
 
 # lucence index
 /src/EPiServer.Search.IndexingService/App_Data/
+
+InstallerSource
+EPiServer.Search.Cms.zip

@@ -7,6 +7,7 @@ using EPiServer.Models;
 using EPiServer.Search;
 using EPiServer.Search.Data;
 using EPiServer.Search.Internal;
+using EPiServer.Security;
 using EPiServer.ServiceLocation;
 using EPiServer.Web;
 using System;
@@ -16,6 +17,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using static EPiServer.Search.Initialization.SearchInitialization;
 
 namespace EPiServer.Job
 {
@@ -34,7 +36,8 @@ namespace EPiServer.Job
         private readonly ITimeProvider _timeProvider;
         private readonly SearchOptions _options;
         private readonly ContentRepository _contentRepository;
-
+        private static bool IsInitContentEvent = false;
+        private SearchEventHandler _eventHandler;
 
         private bool _stop;
 
@@ -81,7 +84,9 @@ namespace EPiServer.Job
                     ContentSearchHandler contentSearchHandler = ServiceLocator.Current.GetInstance<ContentSearchHandler>();
                     RequestQueueRemover requestQueueRemover = new RequestQueueRemover(ServiceLocator.Current.GetInstance<SearchHandler>());
 
-                    ThreadPool.QueueUserWorkItem(new WaitCallback(state => { IndexAllOnce(contentSearchHandler, requestQueueRemover); }));
+                    IndexAllOnce(contentSearchHandler, requestQueueRemover);
+
+                    InitContentEvent();
 
                     return "Sucess added to queue";
                 }
@@ -164,6 +169,36 @@ namespace EPiServer.Job
                 DynamicDataStoreFactory.Instance.CreateStore(_options.DynamicDataStoreName, typeof(IndexRequestQueueItem));
 
             return dataStore;
+        }
+
+        private void InitContentEvent()
+        {
+            if (!IsInitContentEvent && SearchSettings.Options.Active)
+            {
+                var contentRepo = Locate.ContentRepository();
+                var contentSecurityRepo = Locate.ContentSecurityRepository();
+                var contentEvents = Locate.ContentEvents();
+
+                ContentSearchHandler contentSearchHandler = Locate.Advanced.GetInstance<ContentSearchHandler>();
+                _eventHandler = new SearchEventHandler(contentSearchHandler, contentRepo);
+
+                contentEvents.PublishedContent += _eventHandler.ContentEvents_PublishedContent;
+                contentEvents.MovedContent += _eventHandler.ContentEvents_MovedContent;
+                contentEvents.DeletingContent += _eventHandler.ContentEvents_DeletingContent;
+                contentEvents.DeletedContent += _eventHandler.ContentEvents_DeletedContent;
+                contentEvents.DeletedContentLanguage += _eventHandler.ContentEvents_DeletedContentLanguage;
+
+                contentSecurityRepo.ContentSecuritySaved += _eventHandler.ContentSecurityRepository_Saved;
+
+                PageTypeConverter.PagesConverted += _eventHandler.PageTypeConverter_PagesConverted;
+
+                IsInitContentEvent = true;
+            }
+        }
+
+        private ServiceProviderHelper Locate
+        {
+            get { return new ServiceProviderHelper(ServiceLocator.Current); }
         }
 
         private class RequestQueueRemover

@@ -135,7 +135,7 @@ namespace EPiServer.Search.Internal
             }
         }
 
-        private FeedModel GetUnprocessedFeed(IEnumerable<IndexRequestQueueItem> queueItems)
+        public FeedModel GetUnprocessedFeed(IEnumerable<IndexRequestQueueItem> queueItems)
         {
             var feed = new FeedModel
             {

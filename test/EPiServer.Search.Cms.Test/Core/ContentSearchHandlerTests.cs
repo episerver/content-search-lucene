@@ -2,7 +2,9 @@
 using EPiServer.Construction.Internal;
 using EPiServer.DataAbstraction;
 using EPiServer.DataAbstraction.RuntimeModel;
+using EPiServer.Models;
 using EPiServer.Search;
+using EPiServer.Search.Configuration;
 using EPiServer.Search.Internal;
 using EPiServer.Search.Queries;
 using EPiServer.Search.Queries.Lucene;
@@ -29,14 +31,29 @@ namespace EPiServer.Core
         private Mock<IPrincipalAccessor> _principalAccessor;
         private PageReference _oldWasteBasketPage;
         private Mock<IAccessControlListQueryBuilder> _queryBuilder;
-  
+        private RequestQueueHandler _requestQueueHandler;
+        private MockRequestHandler _requestHandler;
 
         public ContentSearchHandlerTests()
         {
+            var searchOptions = new SearchOptions();
+            searchOptions.IndexingServiceReferences.Add(new IndexingServiceReference
+            {
+                Name = "test service"
+            });
+            var options = Options.Create(searchOptions);
+
             _searchHandler = new MockSearchHandler();
             _contentRepositoryMock = new Mock<IContentRepository>();
             _contentTypeRepositoryMock = new Mock<IContentTypeRepository>();
             _principalAccessor = new Mock<IPrincipalAccessor>();
+            _requestQueueHandler = new RequestQueueHandler(
+                _requestHandler,
+                null,
+                options,
+                null
+                );
+            _requestHandler = new MockRequestHandler();
 
             var count = 3;
             var contentList = new List<TestContent>();
@@ -51,14 +68,17 @@ namespace EPiServer.Core
 
             _contentRepositoryMock.Setup(cr => cr.GetAncestors(lastContent)).Returns(contentList.Take(count - 1).Reverse<IContent>());
             _contentRepositoryMock.Setup(cr => cr.Get<IContent>(lastContent)).Returns(contentList.Last());
-         
 
             _testSubject = new ContentSearchHandlerImplementation(_searchHandler,
                 _contentRepositoryMock.Object,
                 _contentTypeRepositoryMock.Object,
                  new SearchIndexConfig(),
- 				_principalAccessor.Object,
-                 _queryBuilder.Object);
+                 _principalAccessor.Object,
+                 _queryBuilder.Object,
+                 options,
+                 _requestQueueHandler,
+                 _requestHandler
+                 );
 
             _oldRootPage = ContentReference.RootPage;
             ContentReference.RootPage = new PageReference(1);
@@ -531,7 +551,7 @@ namespace EPiServer.Core
 
             _testSubject.IndexPublishedContent();
 
-            Assert.Equal(createdBy, _searchHandler.UpdatedIndexItem.Authors.Single());
+            Assert.Equal(createdBy, _requestHandler.UpdatedIndexItem.Items.ToList()[0].Authors.Single());
         }
 
         private class TestContent : IContent
@@ -579,6 +599,21 @@ namespace EPiServer.Core
                 return null;
             }
 
+        }
+
+        private class MockRequestHandler : RequestHandler
+        {
+            public MockRequestHandler() : base(Options.Create(new SearchOptions()))
+            {
+            }
+
+            public FeedModel UpdatedIndexItem { get; set; }
+
+            public override bool SendRequest(FeedModel feed, string namedIndexingService)
+            {
+                UpdatedIndexItem = feed;
+                return true;
+            }
         }
 
         private class FirstLevelInheritedContent : ContentData { }
