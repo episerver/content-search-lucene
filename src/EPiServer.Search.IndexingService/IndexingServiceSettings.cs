@@ -271,7 +271,7 @@ namespace EPiServer.Search.IndexingService
         /// <summary>
         /// Gets and sets the default index name
         /// </summary>
-        internal static string DefaultIndexName
+        public static string DefaultIndexName
         {
             get
             {
