@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Net;
 using System.ServiceModel;
 using System.Threading;
-using EPiServer.Logging.Compatibility;
 using EPiServer.Search.IndexingService.Configuration;
 using EPiServer.Search.IndexingService.Controllers;
 using EPiServer.Search.IndexingService.Helpers;
+using log4net;
 using Lucene.Net.Analysis;
 using Lucene.Net.Analysis.Core;
 using Lucene.Net.Analysis.Miscellaneous;
@@ -404,7 +404,7 @@ namespace EPiServer.Search.IndexingService
         }
 
         public const String AppDataPathKey = "[appDataPath]";
-
+        public const string DefaultAppDataFolderName = "App_Data";
         public String GetDirectoryPath(string directoryPath)
         {
             string path = directoryPath;
@@ -414,7 +414,7 @@ namespace EPiServer.Search.IndexingService
                 string basePath = _episerverFrameworkOpts.AppDataPath;
                 if (String.IsNullOrEmpty(basePath))
                 {
-                    basePath = "App_Data";
+                    basePath = DefaultAppDataFolderName;
                 }
                 path = System.IO.Path.Combine(basePath, path.Substring(AppDataPathKey.Length).TrimStart('\\', '/'));
             }

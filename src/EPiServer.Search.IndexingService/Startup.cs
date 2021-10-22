@@ -1,4 +1,3 @@
-using EPiServer.Framework;
 using EPiServer.Search.IndexingService.Configuration;
 using EPiServer.Search.IndexingService.DependencyInjection;
 using EPiServer.Search.IndexingService.Helpers;
@@ -35,7 +34,7 @@ namespace EPiServer.Search.IndexingService
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
             if (env.IsDevelopment())
             {
@@ -44,6 +43,7 @@ namespace EPiServer.Search.IndexingService
 
             app.UseHttpsRedirection();
 
+            loggerFactory.AddLog4Net();
             app.UseRouting();
 
             app.UseAuthorization();

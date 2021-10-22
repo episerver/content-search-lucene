@@ -18,7 +18,6 @@
       <dependency id="Lucene.Net" version="4.8.0-beta00014" />
       <dependency id="Lucene.Net.Analysis.Common" version="4.8.0-beta00014" />
       <dependency id="Lucene.Net.QueryParser" version="4.8.0-beta00014" />
-      <dependency id="EPiServer.Framework" version="[12,13)" />
     </dependencies>
   </metadata>
   <files>
