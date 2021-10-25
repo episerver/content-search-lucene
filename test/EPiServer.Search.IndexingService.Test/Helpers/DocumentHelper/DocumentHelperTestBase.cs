@@ -1,5 +1,5 @@
-﻿using EPiServer.Logging.Compatibility;
-using EPiServer.Search.IndexingService.Helpers;
+﻿using EPiServer.Search.IndexingService.Helpers;
+using log4net;
 using Moq;
 using System;
 using System.Collections.Generic;

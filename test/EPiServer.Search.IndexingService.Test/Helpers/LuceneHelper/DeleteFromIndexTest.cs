@@ -1,6 +1,6 @@
-﻿using EPiServer.Logging.Compatibility;
-using EPiServer.Search.IndexingService.Configuration;
+﻿using EPiServer.Search.IndexingService.Configuration;
 using EPiServer.Search.IndexingService.Helpers;
+using log4net;
 using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;

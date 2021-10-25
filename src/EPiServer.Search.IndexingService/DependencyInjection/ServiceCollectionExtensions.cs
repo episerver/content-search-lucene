@@ -1,5 +1,4 @@
-﻿using EPiServer.Framework;
-using EPiServer.Search.IndexingService.Configuration;
+﻿using EPiServer.Search.IndexingService.Configuration;
 using EPiServer.Search.IndexingService.Helpers;
 using EPiServer.Search.IndexingService.Security;
 using Microsoft.Extensions.Configuration;
@@ -42,7 +41,7 @@ namespace EPiServer.Search.IndexingService.DependencyInjection
             {
                 if (options.AppDataPath == null)
                 {
-                    options.AppDataPath = Path.Combine(hosting.ContentRootPath, EnvironmentOptions.DefaultAppDataFolderName);
+                    options.AppDataPath = Path.Combine(hosting.ContentRootPath, IndexingServiceSettings.DefaultAppDataFolderName);
                 }
             });
 

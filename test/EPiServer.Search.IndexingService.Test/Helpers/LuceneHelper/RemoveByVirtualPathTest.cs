@@ -1,4 +1,4 @@
-﻿using EPiServer.Logging.Compatibility;
+﻿using log4net;
 using Lucene.Net.Documents;
 using Moq;
 using System;
