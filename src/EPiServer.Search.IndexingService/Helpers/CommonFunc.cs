@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -202,7 +202,10 @@ namespace EPiServer.Search.IndexingService.Helpers
                 }
             }
 
-            Marshal.ReleaseComObject(iflt);
+            if (OperatingSystem.IsWindows())
+            {
+                Marshal.ReleaseComObject(iflt);
+            }
 
             return text.ToString();
         }

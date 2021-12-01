@@ -33,7 +33,7 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
             return searchResults;
         }
 
-        public override void Initialize()
+        protected override void Initialize()
         {
             base.Initialize();
 
@@ -61,7 +61,7 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
             return searchResults;
         }
 
-        public override void Initialize()
+        protected override void Initialize()
         {
             base.Initialize();
 
@@ -87,7 +87,7 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
             return searchResults;
         }
 
-        public override void Initialize()
+        protected override void Initialize()
         {
             base.Initialize();
 
@@ -119,7 +119,7 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
             return searchResults;
         }
 
-        public override void Initialize()
+        protected override void Initialize()
         {
             base.Initialize();
 
@@ -154,12 +154,12 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
 
         protected abstract SearchResults GetSearchResults();
 
-        public BlockSearchProviderFilterTestContext()
+        protected BlockSearchProviderFilterTestContext()
         {
-            this.Initialize();
+            Initialize();
         }
 
-        public virtual void Initialize()
+        protected virtual void Initialize()
         {
             _searchHandler = new Mock<SearchHandler>(null, null, Options.Create(new SearchOptions()));
             _contentTypeRepository = new Mock<IContentTypeRepository<BlockType>>();
