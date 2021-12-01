@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Globalization;
 using EPiServer.Core;
+using EPiServer.DataAbstraction;
 using Moq;
 using Xunit;
-using EPiServer.DataAbstraction;
 
 namespace EPiServer.Search.Initialization
 {
@@ -16,11 +16,11 @@ namespace EPiServer.Search.Initialization
             var link = new ContentReference() { ID = 5 };
             var searchContent = new NoneVersionableSearchContent() { ContentLink = link };
 
-            Mock<IContentRepository> contentRep = new Mock<IContentRepository>();
+            var contentRep = new Mock<IContentRepository>();
             contentRep.Setup(s => s.Get<IContent>(link)).Returns(searchContent);
             contentRep.Setup(s => s.GetLanguageBranches<IContent>(link)).Returns(new IContent[] { searchContent });
 
-            Mock<ContentSearchHandler> searchHandler = new Mock<ContentSearchHandler>();
+            var searchHandler = new Mock<ContentSearchHandler>();
             var subject = new SearchInitialization.SearchEventHandler(searchHandler.Object, contentRep.Object);
 
             subject.ContentSecurityRepository_Saved(null, new EPiServer.DataAbstraction.ContentSecurityEventArg(link, null, EPiServer.Security.SecuritySaveType.None));
@@ -33,15 +33,15 @@ namespace EPiServer.Search.Initialization
         public void EventHandler_WhenSecurityChangedForVersionableContentWithLanguages_ShouldUpdateItem()
         {
             var link = new ContentReference() { ID = 5 };
-            var engSearchContent = new SearchContent() { ContentLink = link , Language = CultureInfo.GetCultureInfo("en")};
+            var engSearchContent = new SearchContent() { ContentLink = link, Language = CultureInfo.GetCultureInfo("en") };
             var svSearchContent = new SearchContent() { ContentLink = link, Language = CultureInfo.GetCultureInfo("sv") };
 
-            Mock<IContentRepository> contentRep = new Mock<IContentRepository>();
+            var contentRep = new Mock<IContentRepository>();
             contentRep.Setup(s => s.Get<IContent>(link)).Returns(engSearchContent);
             contentRep.Setup(s => s.GetLanguageBranches<IContent>(link)).Returns(new IContent[] { engSearchContent, svSearchContent });
 
 
-            Mock<ContentSearchHandler> searchHandler = new Mock<ContentSearchHandler>();
+            var searchHandler = new Mock<ContentSearchHandler>();
             var subject = new SearchInitialization.SearchEventHandler(searchHandler.Object, contentRep.Object);
 
             subject.ContentSecurityRepository_Saved(null, new EPiServer.DataAbstraction.ContentSecurityEventArg(link, null, EPiServer.Security.SecuritySaveType.None));
@@ -57,10 +57,10 @@ namespace EPiServer.Search.Initialization
             var searchContent = new SearchContent() { ContentLink = link };
             searchContent.IsPendingPublish = true;
 
-            Mock<IContentRepository> contentRep = new Mock<IContentRepository>();
+            var contentRep = new Mock<IContentRepository>();
             contentRep.Setup(s => s.Get<IContent>(link)).Returns(searchContent);
 
-            Mock<ContentSearchHandler> searchHandler = new Mock<ContentSearchHandler>();
+            var searchHandler = new Mock<ContentSearchHandler>();
             var subject = new SearchInitialization.SearchEventHandler(searchHandler.Object, contentRep.Object);
 
             subject.ContentSecurityRepository_Saved(null, new EPiServer.DataAbstraction.ContentSecurityEventArg(link, null, EPiServer.Security.SecuritySaveType.None));
@@ -133,7 +133,7 @@ namespace EPiServer.Search.Initialization
     {
         public IEnumerable<CultureInfo> ExistingLanguages
         {
-            get;set;
+            get; set;
         }
 
         public CultureInfo Language

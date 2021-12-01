@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.ServiceModel.Syndication;
-
-namespace EPiServer.Search.IndexingService.FieldSerializers
+﻿namespace EPiServer.Search.IndexingService.FieldSerializers
 {
     internal abstract class IndexFieldStoreSerializerBase
     {
@@ -18,11 +12,7 @@ namespace EPiServer.Search.IndexingService.FieldSerializers
             FieldStoreValue = fieldStoreValue;
         }
 
-        internal virtual string ToFieldStoreValue()
-        {
-
-            return (FieldStoreValue != null) ? FieldStoreValue : "";
-        }
+        internal virtual string ToFieldStoreValue() => (FieldStoreValue != null) ? FieldStoreValue : "";
 
         internal virtual void AddFieldStoreValueToSyndicationItem(FeedItemModel feedItem)
         {

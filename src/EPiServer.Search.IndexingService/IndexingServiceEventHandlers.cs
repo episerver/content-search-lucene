@@ -1,6 +1,5 @@
-﻿using System.ServiceModel.Syndication;
-using Lucene.Net.Documents;
 using System;
+using Lucene.Net.Documents;
 
 namespace EPiServer.Search.IndexingService
 {

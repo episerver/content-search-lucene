@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.Logging;
 
 namespace EPiServer.Search.IndexingService.Helpers
 {
@@ -10,7 +7,7 @@ namespace EPiServer.Search.IndexingService.Helpers
         public void HandleServiceError(string errorMessage)
         {
             //Log, fire event and respond with status code 500
-            IndexingServiceSettings.IndexingServiceServiceLog.Error(errorMessage);
+            IndexingServiceSettings.IndexingServiceServiceLog.LogError(errorMessage);
             throw new HttpResponseException()
             {
                 Value = new { error = errorMessage },
@@ -21,7 +18,7 @@ namespace EPiServer.Search.IndexingService.Helpers
         public void HandleServiceUnauthorized(string errorMessage)
         {
             //Log, fire event and respond with status code 500
-            IndexingServiceSettings.IndexingServiceServiceLog.Error(errorMessage);
+            IndexingServiceSettings.IndexingServiceServiceLog.LogError(errorMessage);
             throw new HttpResponseException()
             {
                 Value = new { error = errorMessage },

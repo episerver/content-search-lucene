@@ -1,13 +1,8 @@
-﻿using EPiServer.Logging.Compatibility;
-using Lucene.Net.Documents;
-using Moq;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using Lucene.Net.Documents;
+using Microsoft.Extensions.Logging;
+using Moq;
 using Xunit;
 
 namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
@@ -18,7 +13,7 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
         [Fact]
         public void Update_ShouldWork()
         {
-            var logMock = new Mock<ILog>();
+            var logMock = new Mock<ILogger>();
             IndexingServiceSettings.IndexingServiceServiceLog = logMock.Object;
             var feed = new FeedItemModel()
             {
@@ -50,8 +45,10 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
             var namedIndexMock = new Mock<NamedIndex>("testindex1");
             namedIndexMock.SetupGet(x => x.Directory).Returns(() => dir);
 
-            var doc = new Document();
-            doc.Add(new TextField(IndexingServiceSettings.VirtualPathFieldName, "vp", Field.Store.YES));
+            var doc = new Document
+            {
+                new TextField(IndexingServiceSettings.VirtualPathFieldName, "vp", Field.Store.YES)
+            };
             _documentHelperMock.Setup(x => x.GetDocumentById(It.IsAny<string>(), It.IsAny<NamedIndex>())).Returns(doc);
             _feedHelperMock.Setup(x => x.GetAttributeValue(It.IsAny<FeedItemModel>(), It.IsAny<string>())).Returns("something");
             _feedHelperMock.Setup(x => x.PrepareAuthors(It.IsAny<FeedItemModel>())).Returns("someone");

@@ -1,10 +1,5 @@
 ﻿using EPiServer.Search.IndexingService.Helpers;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
 {
@@ -25,8 +20,8 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
         public EPiServer.Search.IndexingService.Helpers.LuceneHelper SetupMock()
         {
             return new EPiServer.Search.IndexingService.Helpers.LuceneHelper(
-                _feedHelperMock.Object, 
-                _responseExceptionHelperMock.Object, 
+                _feedHelperMock.Object,
+                _responseExceptionHelperMock.Object,
                 _commonFuncMock.Object,
                 _documentHelperMock.Object);
         }

@@ -1,6 +1,6 @@
-using System.Threading;
-using System.Collections;
 using System;
+using System.Collections;
+using Microsoft.Extensions.Logging;
 
 namespace EPiServer.Search.IndexingService
 {
@@ -14,7 +14,6 @@ namespace EPiServer.Search.IndexingService
         private readonly double _timerInterval;
         private readonly TimeSpan _minQueueItemAge;
         private readonly string _queueName;
-        private IIndexingServiceSettings _indexingServiceSettings;
 
         /// <summary>
         /// Constructs a TaskQueue
@@ -27,9 +26,11 @@ namespace EPiServer.Search.IndexingService
             _queueName = queueName;
             _timerInterval = timerInterval;
             _minQueueItemAge = minQueueItemAge;
-            _queueFlushTimer = new System.Timers.Timer(_timerInterval);
-            _queueFlushTimer.AutoReset = false;
-            _queueFlushTimer.Elapsed += new System.Timers.ElapsedEventHandler(Timer_Elapsed);
+            _queueFlushTimer = new System.Timers.Timer(_timerInterval)
+            {
+                AutoReset = false
+            };
+            _queueFlushTimer.Elapsed += Timer_Elapsed;
         }
 
         /// <summary>
@@ -57,7 +58,7 @@ namespace EPiServer.Search.IndexingService
                     }
                     catch (Exception ex)
                     {
-                        IndexingServiceSettings.IndexingServiceServiceLog.Error(
+                        IndexingServiceSettings.IndexingServiceServiceLog.LogError(
                             string.Format("An exception was thrown when task was invoked by TaskQueue: '{0}'. The message was: {1}. Stacktrace was: {2}", _queueName, ex.Message, ex.StackTrace));
                     }
                 }
@@ -65,7 +66,7 @@ namespace EPiServer.Search.IndexingService
             }
             catch (Exception ex)
             {
-                IndexingServiceSettings.IndexingServiceServiceLog.Error(
+                IndexingServiceSettings.IndexingServiceServiceLog.LogError(
                         string.Format("An exception was thrown while processing TaskQueue: '{0}'. The message was: {1}. Stacktrace was: {2}", _queueName, ex.Message, ex.StackTrace));
             }
             finally
@@ -83,13 +84,7 @@ namespace EPiServer.Search.IndexingService
         /// <summary>
         /// Gets the current length of the queue
         /// </summary>
-        public int QueueLength
-        {
-            get
-            {
-                return _queue.Count;
-            }
-        }
+        public int QueueLength => _queue.Count;
 
         #region Events
 

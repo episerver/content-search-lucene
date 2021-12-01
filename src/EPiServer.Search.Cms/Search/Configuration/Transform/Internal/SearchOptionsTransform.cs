@@ -1,9 +1,6 @@
-﻿using EPiServer.Configuration.Transform.Internal;
-using EPiServer.Search.Filter;
-using System;
-using System.Configuration;
+﻿using System;
 using System.Linq;
-using System.Reflection;
+using EPiServer.Search.Filter;
 
 namespace EPiServer.Search.Configuration.Transform.Internal
 {
@@ -65,15 +62,21 @@ namespace EPiServer.Search.Configuration.Transform.Internal
                 {
                     var providerType = Type.GetType(filterProvider.Type);
                     if (providerType == null)
-                        throw new ApplicationException(String.Format("The search result filter provider type does not exist for provider with name '{0}'.", filterProvider.Type));
+                    {
+                        throw new ApplicationException(string.Format("The search result filter provider type does not exist for provider with name '{0}'.", filterProvider.Type));
+                    }
 
-                    PropertyInfo pInfo = providerType.GetProperty("Instance");
+                    var pInfo = providerType.GetProperty("Instance");
                     if (pInfo == null)
-                        throw new ApplicationException(String.Format("The Instance property could not be found for provider with name '{0}'.", filterProvider.Type));
+                    {
+                        throw new ApplicationException(string.Format("The Instance property could not be found for provider with name '{0}'.", filterProvider.Type));
+                    }
 
-                    SearchResultFilterProvider provider = (SearchResultFilterProvider)pInfo.GetValue(null, null);
+                    var provider = (SearchResultFilterProvider)pInfo.GetValue(null, null);
                     if (provider == null)
-                        throw new ApplicationException(String.Format("The Instance property is null for provider with name '{0}'.", filterProvider.Type));
+                    {
+                        throw new ApplicationException(string.Format("The Instance property is null for provider with name '{0}'.", filterProvider.Type));
+                    }
 
                     return provider;
                 });

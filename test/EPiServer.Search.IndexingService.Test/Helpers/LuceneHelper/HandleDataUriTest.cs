@@ -1,13 +1,8 @@
-﻿using EPiServer.Logging.Compatibility;
-using Moq;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Moq;
 using Xunit;
 
 namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
@@ -18,7 +13,7 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
         [Fact]
         public void HandleDataUri_WhenUriStringIsNotUri_ShouldReturnFalse()
         {
-            var logMock = new Mock<ILog>();
+            var logMock = new Mock<ILogger>();
             IndexingServiceSettings.IndexingServiceServiceLog = logMock.Object;
 
             var feed = new FeedItemModel();
@@ -33,11 +28,11 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
         [Fact]
         public void HandleDataUri_WhenFileNotExist_ShouldReturnFalse()
         {
-            var logMock = new Mock<ILog>();
+            var logMock = new Mock<ILogger>();
             IndexingServiceSettings.IndexingServiceServiceLog = logMock.Object;
 
             var feed = new FeedItemModel();
-            
+
             _feedHelperMock.Setup(x => x.GetAttributeValue(It.IsAny<FeedItemModel>(), It.Is<string>(s => s == IndexingServiceSettings.SyndicationItemAttributeNameDataUri))).Returns(@"c:\fake\App_Data\Index\file.txt");
 
             var classInstant = SetupMock();
@@ -50,7 +45,7 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
         {
             CreateFileForTest();
 
-            var logMock = new Mock<ILog>();
+            var logMock = new Mock<ILogger>();
             IndexingServiceSettings.IndexingServiceServiceLog = logMock.Object;
 
             var feed = new FeedItemModel()
@@ -77,10 +72,10 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
             feed.AttributeExtensions.Add(IndexingServiceSettings.SyndicationItemAttributeNameItemStatus, "1");
             feed.AttributeExtensions.Add(IndexingServiceSettings.SyndicationItemAttributeNamePublicationStart, DateTime.Now.ToString());
             feed.AttributeExtensions.Add(IndexingServiceSettings.SyndicationItemAttributeNamePublicationEnd, DateTime.Now.AddDays(1).ToString());
-            
+
 
             _commonFuncMock.Setup(x => x.GetFileUriContent(It.IsAny<Uri>())).Returns("sometext");
-            
+
             var dir = Lucene.Net.Store.FSDirectory.Open(new System.IO.DirectoryInfo(string.Format(@"c:\fake\App_Data\{0}\Main", Guid.NewGuid())));
 
             var namedIndexMock = new Mock<NamedIndex>("testindex1");
@@ -88,10 +83,10 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
 
             _feedHelperMock.Setup(x => x.PrepareAuthors(It.IsAny<FeedItemModel>())).Returns("someone");
             _feedHelperMock.Setup(x => x.GetAttributeValue(It.IsAny<FeedItemModel>(), It.IsAny<string>())).Returns("something");
-            _feedHelperMock.Setup(x => x.GetAttributeValue(It.IsAny<FeedItemModel>(), It.Is<string>(s=>s== IndexingServiceSettings.SyndicationItemAttributeNameDataUri))).Returns(@"c:\fake\App_Data\test.txt");
+            _feedHelperMock.Setup(x => x.GetAttributeValue(It.IsAny<FeedItemModel>(), It.Is<string>(s => s == IndexingServiceSettings.SyndicationItemAttributeNameDataUri))).Returns(@"c:\fake\App_Data\test.txt");
             _feedHelperMock.Setup(x => x.GetAttributeValue(It.IsAny<FeedItemModel>(), It.Is<string>(s => s == IndexingServiceSettings.SyndicationItemAttributeNameIndexAction))).Returns("add");
             _feedHelperMock.Setup(x => x.GetAttributeValue(It.IsAny<FeedItemModel>(), It.Is<string>(s => s == IndexingServiceSettings.SyndicationItemAttributeNameReferenceId))).Returns("testindex1_ref");
-            
+
 
             var classInstant = SetupMock();
             var result = classInstant.HandleDataUri(feed, namedIndexMock.Object);
@@ -103,7 +98,7 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
         {
             CreateFileForTest();
 
-            var logMock = new Mock<ILog>();
+            var logMock = new Mock<ILogger>();
             IndexingServiceSettings.IndexingServiceServiceLog = logMock.Object;
 
             var feed = new FeedItemModel()
@@ -153,11 +148,11 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
 
         private void CreateFileForTest()
         {
-            string path = @"c:\fake\App_Data\test.txt";
+            var path = @"c:\fake\App_Data\test.txt";
             if (!File.Exists(path))
             {
                 // Create a file to write to.
-                using (StreamWriter sw = File.CreateText(path))
+                using (var sw = File.CreateText(path))
                 {
                     sw.WriteLine("Hello");
                     sw.WriteLine("And");

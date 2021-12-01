@@ -1,10 +1,5 @@
 ﻿using EPiServer.PlugIn;
 using EPiServer.ServiceLocation;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EPiServer.Job
 {
@@ -16,7 +11,7 @@ namespace EPiServer.Job
         LanguagePath = "/EPiServer/Search.Cms/indexingJob",
         SortIndex = 0)]
     [ServiceConfiguration]
-    class IndexingJob : Scheduler.ScheduledJobBase
+    internal class IndexingJob : Scheduler.ScheduledJobBase
     {
         private readonly IIndexingJobService _indexingJobService;
 
@@ -33,25 +28,16 @@ namespace EPiServer.Job
         /// <summary>
         /// Executes the specified context.
         /// </summary>
-        public override string Execute()
-        {
-            return _indexingJobService.Start(OnStatusChanged);
-        }
+        public override string Execute() => _indexingJobService.Start(OnStatusChanged);
 
         /// <summary>
         /// Stops the indexing job.
         /// </summary>
-        public override void Stop()
-        {
-            _indexingJobService.Stop();
-        }
+        public override void Stop() => _indexingJobService.Stop();
 
         /// <summary>
         /// Verifies the indexing job is stopped or not.
         /// </summary>
-        public bool IsStopped()
-        {
-            return _indexingJobService.IsStopped();
-        }
+        public bool IsStopped() => _indexingJobService.IsStopped();
     }
 }

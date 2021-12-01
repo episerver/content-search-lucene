@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace EPiServer.Search.IndexingService
 {
@@ -25,9 +23,9 @@ namespace EPiServer.Search.IndexingService
         public string ItemType { get; set; }
         public string DisplayText { get; set; }
 
-        public Dictionary<string,string> AttributeExtensions { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, string> AttributeExtensions { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         public Dictionary<string, object> ElementExtensions { get; set; } = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
         public Collection<string> Categories { get; set; } = new Collection<string>();
-        public Collection<string> Authors { get; set; } = new Collection<string>();        
+        public Collection<string> Authors { get; set; } = new Collection<string>();
     }
 }

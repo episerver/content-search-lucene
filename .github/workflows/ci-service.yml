@@ -1,0 +1,54 @@
+name: Continuous integration
+
+on:
+  push:
+    branches:
+      - 'main'
+      - 'develop'
+      - 'netcore'
+    paths:
+      - 'src/EPiServer.Search.IndexingService/**'
+      - 'test/EPiServer.Search.IndexingService.Test/**'
+      - 'docker-compose.yml'
+  
+jobs:
+  build_test_pack:
+    name: Build, test & push image
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_NAME: ${{ github.repository }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v1
+      - name: Setup .NET Core @ Latest
+        uses: actions/setup-dotnet@v1
+        
+      - name: Restore
+        run: dotnet restore
+      - name: Test
+        run: dotnet test --configuration $env:buildConfiguration
+      - name: Log in to the Container registry
+        uses: docker/login-action
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+      - name: Push to GitHub Packages
+        uses: docker/build-push-action@v1
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          dockerfile: src/EPiServer.Search.IndexingService/Search.Dockerfile
+

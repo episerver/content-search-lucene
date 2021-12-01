@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.ServiceModel.Syndication;
 using System.Text.Json;
-using System.Xml;
 using EPiServer.Framework;
 using EPiServer.Logging;
 using EPiServer.Models;
@@ -16,10 +13,10 @@ namespace EPiServer.Search.Internal
     public class RequestQueueHandler
     {
         private const string RequestFeedId = "uuid:153f0b26-6ed4-4437-8d47-b381afd5ea2d";
-        private static object _syncObject = new object();
-        private static ILogger _log = LogManager.GetLogger();
+        private static readonly object _syncObject = new object();
+        private static readonly ILogger _log = LogManager.GetLogger();
 
-        private System.Timers.Timer _queueFlushTimer;
+        private readonly System.Timers.Timer _queueFlushTimer;
         private readonly RequestHandler _requestHandler;
         private readonly RequestQueue _queue;
         private readonly SearchOptions _options;
@@ -61,7 +58,9 @@ namespace EPiServer.Search.Internal
         public virtual void TruncateQueue()
         {
             if (!_options.Active)
+            {
                 throw new InvalidOperationException("Can not perform this operation when EPiServer.Search is not set as active in configuration");
+            }
 
             _queue.Truncate();
         }
@@ -69,7 +68,9 @@ namespace EPiServer.Search.Internal
         public virtual void TruncateQueue(string namedIndexingService, string namedIndex)
         {
             if (!_options.Active)
+            {
                 throw new InvalidOperationException("Can not perform this operation when EPiServer.Search is not set as active in configuration");
+            }
 
             if (string.IsNullOrEmpty(namedIndexingService))
             {
@@ -79,16 +80,13 @@ namespace EPiServer.Search.Internal
             _queue.Truncate(namedIndexingService, namedIndex);
         }
 
-        public virtual void StartQueueFlushTimer()
-        {
-            _queueFlushTimer.Enabled = true;
-        }
+        public virtual void StartQueueFlushTimer() => _queueFlushTimer.Enabled = true;
 
         public virtual void ProcessQueue()
         {
             lock (_syncObject)
             {
-                int pageSize = _options.DequeuePageSize;
+                var pageSize = _options.DequeuePageSize;
 
                 _log.Debug("Start dequeue unprocessed items");
 
@@ -110,7 +108,7 @@ namespace EPiServer.Search.Internal
 
                             var feed = GetUnprocessedFeed(queueItems);
 
-                            bool success = _requestHandler.SendRequest(feed, serviceReference.Name);
+                            var success = _requestHandler.SendRequest(feed, serviceReference.Name);
 
                             if (!success)
                             {
@@ -156,7 +154,7 @@ namespace EPiServer.Search.Internal
 
         private FeedItemModel ConstructSyndicationItem(IndexRequestQueueItem queueItem)
         {
-            FeedItemModel item = JsonSerializer.Deserialize<FeedItemModel>(queueItem.FeedItemJson);
+            var item = JsonSerializer.Deserialize<FeedItemModel>(queueItem.FeedItemJson);
 
             return item;
         }

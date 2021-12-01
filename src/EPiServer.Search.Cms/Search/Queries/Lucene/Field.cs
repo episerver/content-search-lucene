@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
-namespace EPiServer.Search.Queries.Lucene
+﻿namespace EPiServer.Search.Queries.Lucene
 {
     /// <summary>
     /// Filds available for separate free text search in the Indexing Service

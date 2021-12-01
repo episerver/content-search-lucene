@@ -1,0 +1,51 @@
+name: Continuous integration
+
+on:
+  push:
+    branches:
+      - 'main'
+      - 'develop'
+    paths:
+      - 'src/EPiServer.Search.Cms/**'
+  pull_request:
+    branches:
+      - '*'
+      - '!main'
+    paths:
+      - 'src/EPiServer.Search.Cms/**'
+jobs:
+  build_test_pack:
+    name: Build, test & pack
+    runs-on: windows-latest
+    env:
+      buildConfiguration: release
+      versionSuffix: ${{ github.ref == 'refs/heads/develop' && '-pre-' ||  '-ci-' }}${{github.RUN_NUMBER }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v1
+      - name: Setup .NET Core @ Latest
+        uses: actions/setup-dotnet@v1
+        with:
+          source-url: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
+        env:
+          NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      
+      - name: Restore
+        run: dotnet restore
+      - name: Build (Release version)
+        if:  ${{ github.ref == 'refs/heads/main' }}
+        run: dotnet build --no-restore --configuration $env:buildConfiguration 
+      - name: Build (Pre-Release version)
+        if:  ${{ github.ref != 'refs/heads/main' }}
+        run: dotnet build --no-restore --configuration $env:buildConfiguration --version-suffix $env:versionSuffix
+      - name: Test
+        run: dotnet test --no-build --configuration $env:buildConfiguration
+      - name: Pack (Release version)
+        if:  ${{ github.ref == 'refs/heads/main' }}
+        run: dotnet pack --no-build --no-restore --configuration $env:buildConfiguration -o out
+      - name: Pack (Pre-Release version)
+        if:  ${{ github.ref != 'refs/heads/main' }}
+        run: dotnet pack --no-build --no-restore --configuration $env:buildConfiguration --version-suffix $env:versionSuffix -o out
+      - name: Publish packages
+        run: dotnet nuget push **/*.nupkg --skip-duplicate -k ${{ secrets.GITHUB_TOKEN }}
+

@@ -7,9 +7,9 @@ namespace EPiServer.Cms.Shell.UI.Test.Fakes
     public class FakeSiteDefinition : SiteDefinition
     {
         private ContentReference _rootPage;
-        private ContentReference _contentAssetsRoot;
-        private ContentReference _globalAssetsRoot;
-        private ContentReference _wasteBasket;
+        private readonly ContentReference _contentAssetsRoot;
+        private readonly ContentReference _globalAssetsRoot;
+        private readonly ContentReference _wasteBasket;
 
         public FakeSiteDefinition()
             : this(
@@ -23,7 +23,7 @@ namespace EPiServer.Cms.Shell.UI.Test.Fakes
         }
 
         public FakeSiteDefinition(
-            ContentReference rootPage, 
+            ContentReference rootPage,
             ContentReference contentAssetsRoot,
             ContentReference globalAssetsRoot,
             ContentReference wasteBasket,
@@ -41,29 +41,14 @@ namespace EPiServer.Cms.Shell.UI.Test.Fakes
             SiteUrl = new Uri("http://fakesite.com");
         }
 
-        public override ContentReference RootPage
-        {
-            get { return _rootPage; }
-        }
+        public override ContentReference RootPage => _rootPage;
 
-        public void SetRootPage(ContentReference reference)
-        {
-            _rootPage = reference;
-        }
+        public void SetRootPage(ContentReference reference) => _rootPage = reference;
 
-        public override ContentReference ContentAssetsRoot
-        {
-            get { return _contentAssetsRoot; }
-        }
+        public override ContentReference ContentAssetsRoot => _contentAssetsRoot;
 
-        public override ContentReference GlobalAssetsRoot
-        {
-            get { return _globalAssetsRoot; }
-        }
+        public override ContentReference GlobalAssetsRoot => _globalAssetsRoot;
 
-        public override ContentReference WasteBasket
-        {
-            get { return _wasteBasket; }
-        }
+        public override ContentReference WasteBasket => _wasteBasket;
     }
 }

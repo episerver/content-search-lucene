@@ -1,19 +1,19 @@
-﻿using EPiServer.Core;
+using System.Collections.Generic;
+using System.Linq;
+using EPiServer.Core;
 using EPiServer.Data;
 using EPiServer.DataAbstraction;
 using EPiServer.Framework;
 using EPiServer.Framework.Initialization;
 using EPiServer.Logging;
+using EPiServer.Search.Configuration;
+using EPiServer.Search.Configuration.Transform.Internal;
 using EPiServer.Search.Internal;
 using EPiServer.Security;
 using EPiServer.ServiceLocation;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
-using EPiServer.Search.Configuration;
-using EPiServer.Search.Configuration.Transform.Internal;
 using EPiServer.Shell.Modules;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace EPiServer.Search.Initialization
 {
@@ -25,7 +25,7 @@ namespace EPiServer.Search.Initialization
     public class SearchInitialization : IConfigurableModule
     {
         private SearchEventHandler _eventHandler;
-        private static object _lock = new object();
+        private static readonly object _lock = new object();
         private static readonly ILogger _log = LogManager.GetLogger();
 
         /// <inherit-doc/>
@@ -83,7 +83,6 @@ namespace EPiServer.Search.Initialization
             if (context.Locate.Advanced.GetInstance<IDatabaseMode>().DatabaseMode == DatabaseMode.ReadOnly)
             {
                 _log.Debug("Unable to indexing of content because the database is in the ReadOnly mode");
-                return;
             }
         }
 
@@ -94,14 +93,14 @@ namespace EPiServer.Search.Initialization
             {
                 var contentEvents = context.Locate.ContentEvents();
                 var contentSecurityRepo = context.Locate.ContentSecurityRepository();
-
+                var contentSecurityEvents = context.Locate.ContentSecurityEvents();
                 contentEvents.PublishedContent -= _eventHandler.ContentEvents_PublishedContent;
                 contentEvents.MovedContent -= _eventHandler.ContentEvents_MovedContent;
                 contentEvents.DeletingContent -= _eventHandler.ContentEvents_DeletingContent;
                 contentEvents.DeletedContent -= _eventHandler.ContentEvents_DeletedContent;
                 contentEvents.DeletedContentLanguage -= _eventHandler.ContentEvents_DeletedContentLanguage;
 
-                contentSecurityRepo.ContentSecuritySaved -= _eventHandler.ContentSecurityRepository_Saved;
+                contentSecurityEvents.ContentSecuritySaved -= _eventHandler.ContentSecurityRepository_Saved;
 
                 PageTypeConverter.PagesConverted -= _eventHandler.PageTypeConverter_PagesConverted;
 
@@ -126,15 +125,9 @@ namespace EPiServer.Search.Initialization
                 _contentRepository = contentRepository;
             }
 
-            public void ContentEvents_PublishedContent(object sender, ContentEventArgs e)
-            {
-                _contentSearchHandler.UpdateItem(e.Content);
-            }
+            public void ContentEvents_PublishedContent(object sender, ContentEventArgs e) => _contentSearchHandler.UpdateItem(e.Content);
 
-            public void ContentEvents_MovedContent(object sender, ContentEventArgs e)
-            {
-                _contentSearchHandler.MoveItem((e as MoveContentEventArgs).OriginalContentLink);
-            }
+            public void ContentEvents_MovedContent(object sender, ContentEventArgs e) => _contentSearchHandler.MoveItem((e as MoveContentEventArgs).OriginalContentLink);
 
             public void ContentEvents_DeletingContent(object sender, ContentEventArgs e)
             {
@@ -153,10 +146,7 @@ namespace EPiServer.Search.Initialization
                 }
             }
 
-            public void ContentEvents_DeletedContentLanguage(object sender, ContentEventArgs e)
-            {
-                _contentSearchHandler.RemoveLanguageBranch(e.Content);
-            }
+            public void ContentEvents_DeletedContentLanguage(object sender, ContentEventArgs e) => _contentSearchHandler.RemoveLanguageBranch(e.Content);
 
             public void ContentSecurityRepository_Saved(object sender, ContentSecurityEventArg e)
             {

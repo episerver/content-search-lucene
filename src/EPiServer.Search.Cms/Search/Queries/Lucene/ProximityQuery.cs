@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Globalization;
 using System.Text;
-using System.Globalization;
 
 namespace EPiServer.Search.Queries.Lucene
 {
@@ -51,7 +48,7 @@ namespace EPiServer.Search.Queries.Lucene
         /// <returns></returns>
         public override string GetQueryExpression()
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             sb.Append(SearchSettings.GetFieldNameForField(Field));
             sb.Append(":(");
             sb.Append(GetSafeQuotedPhrase(Expression));

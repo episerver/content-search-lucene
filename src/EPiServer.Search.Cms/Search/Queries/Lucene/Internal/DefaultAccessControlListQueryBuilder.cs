@@ -1,11 +1,9 @@
-﻿using EPiServer.Security;
-using EPiServer.ServiceLocation;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Principal;
-using System.Threading.Tasks;
+using EPiServer.Security;
+using EPiServer.ServiceLocation;
 
 namespace EPiServer.Search.Queries.Lucene.Internal
 {
@@ -51,10 +49,9 @@ namespace EPiServer.Search.Queries.Lucene.Internal
             roleHandler();
 
             // Add all virtual roles
-            foreach (string roleName in _virtualRoleRepository.GetAllRoles())
+            foreach (var roleName in _virtualRoleRepository.GetAllRoles())
             {
-                VirtualRoleProviderBase virtualRole;
-                if (_virtualRoleRepository.TryGetRole(roleName, out virtualRole) && virtualRole.IsInVirtualRole(principal, context))
+                if (_virtualRoleRepository.TryGetRole(roleName, out var virtualRole) && virtualRole.IsInVirtualRole(principal, context))
                 {
                     query.AddRole(roleName);
                 }

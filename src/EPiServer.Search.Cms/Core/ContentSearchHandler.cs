@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using EPiServer.Framework;
 using EPiServer.Search;
-using EPiServer.ServiceLocation;
-using EPiServer.Search.Internal;
 
 namespace EPiServer.Core
 {
@@ -36,7 +33,7 @@ namespace EPiServer.Core
         /// <remarks>This value will be initialized from the configuration settings of EPiServer.Search.</remarks>
         public abstract bool ServiceActive
         {
-            get;set;
+            get; set;
         }
 
         /// <summary>
@@ -88,10 +85,7 @@ namespace EPiServer.Core
         /// This string will be made up by the base type of the provided type together with a generic name
         /// idicating that it is a content item.
         /// </remarks>
-        public virtual string GetItemType<T>()
-        {
-            return GetItemType(typeof(T));
-        }
+        public virtual string GetItemType<T>() => GetItemType(typeof(T));
 
         /// <summary>
         /// Gets the item type representation for the provided content item type that is used in the search index.
@@ -113,10 +107,7 @@ namespace EPiServer.Core
         /// <returns>
         /// A string that represents the type in the ItemType field.
         /// </returns>
-        public static string GetItemTypeSection<T>()
-        {
-            return GetItemTypeSection(typeof(T));
-        }
+        public static string GetItemTypeSection<T>() => GetItemTypeSection(typeof(T));
 
         /// <summary>
         /// Gets the section that the provided type appends to the ItemType field of the search index.
@@ -145,10 +136,7 @@ namespace EPiServer.Core
         ///   <para>It will use the Culture of <paramref name="indexItem"/> to specify of what culture the returned <see cref="IContent"/> should be.</para>
         /// </remarks>
         public virtual T GetContent<T>(IndexItemBase indexItem)
-            where T : IContent
-        {
-            return GetContent<T>(indexItem, false);
-        }
+            where T : IContent => GetContent<T>(indexItem, false);
 
         /// <summary>
         /// Converts the <paramref name="indexItem"/> to the correct <see cref="IContent"/> instance.
@@ -178,10 +166,7 @@ namespace EPiServer.Core
         /// The search result matching the search query.
         /// </returns>
         public virtual SearchResults GetSearchResults<T>(string searchQuery, int page, int pageSize)
-             where T : IContent
-        {
-            return GetSearchResults<T>(searchQuery, ContentReference.EmptyReference, page, pageSize, true);
-        }
+             where T : IContent => GetSearchResults<T>(searchQuery, ContentReference.EmptyReference, page, pageSize, true);
 
         /// <summary>
         /// Gets the search result for the specified query.
@@ -217,16 +202,13 @@ namespace EPiServer.Core
         {
             return culture != null
                        ? (CultureInfo.InvariantCulture.Equals(culture) ? InvariantCultureIndexedName : culture.Name)
-                       : String.Empty;
+                       : string.Empty;
         }
 
         /// <summary>
         /// Implementation of <see cref="IReIndexable"/>, forwards to <see cref="M:IndexPublishedContent"/>
         /// </summary>
-        public void ReIndex()
-        {
-            IndexPublishedContent();
-        }
+        public void ReIndex() => IndexPublishedContent();
 
         /// <summary>
         /// Gets the index of the named.

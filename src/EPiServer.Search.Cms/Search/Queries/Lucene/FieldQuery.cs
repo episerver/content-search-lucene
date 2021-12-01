@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using System.Text;
 
 namespace EPiServer.Search.Queries.Lucene
@@ -56,7 +53,7 @@ namespace EPiServer.Search.Queries.Lucene
         /// <returns></returns>
         public virtual string GetQueryExpression()
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             sb.Append(SearchSettings.GetFieldNameForField(Field));
             sb.Append(":(");
             sb.Append(LuceneHelpers.EscapeParenthesis(Expression));
@@ -74,9 +71,14 @@ namespace EPiServer.Search.Queries.Lucene
         protected static string GetSafeQuotedPhrase(string phrase)
         {
             if (phrase.StartsWith("\"", StringComparison.Ordinal))
+            {
                 phrase = phrase.Substring(1);
+            }
+
             if (phrase.EndsWith("\"", StringComparison.Ordinal))
+            {
                 phrase = phrase.Substring(0, phrase.Length - 1);
+            }
 
             return "\"" + LuceneHelpers.Escape(phrase) + "\"";
         }

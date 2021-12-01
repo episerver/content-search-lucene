@@ -1,8 +1,4 @@
-﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Configuration;
 
 namespace EPiServer.Search.IndexingService.Configuration
 {
@@ -12,12 +8,12 @@ namespace EPiServer.Search.IndexingService.Configuration
 
         public int MaxHitsForSearchResults { get; set; } = 1000;
 
-        public bool FIPSCompliant { get; set; } = false;
+        public bool FIPSCompliant { get; set; }
 
         public int MaxHitsForReferenceSearch { get; set; } = 10000;
 
         public List<ClientElement> Clients { get; set; }
 
-        public NamedIndexesElement NamedIndexes{ get; set; }
+        public NamedIndexesElement NamedIndexes { get; set; }
     }
 }

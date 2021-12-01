@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace EPiServer.Search
+﻿namespace EPiServer.Search
 {
     /// <summary>
     /// Defines an interface for performing Reindexing of items
@@ -19,11 +14,11 @@ namespace EPiServer.Search
         /// <summary>
         /// Gets the NamedIndex.
         /// </summary>
-        String NamedIndex { get; }
+        string NamedIndex { get; }
 
         /// <summary>
         /// Gets the named indexing service.
         /// </summary>
-        String NamedIndexingService { get; }
+        string NamedIndexingService { get; }
     }
 }

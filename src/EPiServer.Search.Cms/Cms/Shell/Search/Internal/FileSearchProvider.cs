@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
 using EPiServer.Core;
 using EPiServer.DataAbstraction;
 using EPiServer.Framework.Localization;
-using EPiServer.Globalization;
 using EPiServer.Search;
 using EPiServer.Search.Queries.Lucene;
 using EPiServer.ServiceLocation;
@@ -24,8 +22,8 @@ namespace EPiServer.Cms.Shell.Search.Internal
         /// <summary>
         /// Initialized a new instance of the <see cref="FileSearchProvider"/> class
         /// </summary>
-        public FileSearchProvider(LocalizationService localizationService, ISiteDefinitionResolver siteDefinitionResolver, IContentTypeRepository contentTypeRepository, EditUrlResolver editUrlResolver, 
-            ServiceAccessor<SiteDefinition> currentSiteDefinition, IContentRepository contentRepository, ILanguageBranchRepository languageBranchRepository, SearchHandler searchHandler, ContentSearchHandler contentSearchHandler, 
+        public FileSearchProvider(LocalizationService localizationService, ISiteDefinitionResolver siteDefinitionResolver, IContentTypeRepository contentTypeRepository, EditUrlResolver editUrlResolver,
+            ServiceAccessor<SiteDefinition> currentSiteDefinition, IContentRepository contentRepository, ILanguageBranchRepository languageBranchRepository, SearchHandler searchHandler, ContentSearchHandler contentSearchHandler,
             SearchIndexConfig searchIndexConfig, UIDescriptorRegistry uiDescriptorRegistry, IContentLanguageAccessor languageResolver, UrlResolver urlResolver, TemplateResolver templateResolver)
             : base(localizationService, siteDefinitionResolver, contentTypeRepository, editUrlResolver, currentSiteDefinition, contentRepository, languageBranchRepository, searchHandler, contentSearchHandler, searchIndexConfig, uiDescriptorRegistry, languageResolver, urlResolver, templateResolver)
         {
@@ -35,46 +33,28 @@ namespace EPiServer.Cms.Shell.Search.Internal
         /// Area that the provider maps to, used for spotlight searching
         /// </summary>
         /// <value>CMS</value>
-        public override string Area { get { return ContentSearchProviderConstants.FileArea; } }
+        public override string Area => ContentSearchProviderConstants.FileArea;
 
         /// <summary>
         /// Gets the Pages category
         /// </summary>
         /// <value>Pages</value>
-        public override string Category { get { return LocalizationService.GetString(ContentSearchProviderConstants.FileCategory); } }
+        public override string Category => LocalizationService.GetString(ContentSearchProviderConstants.FileCategory);
 
         /// <summary>
         /// Gets the localization path to Files.
         /// </summary>
-        protected override string ToolTipResourceKeyBase
-        {
-            get
-            {
-                return ContentSearchProviderConstants.FileToolTipResourceKeyBase;
-            }
-        }
+        protected override string ToolTipResourceKeyBase => ContentSearchProviderConstants.FileToolTipResourceKeyBase;
 
         /// <summary>
         /// Gets the name of the localization File type.
         /// </summary>
-        protected override string ToolTipContentTypeNameResourceKey
-        {
-            get
-            {
-                return ContentSearchProviderConstants.FileToolTipContentTypeNameResourceKey;
-            }
-        }
+        protected override string ToolTipContentTypeNameResourceKey => ContentSearchProviderConstants.FileToolTipContentTypeNameResourceKey;
 
         /// <summary>
         /// Gets the icon CSS class for Files.
         /// </summary>
-        protected override string IconCssClass
-        {
-            get
-            {
-                return ContentSearchProviderConstants.FileIconCssClass;
-            }
-        }
+        protected override string IconCssClass => ContentSearchProviderConstants.FileIconCssClass;
 
         /// <summary>
         /// Adds the language filter.

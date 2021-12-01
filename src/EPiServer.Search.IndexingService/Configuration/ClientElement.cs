@@ -1,8 +1,4 @@
-﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Configuration;
 using System.Net;
 using System.Net.NetworkInformation;
 
@@ -25,20 +21,22 @@ namespace EPiServer.Search.IndexingService.Configuration
 
     public class ClientElementHandler
     {
-        object _lockObj = new object();
-        List<IPAddress> _localIps = null;
-        List<IPRange> _ip6Ranges = null;
-        List<IPRange> _ip4Ranges = null;
+        private readonly object _lockObj = new object();
+        private List<IPAddress> _localIps;
+        private List<IPRange> _ip6Ranges;
+        private List<IPRange> _ip4Ranges;
 
         private List<IPRange> ParseIPRangeList(System.Net.Sockets.AddressFamily addressFamily, string list)
         {
-            List<IPRange> result = new List<IPRange>();
-            string[] ranges = list.Split(',', ' ');
-            foreach (string range in ranges)
+            var result = new List<IPRange>();
+            if (list == null)
             {
-                string r = range.Trim();
-                IPRange ipr;
-                if (r.Length > 0 && IPRange.TryParse(addressFamily, r, out ipr))
+                return result;
+            }
+            foreach (var range in list.Split(',', ' '))
+            {
+                var r = range.Trim();
+                if (r.Length > 0 && IPRange.TryParse(addressFamily, r, out var ipr))
                 {
                     result.Add(ipr);
                 }
@@ -49,12 +47,12 @@ namespace EPiServer.Search.IndexingService.Configuration
 
         private List<IPAddress> GetLocalAddresses()
         {
-            List<IPAddress> localIps = new List<IPAddress>();
+            var localIps = new List<IPAddress>();
 
-            NetworkInterface[] nics = NetworkInterface.GetAllNetworkInterfaces();
-            foreach (NetworkInterface nic in nics)
+            var nics = NetworkInterface.GetAllNetworkInterfaces();
+            foreach (var nic in nics)
             {
-                IPInterfaceProperties properties = nic.GetIPProperties();
+                var properties = nic.GetIPProperties();
                 foreach (IPAddressInformation uniCast in properties.UnicastAddresses)
                 {
                     localIps.Add(uniCast.Address);
@@ -82,10 +80,12 @@ namespace EPiServer.Search.IndexingService.Configuration
                 // Check if the IP is local and AllowLocal is enabled
                 if (_localIps != null)
                 {
-                    foreach (IPAddress addr in _localIps)
+                    foreach (var addr in _localIps)
                     {
                         if (addr.Equals(ipAddress))
+                        {
                             return true;
+                        }
                     }
                 }
             }
@@ -106,10 +106,12 @@ namespace EPiServer.Search.IndexingService.Configuration
 
                 if (_ip4Ranges != null)
                 {
-                    foreach (IPRange r in _ip4Ranges)
+                    foreach (var r in _ip4Ranges)
                     {
                         if (r.IsInRange(ipAddress))
+                        {
                             return true;
+                        }
                     }
                 }
             }
@@ -130,10 +132,12 @@ namespace EPiServer.Search.IndexingService.Configuration
 
                 if (_ip6Ranges != null)
                 {
-                    foreach (IPRange r in _ip6Ranges)
+                    foreach (var r in _ip6Ranges)
                     {
                         if (r.IsInRange(ipAddress))
+                        {
                             return true;
+                        }
                     }
                 }
             }

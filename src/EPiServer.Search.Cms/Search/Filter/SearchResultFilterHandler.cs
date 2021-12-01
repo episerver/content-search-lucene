@@ -14,14 +14,18 @@
         public static bool Include(IndexResponseItem item)
         {
             // Iterate all configured providers
-            foreach (SearchResultFilterProvider provider in SearchSettings.SearchResultFilterProviders.Values)
+            foreach (var provider in SearchSettings.SearchResultFilterProviders.Values)
             {
-                SearchResultFilter filter = provider.Filter(item);
+                var filter = provider.Filter(item);
                 if (filter == SearchResultFilter.Include)
+                {
                     return true;
+                }
                 else if (filter == SearchResultFilter.Exclude)
+                {
                     return false;
-                
+                }
+
                 // if SearchResultFilter.NotHandled, try next provider
             }
 

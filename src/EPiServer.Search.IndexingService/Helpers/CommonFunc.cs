@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace EPiServer.Search.IndexingService.Helpers
 {
@@ -15,7 +12,7 @@ namespace EPiServer.Search.IndexingService.Helpers
                         IFILTER_INIT.IFILTER_INIT_APPLY_CRAWL_ATTRIBUTES |
                         IFILTER_INIT.IFILTER_INIT_CANON_SPACES;
 
-        private const Int32 BufferSize = 65536;
+        private const int BufferSize = 65536;
 
         private readonly IResponseExceptionHelper _responseExceptionHelper;
         public CommonFunc(IResponseExceptionHelper responseExceptionHelper)
@@ -24,14 +21,14 @@ namespace EPiServer.Search.IndexingService.Helpers
         }
         public bool IsModifyIndex(string namedIndexName)
         {
-            if (String.IsNullOrEmpty(namedIndexName))
+            if (string.IsNullOrEmpty(namedIndexName))
             {
                 namedIndexName = IndexingServiceSettings.DefaultIndexName;
             }
 
             if (IndexingServiceSettings.NamedIndexElements[namedIndexName].ReadOnly)
             {
-                _responseExceptionHelper.HandleServiceError(String.Format("cannot modify index: '{0}'. Index is readonly.", namedIndexName));
+                _responseExceptionHelper.HandleServiceError(string.Format("cannot modify index: '{0}'. Index is readonly.", namedIndexName));
 
                 return false;
             }
@@ -43,19 +40,19 @@ namespace EPiServer.Search.IndexingService.Helpers
 
         public string PrepareExpression(string q, bool excludeNotPublished)
         {
-            string expression = q;
+            var expression = q;
             expression = PrepareEscapeFields(expression, IndexingServiceSettings.CategoriesFieldName);
             expression = PrepareEscapeFields(expression, IndexingServiceSettings.AclFieldName);
-            string currentDate = Regex.Replace(DateTime.Now.ToUniversalTime().ToString("u"), @"\D", "");
+            var currentDate = Regex.Replace(DateTime.Now.ToUniversalTime().ToString("u"), @"\D", "");
 
             if (excludeNotPublished)
             {
-                expression = String.Format("({0}) AND ({1}:(no) OR {1}:[{2} TO 99999999999999])", expression,
+                expression = string.Format("({0}) AND ({1}:(no) OR {1}:[{2} TO 99999999999999])", expression,
                     IndexingServiceSettings.PublicationEndFieldName, currentDate);
             }
             if (excludeNotPublished)
             {
-                expression = String.Format("({0}) AND ({1}:(no) OR {1}:[00000000000000 TO {2}])", expression,
+                expression = string.Format("({0}) AND ({1}:(no) OR {1}:[00000000000000 TO {2}])", expression,
                     IndexingServiceSettings.PublicationStartFieldName, currentDate);
             }
 
@@ -76,7 +73,7 @@ namespace EPiServer.Search.IndexingService.Helpers
                 }
             };
 
-            string expr = Regex.Replace(q, "(?<fieldname>\\w+:)?(?:(?<terms>\\([^()]*\\))|(?<terms>[^\\s()\"]+)|(?<terms>\"[^\"]*\"))", regexEscapeFields);
+            var expr = Regex.Replace(q, "(?<fieldname>\\w+:)?(?:(?<terms>\\([^()]*\\))|(?<terms>[^\\s()\"]+)|(?<terms>\"[^\"]*\"))", regexEscapeFields);
 
             return expr;
         }
@@ -88,7 +85,7 @@ namespace EPiServer.Search.IndexingService.Helpers
         /// <returns></returns>
         public bool IsValidIndex(string namedIndexName)
         {
-            if (String.IsNullOrEmpty(namedIndexName))
+            if (string.IsNullOrEmpty(namedIndexName))
             {
                 namedIndexName = IndexingServiceSettings.DefaultIndexName;
                 if (IndexingServiceSettings.NamedIndexDirectories.ContainsKey(namedIndexName))
@@ -100,14 +97,14 @@ namespace EPiServer.Search.IndexingService.Helpers
             {
                 return true;
             }
-            _responseExceptionHelper.HandleServiceError(String.Format("Named index \"{0}\" is not valid, it does not exist in configuration or has faulty configuration", namedIndexName));
+            _responseExceptionHelper.HandleServiceError(string.Format("Named index \"{0}\" is not valid, it does not exist in configuration or has faulty configuration", namedIndexName));
             return false;
         }
 
         public void SplitDisplayTextToMetadata(string displayText, string metadata, out string displayTextOut, out string metadataOut)
         {
-            displayTextOut = String.Empty;
-            metadataOut = String.Empty;
+            displayTextOut = string.Empty;
+            metadataOut = string.Empty;
 
             if (displayText.Length <= IndexingServiceSettings.MaxDisplayTextLength)
             {
@@ -118,7 +115,7 @@ namespace EPiServer.Search.IndexingService.Helpers
             else
             {
                 displayTextOut = displayText.Substring(0, IndexingServiceSettings.MaxDisplayTextLength);
-                StringBuilder sb = new StringBuilder();
+                var sb = new StringBuilder();
                 sb.Append(metadata); // Add original data
                 sb.Append(" ");
                 sb.Append(displayText.Substring(IndexingServiceSettings.MaxDisplayTextLength, displayText.Length - IndexingServiceSettings.MaxDisplayTextLength));
@@ -131,27 +128,21 @@ namespace EPiServer.Search.IndexingService.Helpers
         /// </summary>
         /// <param name="uri">The <see cref="Uri"/> to get content from</param>
         /// <returns>Empty string</returns>
-        public virtual string GetNonFileUriContent(Uri uri)
-        {
-            return "";
-        }
+        public virtual string GetNonFileUriContent(Uri uri) => "";
 
         /// <summary>
         /// Gets the text content for the passed file uri using the uri.LocalPath
         /// </summary>
         /// <param name="uri">The file <see cref="Uri"/> to get content from</param>
         /// <returns></returns>     
-        public virtual string GetFileUriContent(Uri uri)
-        {
-            return GetFileText(uri.LocalPath);
-        }
-        
+        public virtual string GetFileUriContent(Uri uri) => GetFileText(uri.LocalPath);
+
         public string GetFileText(string path)
         {
-            StringBuilder text = new StringBuilder();
+            var text = new StringBuilder();
             IFilter iflt = null;
             object iunk = null;
-            int i = TextFilter.LoadIFilter(path, iunk, ref iflt);
+            var i = TextFilter.LoadIFilter(path, iunk, ref iflt);
             if (i != (int)IFilterReturnCodes.S_OK)
             {
                 return null; //Cannot find a filter for file
@@ -160,19 +151,19 @@ namespace EPiServer.Search.IndexingService.Helpers
             IFilterReturnCodes scode;
             //ArrayList textItems = new ArrayList();
 
-            int attr = 0;
+            var attr = 0;
             IFILTER_FLAGS flagsSet = 0;
             scode = iflt.Init(FILTERSETTINGS, attr, IntPtr.Zero, ref flagsSet);
             if (scode != IFilterReturnCodes.S_OK)
             {
                 throw new Exception(
-                    String.Format("IFilter initialisation failed: {0}",
+                    string.Format("IFilter initialisation failed: {0}",
                     Enum.GetName(scode.GetType(), scode)));
             }
 
             while (scode == IFilterReturnCodes.S_OK)
             {
-                STAT_CHUNK stat = new STAT_CHUNK();
+                var stat = new STAT_CHUNK();
 
                 scode = iflt.GetChunk(ref stat);
                 if (scode == IFilterReturnCodes.S_OK)
@@ -183,10 +174,10 @@ namespace EPiServer.Search.IndexingService.Helpers
                         {
                             text.AppendLine();
                         }
-                        int bufSize = BufferSize;
+                        var bufSize = BufferSize;
 
-                        IFilterReturnCodes scodeText = IFilterReturnCodes.S_OK;
-                        StringBuilder tmpbuf = new StringBuilder(bufSize);
+                        var scodeText = IFilterReturnCodes.S_OK;
+                        var tmpbuf = new StringBuilder(bufSize);
 
                         while (scodeText == IFilterReturnCodes.S_OK)
                         {

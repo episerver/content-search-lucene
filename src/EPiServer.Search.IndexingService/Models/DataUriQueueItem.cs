@@ -1,16 +1,12 @@
 ﻿using EPiServer.Search.IndexingService.Helpers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace EPiServer.Search.IndexingService.Models
 {
     public class DataUriQueueItem
     {
-        private FeedItemModel _item;
-        private NamedIndex _namedIndex;
-        private ILuceneHelper _luceneHelper;
+        private readonly FeedItemModel _item;
+        private readonly NamedIndex _namedIndex;
+        private readonly ILuceneHelper _luceneHelper;
 
         public DataUriQueueItem(FeedItemModel item, NamedIndex namedIndex, ILuceneHelper luceneHelper)
         {
@@ -19,9 +15,6 @@ namespace EPiServer.Search.IndexingService.Models
             this._luceneHelper = luceneHelper;
         }
 
-        internal void Do()
-        {
-            _luceneHelper.HandleDataUri(_item, _namedIndex);
-        }
+        internal void Do() => _luceneHelper.HandleDataUri(_item, _namedIndex);
     }
 }

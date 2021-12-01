@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace EPiServer.Search.IndexingService.Helpers
+﻿namespace EPiServer.Search.IndexingService.Helpers
 {
     public interface IFeedHelper
     {

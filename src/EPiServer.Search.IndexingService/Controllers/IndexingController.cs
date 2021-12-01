@@ -1,13 +1,9 @@
-﻿using EPiServer.Search.IndexingService.Helpers;
-using EPiServer.Search.IndexingService.Security;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.ServiceModel.Syndication;
-using System.Threading.Tasks;
+using EPiServer.Search.IndexingService.Helpers;
+using EPiServer.Search.IndexingService.Security;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace EPiServer.Search.IndexingService.Controllers
 {
@@ -20,7 +16,7 @@ namespace EPiServer.Search.IndexingService.Controllers
         private readonly IIndexingServiceSettings _indexingServiceSettings;
         private readonly IResponseExceptionHelper _responseExceptionHelper;
 
-        public IndexingController(ISecurityHandler securityHandler, 
+        public IndexingController(ISecurityHandler securityHandler,
             IIndexingServiceHandler indexingServiceHandler,
             IIndexingServiceSettings indexingServiceSettings,
             IResponseExceptionHelper responseExceptionHelper)
@@ -36,7 +32,7 @@ namespace EPiServer.Search.IndexingService.Controllers
         [Route("reset")]
         public IActionResult ResetIndex(string namedIndex, string accessKey)
         {
-            IndexingServiceSettings.IndexingServiceServiceLog.Debug(String.Format("Reset of index: {0} requested", namedIndex));
+            IndexingServiceSettings.IndexingServiceServiceLog.LogDebug(string.Format("Reset of index: {0} requested", namedIndex));
 
             if (!_securityHandler.IsAuthenticated(accessKey, AccessLevel.Modify))
             {
@@ -49,7 +45,7 @@ namespace EPiServer.Search.IndexingService.Controllers
 
         //POST: update?accessKey={accessKey}
         [HttpPost]
-        [Route("update")]        
+        [Route("update")]
         public IActionResult UpdateIndex(string accessKey, [FromBody] FeedModel model)
         {
             if (!_securityHandler.IsAuthenticated(accessKey, AccessLevel.Modify))
@@ -71,7 +67,7 @@ namespace EPiServer.Search.IndexingService.Controllers
                 _responseExceptionHelper.HandleServiceUnauthorized("Unauthorized");
             }
 
-            return Ok(_indexingServiceHandler.GetSearchResults(q, namedIndexes, Int32.Parse(offset, CultureInfo.InvariantCulture), Int32.Parse(limit, CultureInfo.InvariantCulture)));
+            return Ok(_indexingServiceHandler.GetSearchResults(q, namedIndexes, int.Parse(offset, CultureInfo.InvariantCulture), int.Parse(limit, CultureInfo.InvariantCulture)));
         }
 
         //GET: namedindexes?accesskey={accesskey}
@@ -89,7 +85,7 @@ namespace EPiServer.Search.IndexingService.Controllers
 
         #region Private
 
-        
+
         #endregion
 
         #region Events
@@ -154,5 +150,5 @@ namespace EPiServer.Search.IndexingService.Controllers
 
         #endregion
     }
-    
+
 }

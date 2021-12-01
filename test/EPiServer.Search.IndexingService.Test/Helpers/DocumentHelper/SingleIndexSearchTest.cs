@@ -1,14 +1,5 @@
-﻿using EPiServer.Logging.Compatibility;
-using EPiServer.Search.IndexingService.Helpers;
-using Lucene.Net.Index;
-using Moq;
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using Moq;
 using Xunit;
 
 namespace EPiServer.Search.IndexingService.Test.Helpers.DocumentHelper
@@ -27,9 +18,8 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.DocumentHelper
             var itemId = Guid.NewGuid().ToString();
             AddDocumentForTest(namedIndexMock.Object, itemId);
 
-            int totalHits = 0;
             var classInstant = SetupMock();
-            var result = classInstant.SingleIndexSearch("EPISERVER_SEARCH_ID:"+ itemId, namedIndexMock.Object, 1, out totalHits);
+            var result = classInstant.SingleIndexSearch("EPISERVER_SEARCH_ID:" + itemId, namedIndexMock.Object, 1, out var totalHits);
             Assert.Single(result);
 
             DeleteDocumentForTest(namedIndexMock.Object, itemId);

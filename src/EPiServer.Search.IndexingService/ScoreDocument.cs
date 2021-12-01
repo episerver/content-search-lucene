@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using Lucene.Net.Documents;
 
 namespace EPiServer.Search.IndexingService
@@ -14,7 +10,7 @@ namespace EPiServer.Search.IndexingService
             Score = score;
         }
 
-        internal Document Document 
+        internal Document Document
         {
             get;
             set;

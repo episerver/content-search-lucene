@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Configuration;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using EPiServer.ServiceLocation;
 
 namespace EPiServer.Core
@@ -12,7 +7,7 @@ namespace EPiServer.Core
     /// <summary>
     /// holds configuration about NamedIndex and NamedIndexingService
     /// </summary>
-   [ServiceConfiguration(typeof(SearchIndexConfig), Lifecycle= ServiceInstanceScope.Singleton)]
+    [ServiceConfiguration(typeof(SearchIndexConfig), Lifecycle = ServiceInstanceScope.Singleton)]
     public class SearchIndexConfig
     {
         /// <summary>
@@ -25,7 +20,7 @@ namespace EPiServer.Core
         /// <summary>
         /// Gets or sets the index of the named.
         /// </summary>
-        public virtual Collection<String> NamedIndexes
+        public virtual Collection<string> NamedIndexes
         {
             get;
             set;
@@ -37,7 +32,7 @@ namespace EPiServer.Core
         /// <value>
         /// The index of the CMS named.
         /// </value>
-        public virtual String CMSNamedIndex
+        public virtual string CMSNamedIndex
         {
             get;
             set;
@@ -46,11 +41,11 @@ namespace EPiServer.Core
         /// <summary>
         /// Gets or sets the named indexing service.
         /// </summary>
-        public virtual String NamedIndexingService
+        public virtual string NamedIndexingService
         {
             get;
             set;
         }
 
-   }
+    }
 }

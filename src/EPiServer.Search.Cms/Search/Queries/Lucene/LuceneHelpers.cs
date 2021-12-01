@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-
-namespace EPiServer.Search.Queries.Lucene
+﻿namespace EPiServer.Search.Queries.Lucene
 {
     /// <summary>
     /// Class with helper methods for constructing Lucene queries
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Lucene", Justification="Known name")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Lucene", Justification = "Known name")]
     public static class LuceneHelpers
     {
         /// <summary>
@@ -17,10 +11,10 @@ namespace EPiServer.Search.Queries.Lucene
         /// </summary>
         public static string Escape(string value)
         {
-            System.Text.StringBuilder sb = new System.Text.StringBuilder();
-            for (int i = 0; i < value.Length; i++)
+            var sb = new System.Text.StringBuilder();
+            for (var i = 0; i < value.Length; i++)
             {
-                char c = value[i];
+                var c = value[i];
                 // These characters are part of the query syntax and must be escaped
                 if (c == '\\' || c == '+' || c == '-' || c == '!' || c == '(' || c == ')' || c == ':' || c == '^' || c == '[' || c == ']' || c == '\"' || c == '{' || c == '}' || c == '~' || c == '*' || c == '?' || c == '|' || c == '&')
                 {
@@ -36,10 +30,10 @@ namespace EPiServer.Search.Queries.Lucene
         /// </summary>
         public static string EscapeParenthesis(string value)
         {
-            System.Text.StringBuilder sb = new System.Text.StringBuilder();
-            for (int i = 0; i < value.Length; i++)
+            var sb = new System.Text.StringBuilder();
+            for (var i = 0; i < value.Length; i++)
             {
-                char c = value[i];
+                var c = value[i];
                 // These characters are part of the query syntax and must be escaped
                 if (c == '(' || c == ')')
                 {

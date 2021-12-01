@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿using System.Collections.ObjectModel;
 using System.Text;
-using System.Xml.Linq;
-using System.ServiceModel.Syndication;
-using System.Collections.ObjectModel;
 using System.Text.Json;
 
 namespace EPiServer.Search.IndexingService.FieldSerializers
@@ -26,13 +20,13 @@ namespace EPiServer.Search.IndexingService.FieldSerializers
         {
             if (FeedItem != null)
             {
-                StringBuilder sb = new StringBuilder();
+                var sb = new StringBuilder();
 
                 var element = TryParseCollection(FeedItem.ElementExtensions[syndicationItemElementExtensionName]);
 
                 if (element != null)
                 {
-                    foreach (string e in element)
+                    foreach (var e in element)
                     {
                         sb.Append(e);
                         sb.Append("|");
@@ -40,7 +34,9 @@ namespace EPiServer.Search.IndexingService.FieldSerializers
                 }
 
                 if (sb.Length > 0)
+                {
                     sb.Remove(sb.Length - 1, 1);
+                }
 
                 return sb.ToString().Trim();
             }
@@ -52,13 +48,13 @@ namespace EPiServer.Search.IndexingService.FieldSerializers
 
         internal void AddFieldStoreValueToSyndicationItem(FeedItemModel feedItem, string syndicationItemElementExtensionName)
         {
-            if (!String.IsNullOrEmpty(FieldStoreValue))
+            if (!string.IsNullOrEmpty(FieldStoreValue))
             {
-                Collection<string> element = new Collection<string>();
+                var element = new Collection<string>();
 
-                string[] nodes = SplitFieldStoreValue();
-                
-                foreach (string node in nodes)
+                var nodes = SplitFieldStoreValue();
+
+                foreach (var node in nodes)
                 {
                     element.Add(node);
                 }
@@ -77,7 +73,7 @@ namespace EPiServer.Search.IndexingService.FieldSerializers
         }
         private Collection<string> TryParseCollection(object o)
         {
-            Collection<string> c = new Collection<string>();
+            var c = new Collection<string>();
             if (o is JsonElement)
             {
                 var json = ((JsonElement)o).GetRawText();

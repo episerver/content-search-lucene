@@ -1,10 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace EPiServer.Search.IndexingService.Test.Controllers
@@ -22,7 +17,7 @@ namespace EPiServer.Search.IndexingService.Test.Controllers
             _responseExceptionHelperMock.Setup(x => x.HandleServiceUnauthorized(It.IsAny<string>())).Throws(new HttpResponseException() { Status = 401 });
 
             var classInstant = SetupMock();
-            var caughtException = Assert.Throws<HttpResponseException>(() => classInstant.UpdateIndex(accessKey,feed));
+            var caughtException = Assert.Throws<HttpResponseException>(() => classInstant.UpdateIndex(accessKey, feed));
             Assert.Equal(401, caughtException.Status);
         }
 

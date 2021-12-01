@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using EPiServer.Cms.Shell.Search;
 using EPiServer.Cms.Shell.Search.Internal;
 using EPiServer.Cms.Shell.UI.Test.Fakes;
 using EPiServer.Core;
 using EPiServer.DataAbstraction;
 using EPiServer.Framework.Localization;
-using EPiServer.Globalization;
 using EPiServer.Search;
 using EPiServer.Search.Queries;
 using EPiServer.Search.Queries.Lucene;
@@ -42,8 +40,10 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
         [Fact]
         public void Search_WithQueryContainingOneSearchRoot_ShouldAddCorrectGuidAsVirtualPathNode()
         {
-            var query = new Query("query");
-            query.SearchRoots = new string[] { "1" };
+            var query = new Query("query")
+            {
+                SearchRoots = new string[] { "1" }
+            };
 
             _searchProvider.Search(query);
             _searchHandlerMock
@@ -56,8 +56,10 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
         [Fact]
         public void Search_WithQueryContainingMultipleSearchRoots_ShouldAddCorrectNumberOfVirtualPathQueries()
         {
-            var query = new Query("query");
-            query.SearchRoots = new string[] { "1", "2", "3" };
+            var query = new Query("query")
+            {
+                SearchRoots = new string[] { "1", "2", "3" }
+            };
 
             _searchProvider.Search(query);
             _searchHandlerMock
@@ -70,8 +72,10 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
         [Fact]
         public void Search_WithSearchRootsThatCannotBeParsedToContentReference_ShouldNotAddPathQuery()
         {
-            var query = new Query("query");
-            query.SearchRoots = new string[] { "not", "parsable", "to", "content", "reference" };
+            var query = new Query("query")
+            {
+                SearchRoots = new string[] { "not", "parsable", "to", "content", "reference" }
+            };
 
             _searchProvider.Search(query);
             _searchHandlerMock
@@ -94,7 +98,9 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
             {
                 var recursiveResult = GetQueryExpressionsRecursive<T>(group);
                 if (recursiveResult.Any())
+                {
                     queryList.AddRange(recursiveResult);
+                }
             }
             queryList.AddRange(query.QueryExpressions.OfType<T>());
             return queryList;
@@ -134,9 +140,11 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
                 Mock.Of<IContentLanguageAccessor>(),
                 Mock.Of<UrlResolver>(),
                 Mock.Of<TemplateResolver>(),
-                Mock.Of<IBlobResolver>());
-            _searchProvider.IsSearchActive = true;
-            _searchProvider.HasAdminAccess = () => true;
+                Mock.Of<IBlobResolver>())
+            {
+                IsSearchActive = true,
+                HasAdminAccess = () => true
+            };
         }
         #endregion
     }

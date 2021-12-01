@@ -6,7 +6,7 @@ namespace EPiServer.Search.Queries.Lucene
 {
     public class GroupQuery : IQueryExpression
     {
-        Collection<IQueryExpression> _queries = new Collection<IQueryExpression>();
+        private readonly Collection<IQueryExpression> _queries = new Collection<IQueryExpression>();
 
         /// <summary>
         /// The <see cref="LuceneOperator"/> to use between the queries within the group
@@ -23,13 +23,7 @@ namespace EPiServer.Search.Queries.Lucene
             set;
         }
 
-        public Collection<IQueryExpression> QueryExpressions
-        {
-            get
-            {
-                return _queries;
-            }
-        }
+        public Collection<IQueryExpression> QueryExpressions => _queries;
 
         /// <summary>
         /// Gets the text representation for this <see cref="GroupQuery"/>
@@ -37,16 +31,18 @@ namespace EPiServer.Search.Queries.Lucene
         /// <returns></returns>
         public string GetQueryExpression()
         {
-            StringBuilder text = new StringBuilder();
-            int i = 0;
-            int itemsCount = QueryExpressions.Count;
+            var text = new StringBuilder();
+            var i = 0;
+            var itemsCount = QueryExpressions.Count;
 
-            foreach (IQueryExpression searchExpression in QueryExpressions)
+            foreach (var searchExpression in QueryExpressions)
             {
                 i++;
 
                 if (itemsCount > 1)
+                {
                     text.Append("(");
+                }
 
                 text.Append(searchExpression.GetQueryExpression());
 

@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using EPiServer.Core;
 using EPiServer.DataAbstraction;
 using EPiServer.Framework.Localization;
-using EPiServer.Globalization;
 using EPiServer.Search;
 using EPiServer.ServiceLocation;
 using EPiServer.Shell;
@@ -19,12 +17,12 @@ namespace EPiServer.Cms.Shell.Search.Internal
     /// </summary>
     [SearchProvider]
     public class BlockSearchProvider : EPiServerSearchProviderBase<BlockData, BlockType>
-    { 
+    {
         /// <summary>
         /// Initialized a new instance of the <see cref="BlockSearchProvider"/> class
         /// </summary>
-        public BlockSearchProvider(LocalizationService localizationService, ISiteDefinitionResolver siteDefinitionResolver, IContentTypeRepository<BlockType> blockTypeRepository, EditUrlResolver editUrlResolver, 
-            ServiceAccessor<SiteDefinition> currentSiteDefinition, IContentRepository contentRepository, ILanguageBranchRepository languageBranchRepository, SearchHandler searchHandler, ContentSearchHandler contentSearchHandler, 
+        public BlockSearchProvider(LocalizationService localizationService, ISiteDefinitionResolver siteDefinitionResolver, IContentTypeRepository<BlockType> blockTypeRepository, EditUrlResolver editUrlResolver,
+            ServiceAccessor<SiteDefinition> currentSiteDefinition, IContentRepository contentRepository, ILanguageBranchRepository languageBranchRepository, SearchHandler searchHandler, ContentSearchHandler contentSearchHandler,
             SearchIndexConfig searchIndexConfig, UIDescriptorRegistry uiDescriptorRegistry, IContentLanguageAccessor languageResolver, UrlResolver urlResolver, TemplateResolver templateResolver, IBlobResolver blobResolver)
            : base(localizationService, siteDefinitionResolver, blockTypeRepository, editUrlResolver, currentSiteDefinition, contentRepository, languageBranchRepository, searchHandler, contentSearchHandler, searchIndexConfig, uiDescriptorRegistry, languageResolver, urlResolver, templateResolver)
         {
@@ -35,46 +33,28 @@ namespace EPiServer.Cms.Shell.Search.Internal
         /// Area that the provider maps to, used for spotlight searching
         /// </summary>
         /// <value>CMS</value>
-        public override string Area { get { return ContentSearchProviderConstants.BlockArea; } }
+        public override string Area => ContentSearchProviderConstants.BlockArea;
 
         /// <summary>
         /// Gets the Pages category
         /// </summary>
         /// <value>Pages</value>
-        public override string Category { get { return LocalizationService.GetString(ContentSearchProviderConstants.BlockCategory); } }
+        public override string Category => LocalizationService.GetString(ContentSearchProviderConstants.BlockCategory);
 
         /// <summary>
         /// Gets the localization path to blocks.
         /// </summary>
-        protected override string ToolTipResourceKeyBase
-        {
-            get
-            {
-                return ContentSearchProviderConstants.BlockToolTipResourceKeyBase;
-            }
-        }
+        protected override string ToolTipResourceKeyBase => ContentSearchProviderConstants.BlockToolTipResourceKeyBase;
 
         /// <summary>
         /// Gets the name of the localization block type.
         /// </summary>
-        protected override string ToolTipContentTypeNameResourceKey
-        {
-            get
-            {
-                return ContentSearchProviderConstants.BlockToolTipContentTypeNameResourceKey;
-            }
-        }
+        protected override string ToolTipContentTypeNameResourceKey => ContentSearchProviderConstants.BlockToolTipContentTypeNameResourceKey;
 
         /// <summary>
         /// Gets the icon CSS class for blocks.
         /// </summary>
-        protected override string IconCssClass
-        {
-            get
-            {
-                return ContentSearchProviderConstants.BlockIconCssClass;
-            }
-        }
+        protected override string IconCssClass => ContentSearchProviderConstants.BlockIconCssClass;
 
         /// <summary>
         /// Remove duplicate hits and try to select the most appropriate language version
@@ -84,7 +64,7 @@ namespace EPiServer.Cms.Shell.Search.Internal
         protected override IEnumerable<BlockData> FilterResults(Query query, IEnumerable<BlockData> searchResults)
         {
             // If the search is a global search then don't filter on preferred culture and just return.
-            if (query.Parameters != null && query.Parameters.ContainsKey("global") && Boolean.Parse(query.Parameters["global"].ToString()))
+            if (query.Parameters != null && query.Parameters.ContainsKey("global") && bool.Parse(query.Parameters["global"].ToString()))
             {
                 return searchResults;
             }

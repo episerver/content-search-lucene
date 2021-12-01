@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using EPiServer.ServiceLocation;
+﻿using EPiServer.ServiceLocation;
 
 namespace EPiServer.Search
 {
@@ -18,9 +14,6 @@ namespace EPiServer.Search
         /// <returns>
         /// The currently registered <see cref="SearchHandler"/>.
         /// </returns>
-        public static SearchHandler SearchHandler(this ServiceProviderHelper helper)
-        {
-            return helper.Advanced.GetInstance<SearchHandler>();
-        }
+        public static SearchHandler SearchHandler(this ServiceProviderHelper helper) => helper.Advanced.GetInstance<SearchHandler>();
     }
 }

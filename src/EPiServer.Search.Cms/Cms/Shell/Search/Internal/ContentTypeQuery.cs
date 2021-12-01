@@ -21,9 +21,6 @@ namespace EPiServer.Cms.Shell.Search.Internal
         /// Gets the query expression for this <see cref="ContentTypeQuery"/> instance.
         /// </summary>
         /// <returns>A query expression string.</returns>
-        public virtual string GetQueryExpression()
-        {
-            return new FieldQuery("\"" + ContentSearchHandler.GetItemTypeSection(Type) + "\"", Field.ItemType).GetQueryExpression();
-        }
+        public virtual string GetQueryExpression() => new FieldQuery("\"" + ContentSearchHandler.GetItemTypeSection(Type) + "\"", Field.ItemType).GetQueryExpression();
     }
 }

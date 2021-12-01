@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
 
 namespace EPiServer.Core.Internal
 {
@@ -11,10 +10,10 @@ namespace EPiServer.Core.Internal
     /// </summary>
     internal class SlimContentReader
     {
-        private IContentRepository _contentRepository;
-        private Stack<ContentReference> _backlog = new Stack<ContentReference>();
-        private Queue<IContent> _queue = new Queue<IContent>();
-        private Func<IContent, bool> _traverseChildren;
+        private readonly IContentRepository _contentRepository;
+        private readonly Stack<ContentReference> _backlog = new Stack<ContentReference>();
+        private readonly Queue<IContent> _queue = new Queue<IContent>();
+        private readonly Func<IContent, bool> _traverseChildren;
 
         public SlimContentReader(IContentRepository contentRepository, ContentReference start)
             : this(contentRepository, start, c => true)
@@ -43,9 +42,9 @@ namespace EPiServer.Core.Internal
 
             if (_queue.Count == 0)
             {
-                bool traverseChildren = true;
-                ContentReference currentReference = _backlog.Pop();
-                foreach (IContent item in _contentRepository.GetLanguageBranches<IContent>(currentReference))
+                var traverseChildren = true;
+                var currentReference = _backlog.Pop();
+                foreach (var item in _contentRepository.GetLanguageBranches<IContent>(currentReference))
                 {
                     traverseChildren &= _traverseChildren(item);
                     _queue.Enqueue(item);
@@ -53,10 +52,10 @@ namespace EPiServer.Core.Internal
 
                 if (traverseChildren)
                 {
-                    IContent[] children = _contentRepository.GetChildren<IContent>(currentReference, CultureInfo.InvariantCulture).ToArray();
-                    for (int i = children.Length; i > 0; i--)
+                    var children = _contentRepository.GetChildren<IContent>(currentReference, CultureInfo.InvariantCulture).ToArray();
+                    for (var i = children.Length; i > 0; i--)
                     {
-                        ContentReference childReference = new ContentReference(children[i - 1].ContentLink.ID, children[i - 1].ContentLink.ProviderName);
+                        var childReference = new ContentReference(children[i - 1].ContentLink.ID, children[i - 1].ContentLink.ProviderName);
                         _backlog.Push(childReference);
                     }
                 }

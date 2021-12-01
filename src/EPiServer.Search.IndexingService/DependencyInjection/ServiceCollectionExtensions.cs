@@ -1,14 +1,11 @@
-﻿using EPiServer.Search.IndexingService.Configuration;
+using System;
+using System.IO;
+using EPiServer.Search.IndexingService.Configuration;
 using EPiServer.Search.IndexingService.Helpers;
 using EPiServer.Search.IndexingService.Security;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace EPiServer.Search.IndexingService.DependencyInjection
 {
@@ -20,10 +17,15 @@ namespace EPiServer.Search.IndexingService.DependencyInjection
         /// <summary>
         /// Register services EPiServer.Search.IndexingService
         /// </summary>
+        /// <param name="services"></param>
+        /// <param name="configuration"></param>
+        /// <exception cref="ArgumentNullException"><paramref name="services"/> is <c>null</c>.</exception>
         public static IServiceCollection AddSearchIndexingService(this IServiceCollection services, IConfiguration configuration)
         {
             if (services == null)
+            {
                 throw new ArgumentNullException(nameof(services));
+            }
 
             //register
             services.AddSingleton<IIndexingServiceSettings, IndexingServiceSettings>();

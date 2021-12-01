@@ -1,1 +1,0 @@
-powershell .\build\set-version.ps1 %*

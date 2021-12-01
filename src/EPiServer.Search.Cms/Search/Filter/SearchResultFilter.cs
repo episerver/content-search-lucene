@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace EPiServer.Search.Filter
+﻿namespace EPiServer.Search.Filter
 {
     /// <summary>
     /// An enum returned by the SearchResultFilterProviders telling whether the item should be included, excluded ocr if the provider does noy handle the item type

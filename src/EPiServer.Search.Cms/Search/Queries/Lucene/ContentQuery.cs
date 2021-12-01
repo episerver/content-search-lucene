@@ -1,6 +1,4 @@
-﻿using System;
-using System.Globalization;
-using EPiServer.Core;
+﻿using EPiServer.Core;
 
 namespace EPiServer.Search.Queries.Lucene
 {
@@ -12,7 +10,7 @@ namespace EPiServer.Search.Queries.Lucene
         /// <summary>
         /// Initializes a new instance of the <see cref="ContentQuery"/> class.
         /// </summary>
-        public ContentQuery() 
+        public ContentQuery()
             : base() { }
     }
 
@@ -38,10 +36,7 @@ namespace EPiServer.Search.Queries.Lucene
         /// Gets the query expression for this <see cref="ContentQuery&lt;T&gt;"/> instance.
         /// </summary>
         /// <returns>A query expression string.</returns>
-        public virtual string GetQueryExpression()
-        {
-            return new FieldQuery("\"" + ContentSearchHandler.GetItemTypeSection<T>() + "\"", Field.ItemType).GetQueryExpression();
-        }
+        public virtual string GetQueryExpression() => new FieldQuery("\"" + ContentSearchHandler.GetItemTypeSection<T>() + "\"", Field.ItemType).GetQueryExpression();
     }
 
 }

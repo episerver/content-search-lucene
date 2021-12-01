@@ -1,10 +1,7 @@
-﻿using Moq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Moq;
 using Xunit;
 
 namespace EPiServer.Search.IndexingService.Test.IndexingServiceHandler
@@ -100,8 +97,8 @@ namespace EPiServer.Search.IndexingService.Test.IndexingServiceHandler
 
             _feedHelperMock.Setup(x => x.GetAttributeValue(It.IsAny<FeedItemModel>(), It.IsAny<string>())).Returns("something");
             _feedHelperMock.Setup(x => x.GetAttributeValue(It.IsAny<FeedItemModel>(), It.Is<string>(s => s == IndexingServiceSettings.SyndicationItemAttributeNameNamedIndex))).Returns("default");
-            
-            
+
+
             _commonFuncMock.Setup(x => x.IsValidIndex(It.IsAny<string>())).Returns(true);
             _commonFuncMock.Setup(x => x.IsModifyIndex(It.IsAny<string>())).Returns(true);
 

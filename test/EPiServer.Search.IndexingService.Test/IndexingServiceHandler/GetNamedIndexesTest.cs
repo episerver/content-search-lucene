@@ -1,9 +1,6 @@
-﻿using Moq;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Moq;
 using Xunit;
 
 namespace EPiServer.Search.IndexingService.Test.IndexingServiceHandler
@@ -22,7 +19,7 @@ namespace EPiServer.Search.IndexingService.Test.IndexingServiceHandler
             var classInstant = SetupMock();
             var result = classInstant.GetNamedIndexes();
 
-            Assert.True(result.Items.Count()>0);
+            Assert.True(result.Items.Count() > 0);
         }
     }
 }

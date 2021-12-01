@@ -1,12 +1,7 @@
-﻿using EPiServer.Logging.Compatibility;
-using Moq;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Moq;
 using Xunit;
 
 namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
@@ -17,20 +12,20 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
         [Fact]
         public void RemoveFeedItemModelNamedIndex_WhenFeedItemIdNotEqualIgnoreItemId_ShouldRunRemove()
         {
-            var logMock = new Mock<ILog>();
+            var logMock = new Mock<ILogger>();
             IndexingServiceSettings.IndexingServiceServiceLog = logMock.Object;
             var namedIndexMock = new Mock<NamedIndex>("testindex1");
             var dir1 = Lucene.Net.Store.FSDirectory.Open(new System.IO.DirectoryInfo(string.Format(@"c:\fake\App_Data\{0}\Main", Guid.NewGuid())));
             namedIndexMock.SetupGet(x => x.Directory).Returns(() => dir1);
 
             var classInstant = SetupMock();
-            classInstant.Remove(new FeedItemModel() { Id="1" }, namedIndexMock.Object);
+            classInstant.Remove(new FeedItemModel() { Id = "1" }, namedIndexMock.Object);
         }
 
         [Fact]
         public void RemoveFeedItemModelNamedIndex_WhenFeedItemIdNotEqualIgnoreItemId_ShouldRunGetAutoUpdateVirtualPathValue()
         {
-            var logMock = new Mock<ILog>();
+            var logMock = new Mock<ILogger>();
             IndexingServiceSettings.IndexingServiceServiceLog = logMock.Object;
             var namedIndexMock = new Mock<NamedIndex>("testindex1");
             var dir1 = Lucene.Net.Store.FSDirectory.Open(new System.IO.DirectoryInfo(string.Format(@"c:\fake\App_Data\{0}\Main", Guid.NewGuid())));
@@ -39,7 +34,7 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
             _feedHelperMock.Setup(x => x.GetAutoUpdateVirtualPathValue(It.IsAny<FeedItemModel>())).Returns(true);
 
             var feed = new FeedItemModel() { Id = "1" };
-            feed.ElementExtensions.Add(IndexingServiceSettings.SyndicationItemElementNameVirtualPath, new Collection<string>() {  });
+            feed.ElementExtensions.Add(IndexingServiceSettings.SyndicationItemElementNameVirtualPath, new Collection<string>() { });
 
             var classInstant = SetupMock();
             classInstant.Remove(feed, namedIndexMock.Object);
@@ -48,7 +43,7 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
         [Fact]
         public void RemoveStringNamedIndexBool_ShouldWork()
         {
-            var logMock = new Mock<ILog>();
+            var logMock = new Mock<ILogger>();
             IndexingServiceSettings.IndexingServiceServiceLog = logMock.Object;
 
             var namedIndexMock = new Mock<NamedIndex>("testindex1");
@@ -56,7 +51,7 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
             namedIndexMock.SetupGet(x => x.Directory).Returns(() => dir1);
 
             var classInstant = SetupMock();
-            classInstant.Remove("1", namedIndexMock.Object,false);
+            classInstant.Remove("1", namedIndexMock.Object, false);
         }
     }
 }

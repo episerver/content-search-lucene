@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace EPiServer.Search.Queries.Lucene
+﻿namespace EPiServer.Search.Queries.Lucene
 {
     /// <summary>
     /// Representing a CategoryQuery for the Lucene Indexing Service with correct field name and Lucene syntax.

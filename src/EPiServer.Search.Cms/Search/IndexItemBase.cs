@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.ServiceModel.Syndication;
 using EPiServer.Models;
 using EPiServer.Search.Internal;
 
@@ -8,15 +7,15 @@ namespace EPiServer.Search
 {
     public abstract class IndexItemBase
     {
-        private FeedItemModel _syndicationItem;
-        private Collection<string> _categories = new Collection<string>();
-        private Collection<string> _authors = new Collection<string>();
-        private Collection<string> _accessControlList = new Collection<string>();
-        private Collection<string> _virtualPathNodes = new Collection<string>();
+        private readonly FeedItemModel _syndicationItem;
+        private readonly Collection<string> _categories = new Collection<string>();
+        private readonly Collection<string> _authors = new Collection<string>();
+        private readonly Collection<string> _accessControlList = new Collection<string>();
+        private readonly Collection<string> _virtualPathNodes = new Collection<string>();
         private string _metadata;
-        private IndexHtmlFilter _indexHtmlFilter;
+        private readonly IndexHtmlFilter _indexHtmlFilter;
 
-        protected IndexItemBase(string id) 
+        protected IndexItemBase(string id)
         {
             _indexHtmlFilter = new IndexHtmlFilter();
             _syndicationItem = new FeedItemModel();
@@ -31,7 +30,7 @@ namespace EPiServer.Search
             Culture = string.Empty;
             NamedIndex = string.Empty;
             ItemStatus = ItemStatus.Approved;
-          
+
         }
 
         /// <summary>
@@ -39,14 +38,8 @@ namespace EPiServer.Search
         /// </summary>
         public string Id
         {
-            get
-            {
-                return SyndicationItem.Id;
-            }
-            set
-            {
-                SyndicationItem.Id = value;
-            }
+            get => SyndicationItem.Id;
+            set => SyndicationItem.Id = value;
         }
 
         /// <summary>
@@ -54,10 +47,7 @@ namespace EPiServer.Search
         /// </summary>
         public DateTimeOffset Created
         {
-            get
-            {
-                return SyndicationItem.Created.DateTime;
-            }
+            get => SyndicationItem.Created.DateTime;
             set
             {
                 if (value != DateTimeOffset.MinValue)
@@ -73,14 +63,8 @@ namespace EPiServer.Search
         /// <remarks></remarks>
         public string Title
         {
-            get
-            {
-                return SyndicationItem.Title;
-            }
-            set
-            {
-                SyndicationItem.Title = value;
-            }
+            get => SyndicationItem.Title;
+            set => SyndicationItem.Title = value;
         }
 
         /// <summary>
@@ -89,14 +73,8 @@ namespace EPiServer.Search
         /// <remarks></remarks>
         public string DisplayText
         {
-            get
-            {
-                return SyndicationItem.DisplayText;
-            }
-            set
-            {
-                SyndicationItem.DisplayText = value;
-            }
+            get => SyndicationItem.DisplayText;
+            set => SyndicationItem.DisplayText = value;
         }
 
         /// <summary>
@@ -104,10 +82,7 @@ namespace EPiServer.Search
         /// </summary>
         public DateTimeOffset Modified
         {
-            get
-            {
-                return SyndicationItem.Modified;
-            }
+            get => SyndicationItem.Modified;
             set
             {
                 if (value != DateTimeOffset.MinValue)
@@ -149,16 +124,17 @@ namespace EPiServer.Search
         /// </summary>
         public string Metadata
         {
-            get
-            {
-                return _metadata;
-            }
+            get => _metadata;
             set
             {
                 if (value != null)
+                {
                     _metadata = SearchSettings.Options.HtmlStripMetadata ? _indexHtmlFilter.StripHtml(value) : value;
+                }
                 else
+                {
                     _metadata = null;
+                }
             }
         }
 
@@ -204,48 +180,24 @@ namespace EPiServer.Search
         /// </summary>
         public Uri Uri
         {
-            get
-            {
-                return SyndicationItem.Uri;
-            }
-            set
-            {
-                SyndicationItem.Uri = value;
-            }
+            get => SyndicationItem.Uri;
+            set => SyndicationItem.Uri = value;
         }
 
         /// <summary>
         /// Gets and adds the categories for this <see cref="IndexItemBase"/>
         /// </summary>
-        public Collection<string> Categories
-        {
-            get
-            {
-                return _categories;
-            }
-        }
+        public Collection<string> Categories => _categories;
 
         /// <summary>
         /// Gets and adds the authors for this <see cref="IndexItemBase"/> 
         /// </summary>
-        public Collection<string> Authors
-        {
-            get
-            {
-                return _authors;
-            }
-        }
+        public Collection<string> Authors => _authors;
 
         /// <summary>
         /// Gets and adds a list of groups and users that has read access to this index item
         /// </summary>
-        public Collection<string> AccessControlList
-        {
-            get
-            {
-                return _accessControlList;
-            }
-        }
+        public Collection<string> AccessControlList => _accessControlList;
 
         /// <summary>
         /// gets and sets the reference id, which is the id of the parent item
@@ -270,27 +222,15 @@ namespace EPiServer.Search
         /// The virtual path is used to connect the item to a node in a tree structure and hence allowing searches under a specific node
         /// This default implementation will remove all white spaces in a node value
         /// </summary>
-        public Collection<string> VirtualPathNodes
-        {
-            get
-            {
-                return _virtualPathNodes;
-            }
-        }
+        public Collection<string> VirtualPathNodes => _virtualPathNodes;
 
-        protected FeedItemModel SyndicationItem
-        {
-            get
-            {
-                return _syndicationItem;
-            }
-        }
+        protected FeedItemModel SyndicationItem => _syndicationItem;
 
         /// <summary>
         /// Returns a string wih a xml representation of a syndication feed item with custom attribute and element extentions set
         /// </summary>
         [Obsolete("Method is only supported on IndexRequestItem going forward", true)]
         protected virtual string ToSyndicationItemXml() => throw new NotSupportedException();
-       
+
     }
 }

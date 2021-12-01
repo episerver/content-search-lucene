@@ -1,13 +1,8 @@
-﻿using log4net;
-using Lucene.Net.Documents;
-using Moq;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using Lucene.Net.Documents;
+using Microsoft.Extensions.Logging;
+using Moq;
 using Xunit;
 
 namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
@@ -27,7 +22,7 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
         [Fact]
         public void RemoveByVirtualPath_WhenVirtualPathIsNotEmpty_ShouldReturnTrue()
         {
-            var logMock = new Mock<ILog>();
+            var logMock = new Mock<ILogger>();
             IndexingServiceSettings.IndexingServiceServiceLog = logMock.Object;
             var folderId = Guid.NewGuid();
             var namedIndexMock = new Mock<NamedIndex>("testindex2");
@@ -42,9 +37,10 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
             IndexingServiceSettings.MainDirectoryInfos.Add(namedIndexMock.Object.Name, dir1);
             IndexingServiceSettings.ReferenceDirectoryInfos.Add(namedIndexMock.Object.Name, dir2);
 
-            int totalHits = 1;
-            var docs = new Collection<ScoreDocument>();
-            docs.Add(new ScoreDocument(new Document
+            var totalHits = 1;
+            var docs = new Collection<ScoreDocument>
+            {
+                new ScoreDocument(new Document
             {
                 new TextField(IndexingServiceSettings.TitleFieldName,"Title",Field.Store.YES),
                 new TextField(IndexingServiceSettings.DisplayTextFieldName,"Body",Field.Store.YES),
@@ -52,7 +48,8 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
                 new TextField(IndexingServiceSettings.NamedIndexFieldName,"testindex1",Field.Store.YES),
                 new TextField(IndexingServiceSettings.IdFieldName,"1",Field.Store.YES),
                 new TextField(IndexingServiceSettings.VirtualPathFieldName,"vp1",Field.Store.YES)
-            }, 1));
+            }, 1)
+            };
 
             _documentHelperMock.Setup(x => x.SingleIndexSearch(It.IsAny<string>(), It.IsAny<NamedIndex>(), It.IsAny<int>(), out totalHits)).Returns(docs);
 

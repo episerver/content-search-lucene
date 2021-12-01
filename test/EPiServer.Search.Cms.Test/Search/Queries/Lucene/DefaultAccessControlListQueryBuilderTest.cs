@@ -1,13 +1,10 @@
-﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
+using System.Security.Principal;
 using EPiServer.Search.Queries.Lucene;
+using EPiServer.Search.Queries.Lucene.Internal;
 using EPiServer.Security;
 using Moq;
-using System.Security.Principal;
 using Xunit;
-using EPiServer.Search.Queries.Lucene.Internal;
 
 namespace EPiServer.UnitTests.Search.Queries.Lucene
 {
@@ -17,9 +14,9 @@ namespace EPiServer.UnitTests.Search.Queries.Lucene
         [Fact]
         public void AddUser_WhenPrincipalIsNull_ShouldAddNothing()
         {
-            AccessControlListQuery query = new AccessControlListQuery();
+            var query = new AccessControlListQuery();
             var subject = new DefaultAccessControlListQueryBuilder(Mock.Of<IVirtualRoleRepository>());
-            subject.AddUser(query, (IPrincipal)null, null);
+            subject.AddUser(query, null, null);
 
             Assert.Equal(0, query.Items.Count);
         }
@@ -27,9 +24,9 @@ namespace EPiServer.UnitTests.Search.Queries.Lucene
         [Fact]
         public void AddUser_WhenPrincipalIsSpecified_ShouldAddUserName()
         {
-            string userName = "IAmUser";
+            var userName = "IAmUser";
 
-            AccessControlListQuery query = new AccessControlListQuery();
+            var query = new AccessControlListQuery();
             var mockVirtualRoleRepository = new Mock<IVirtualRoleRepository>();
             mockVirtualRoleRepository.Setup(r => r.GetAllRoles()).Returns(new List<string>());
 
@@ -46,10 +43,10 @@ namespace EPiServer.UnitTests.Search.Queries.Lucene
         [Fact]
         public void AddUser_WhenPrincipalIsInVirtualRole_ShouldAddRole()
         {
-            string userName = "IAmUser";
-            string roleName = "theRole";
+            var userName = "IAmUser";
+            var roleName = "theRole";
 
-            AccessControlListQuery query = new AccessControlListQuery();
+            var query = new AccessControlListQuery();
             var mockVirtualRoleRepository = new Mock<IVirtualRoleRepository>();
             mockVirtualRoleRepository.Setup(r => r.GetAllRoles()).Returns(new List<string>(new[] { roleName }));
 
@@ -69,10 +66,10 @@ namespace EPiServer.UnitTests.Search.Queries.Lucene
         [Fact]
         public void AddUser_WhenPrincipalIsNotInVirtualRole_ShouldNotAddRole()
         {
-            string userName = "IAmUser";
-            string roleName = "theRole";
+            var userName = "IAmUser";
+            var roleName = "theRole";
 
-            AccessControlListQuery query = new AccessControlListQuery();
+            var query = new AccessControlListQuery();
             var mockVirtualRoleRepository = new Mock<IVirtualRoleRepository>();
             mockVirtualRoleRepository.Setup(r => r.GetAllRoles()).Returns(new List<string>(new[] { roleName }));
 
@@ -92,10 +89,10 @@ namespace EPiServer.UnitTests.Search.Queries.Lucene
         [Fact]
         public void AddUser_WhenPrincipalHasRoleClaims_ShouldAddRoles()
         {
-            string userName = "IAmUser";
-            string roleName = "theRole";
+            var userName = "IAmUser";
+            var roleName = "theRole";
 
-            AccessControlListQuery query = new AccessControlListQuery();
+            var query = new AccessControlListQuery();
             var mockVirtualRoleRepository = new Mock<IVirtualRoleRepository>();
 
             var principal = new GenericPrincipal(new GenericIdentity(userName), new[] { roleName });
@@ -115,10 +112,7 @@ namespace EPiServer.UnitTests.Search.Queries.Lucene
             {
                 _isInRole = isInRole;
             }
-            public override bool IsInVirtualRole(IPrincipal principal, object context)
-            {
-                return _isInRole;
-            }
+            public override bool IsInVirtualRole(IPrincipal principal, object context) => _isInRole;
         }
     }
 }

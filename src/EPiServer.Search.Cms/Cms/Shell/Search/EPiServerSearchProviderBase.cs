@@ -2,14 +2,12 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Web;
 using EPiServer.Authorization;
 using EPiServer.Cms.Shell.Search.Internal;
 using EPiServer.Core;
 using EPiServer.DataAbstraction;
 using EPiServer.Framework;
 using EPiServer.Framework.Localization;
-using EPiServer.Globalization;
 using EPiServer.Search;
 using EPiServer.Search.Queries.Lucene;
 using EPiServer.Security;
@@ -70,8 +68,8 @@ namespace EPiServer.Cms.Shell.Search
         /// </summary>
         public virtual bool IsSearchActive
         {
-            get { return !_isSearchActive.HasValue ? ServiceLocation.ServiceLocator.Current.GetInstance<SearchOptions>().Active : _isSearchActive.Value; }
-            set { _isSearchActive = value; }
+            get => !_isSearchActive.HasValue ? ServiceLocation.ServiceLocator.Current.GetInstance<SearchOptions>().Active : _isSearchActive.Value;
+            set => _isSearchActive = value;
         }
 
         /// <summary>
@@ -83,7 +81,7 @@ namespace EPiServer.Cms.Shell.Search
         {
             Validator.ThrowIfNull("query", query);
 
-            if (String.IsNullOrEmpty(query.SearchQuery) || !IsSearchActive)
+            if (string.IsNullOrEmpty(query.SearchQuery) || !IsSearchActive)
             {
                 return Enumerable.Empty<SearchResult>();
             }
@@ -93,12 +91,10 @@ namespace EPiServer.Cms.Shell.Search
             var editAccessCultures = GetEditAccessCultures();
 
             //Have they entered an ID?
-            ContentReference contentLink;
-            if (ContentReference.TryParse(query.SearchQuery, out contentLink) && !ContentReference.IsNullOrEmpty(contentLink) && contentLink != ContentReference.SelfReference)
+            if (ContentReference.TryParse(query.SearchQuery, out var contentLink) && !ContentReference.IsNullOrEmpty(contentLink) && contentLink != ContentReference.SelfReference)
             {
-                TContentData content;
                 //If found add it to the hits
-                if (_contentRepository.TryGet<TContentData>(contentLink, out content))
+                if (_contentRepository.TryGet<TContentData>(contentLink, out var content))
                 {
                     var securable = content as ISecurable;
                     var icontent = content as IContent;
@@ -133,11 +129,10 @@ namespace EPiServer.Cms.Shell.Search
                 var pathGroupQuery = new GroupQuery(LuceneOperator.OR);
                 foreach (var root in query.SearchRoots)
                 {
-                    ContentReference searchRoot;
-                    if (ContentReference.TryParse(root, out searchRoot))
+                    if (ContentReference.TryParse(root, out var searchRoot))
                     {
                         var pathQuery = new VirtualPathQuery();
-                        foreach(var node in _contentSearchHandler.GetVirtualPathNodes(searchRoot))
+                        foreach (var node in _contentSearchHandler.GetVirtualPathNodes(searchRoot))
                         {
                             pathQuery.VirtualPathNodes.Add(node);
                         }
@@ -166,7 +161,7 @@ namespace EPiServer.Cms.Shell.Search
 
             var allowedTypes = getContentTypesFromQuery("allowedTypes");
             var allowedTypesGroup = new GroupQuery(LuceneOperator.OR);
-            foreach(var allowedType in allowedTypes)
+            foreach (var allowedType in allowedTypes)
             {
                 allowedTypesGroup.QueryExpressions.Add(new ContentTypeQuery(allowedType));
             }
@@ -219,12 +214,13 @@ namespace EPiServer.Cms.Shell.Search
             if (searchResultsFromIndex != null)
             {
                 // Don't included deleted items in the results if the filterOnDeleted flag is set to true.
-                var filterOnDeleted = query.Parameters != null && query.Parameters.ContainsKey("filterOnDeleted") && Boolean.Parse(query.Parameters["filterOnDeleted"].ToString());
+                var filterOnDeleted = query.Parameters != null && query.Parameters.ContainsKey("filterOnDeleted") && bool.Parse(query.Parameters["filterOnDeleted"].ToString());
                 var contentResults = FilterResults(query, from result in searchResultsFromIndex.IndexResponseItems
-                                 let content = _contentSearchHandler.GetContent<IContent>(result, query.FilterOnCulture)
-                                 where content != null && content.QueryDistinctAccess(AccessLevel.Read) && (!filterOnDeleted || !content.IsDeleted) select (TContentData)content);
+                                                          let content = _contentSearchHandler.GetContent<IContent>(result, query.FilterOnCulture)
+                                                          where content != null && content.QueryDistinctAccess(AccessLevel.Read) && (!filterOnDeleted || !content.IsDeleted)
+                                                          select (TContentData)content);
 
-                results.AddRange(contentResults.Take(query.MaxResults - results.Count).Select(content => CreateSearchResult((TContentData)content)));
+                results.AddRange(contentResults.Take(query.MaxResults - results.Count).Select(content => CreateSearchResult(content)));
             }
 
             return results;
@@ -239,7 +235,9 @@ namespace EPiServer.Cms.Shell.Search
         {
             var uiDescriptor = _uiDescriptorRegistry.UIDescriptors.FirstOrDefault(d => d.TypeIdentifier.Equals(allowedType, StringComparison.OrdinalIgnoreCase));
             if (uiDescriptor == null)
+            {
                 return Enumerable.Empty<Type>();
+            }
 
             return ContentTypeRepository
                 .List()
@@ -252,10 +250,7 @@ namespace EPiServer.Cms.Shell.Search
         /// </summary>
         /// <param name="query">The query</param>
         /// <param name="result">The search results</param>
-        protected virtual IEnumerable<TContentData> FilterResults(Query query, IEnumerable<TContentData> result)
-        {
-            return result;
-        }
+        protected virtual IEnumerable<TContentData> FilterResults(Query query, IEnumerable<TContentData> result) => result;
 
         /// <summary>
         /// Adds a language filter to the query.
@@ -280,10 +275,7 @@ namespace EPiServer.Cms.Shell.Search
             }
         }
 
-        public virtual String AddTrailingWildcards(String query)
-        {
-            return query.IndexOfAny(new char[] { '*', ' ' }) < 0 ? query + "*" : query;
-        }
+        public virtual string AddTrailingWildcards(string query) => query.IndexOfAny(new char[] { '*', ' ' }) < 0 ? query + "*" : query;
 
         #region Helper Methods
 

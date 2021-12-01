@@ -36,8 +36,10 @@ namespace EPiServer.Search.Internal
 
                 return queueItems.ToList();
             }
-            else 
+            else
+            {
                 return null;
+            }
         }
 
         public virtual void Remove(IEnumerable<IndexRequestQueueItem> items)
@@ -84,9 +86,6 @@ namespace EPiServer.Search.Internal
 
         }
 
-        private DynamicDataStore Store()
-        {
-            return DynamicDataStoreFactory.Instance.GetStore(_options.DynamicDataStoreName) ?? null;
-        }
+        private DynamicDataStore Store() => DynamicDataStoreFactory.Instance.GetStore(_options.DynamicDataStoreName) ?? null;
     }
 }

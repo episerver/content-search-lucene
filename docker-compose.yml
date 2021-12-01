@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+  search:
+    build:
+      dockerfile: ./src/EPiServer.Search.IndexingService/Search.Dockerfile
+      context: . 
+    environment:
+      ASPNETCORE_URLS: http://*:80
+      ASPNETCORE_ENVIRONMENT: Production
+      
+    ports:
+      - 5000:80
+    image: episerver.search.indexingservice:latest
+    container_name: EPiServer.Search.IndexingService 
+    volumes:
+      - shared-folder:/app/App_Data
+
+volumes:
+  shared-folder:

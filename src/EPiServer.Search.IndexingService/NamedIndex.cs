@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
+﻿using System.Collections.Generic;
 using EPiServer.Search.IndexingService.Configuration;
-using Lucene.Net.Analysis;
-using Lucene.Net.Analysis.Standard;
 
 namespace EPiServer.Search.IndexingService
 {
@@ -13,8 +9,8 @@ namespace EPiServer.Search.IndexingService
     public class NamedIndex
     {
         #region Members
-        private string _namedIndex;
-        private Dictionary<string, bool> _fieldInResponse = new Dictionary<string,bool>();
+        private readonly string _namedIndex;
+        private readonly Dictionary<string, bool> _fieldInResponse = new Dictionary<string, bool>();
         #endregion
 
         #region Constructors
@@ -24,14 +20,14 @@ namespace EPiServer.Search.IndexingService
         /// </summary>
         public NamedIndex()
             : this(null)
-        {           
+        {
         }
 
         /// <summary>
         /// Constructs a <see cref="NamedIndex"/> for the passed name
         /// </summary>
         /// <param name="name"></param>
-        public NamedIndex(string name) : 
+        public NamedIndex(string name) :
             this(name, false)
         {
         }
@@ -43,24 +39,24 @@ namespace EPiServer.Search.IndexingService
         /// <param name="useRefIndex">Whether to costruct a <see cref="NamedIndex"/> for the reference index</param>
         public NamedIndex(string name, bool useRefIndex)
         {
-            _namedIndex = (String.IsNullOrEmpty(name)) ? IndexingServiceSettings.DefaultIndexName : name;
+            _namedIndex = (string.IsNullOrEmpty(name)) ? IndexingServiceSettings.DefaultIndexName : name;
 
             if (IndexingServiceSettings.NamedIndexDirectories.ContainsKey(_namedIndex))
             {
                 if (useRefIndex)
                 {
-                    Directory = (Lucene.Net.Store.Directory)IndexingServiceSettings.ReferenceIndexDirectories[_namedIndex];
+                    Directory = IndexingServiceSettings.ReferenceIndexDirectories[_namedIndex];
                     ReferenceDirectoryInfo = IndexingServiceSettings.ReferenceDirectoryInfos[_namedIndex];
                 }
                 else
                 {
-                    Directory = (Lucene.Net.Store.Directory)IndexingServiceSettings.NamedIndexDirectories[_namedIndex];
-                    ReferenceDirectory = (Lucene.Net.Store.Directory)IndexingServiceSettings.ReferenceIndexDirectories[_namedIndex];
+                    Directory = IndexingServiceSettings.NamedIndexDirectories[_namedIndex];
+                    ReferenceDirectory = IndexingServiceSettings.ReferenceIndexDirectories[_namedIndex];
                     ReferenceDirectoryInfo = IndexingServiceSettings.ReferenceDirectoryInfos[_namedIndex];
                     DirectoryInfo = IndexingServiceSettings.MainDirectoryInfos[_namedIndex];
                 }
 
-                NamedIndexElement element = (NamedIndexElement)IndexingServiceSettings.NamedIndexElements[_namedIndex];
+                var element = IndexingServiceSettings.NamedIndexElements[_namedIndex];
 
                 PendingDeletesOptimizeThreshold = element.PendingDeletesOptimizeThreshold;
 
@@ -112,10 +108,7 @@ namespace EPiServer.Search.IndexingService
             private set;
         }
 
-        internal bool IncludeInResponse(string defaultFieldName)
-        {
-            return _fieldInResponse.ContainsKey(defaultFieldName) ? _fieldInResponse[defaultFieldName] : false;
-        }
+        internal bool IncludeInResponse(string defaultFieldName) => _fieldInResponse.ContainsKey(defaultFieldName) ? _fieldInResponse[defaultFieldName] : false;
 
         /// <summary>
         /// Gets and sets if this Index is readonly
@@ -129,24 +122,12 @@ namespace EPiServer.Search.IndexingService
         /// <summary>
         /// Gets the name of this Index
         /// </summary>
-        public string Name
-        {
-            get
-            {
-                return _namedIndex;
-            }
-        }
+        public string Name => _namedIndex;
 
         /// <summary>
         /// Gets the reference index name of this Index
         /// </summary>
-        public string ReferenceName
-        {
-            get
-            {
-                return _namedIndex + IndexingServiceSettings.RefIndexSuffix;
-            }
-        }
+        public string ReferenceName => _namedIndex + IndexingServiceSettings.RefIndexSuffix;
 
         /// <summary>
         /// Gets the number of pending deletes before running optimize on this Index

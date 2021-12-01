@@ -1,17 +1,14 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.ServiceModel.Syndication;
-using System.Text;
 using System.Text.Json;
 
 namespace EPiServer.Search
 {
     public class IndexRequestItem : IndexItemBase
-    { 
-        public IndexRequestItem(string id, IndexAction indexAction): 
+    {
+        public IndexRequestItem(string id, IndexAction indexAction) :
             base(id)
         {
             IndexAction = indexAction;
@@ -76,18 +73,18 @@ namespace EPiServer.Search
             // Add metadata extension element
             SyndicationItem.ElementExtensions.Add(options.SyndicationItemElementNameMetadata, Metadata);
 
-            foreach (string categoryName in Categories.Where(c => !string.IsNullOrEmpty(c)))
+            foreach (var categoryName in Categories.Where(c => !string.IsNullOrEmpty(c)))
             {
                 SyndicationItem.Categories.Add(categoryName);
             }
 
-            foreach (string author in Authors.Where(a => !string.IsNullOrEmpty(a)))
+            foreach (var author in Authors.Where(a => !string.IsNullOrEmpty(a)))
             {
                 SyndicationItem.Authors.Add(author);
             }
 
-            Collection<string> acessControlList = new Collection<string>();
-            foreach (string access in AccessControlList.Distinct(StringComparer.OrdinalIgnoreCase))
+            var acessControlList = new Collection<string>();
+            foreach (var access in AccessControlList.Distinct(StringComparer.OrdinalIgnoreCase))
             {
                 acessControlList.Add(access);
             }
@@ -95,8 +92,8 @@ namespace EPiServer.Search
             SyndicationItem.ElementExtensions.Add(SearchSettings.Options.SyndicationItemElementNameAcl, acessControlList);
 
             // Add virtual path element
-            Collection<string> virtualpaths = new Collection<string>();
-            foreach (string item in VirtualPathNodes)
+            var virtualpaths = new Collection<string>();
+            foreach (var item in VirtualPathNodes)
             {
                 virtualpaths.Add(item.Replace(" ", ""));
             }

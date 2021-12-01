@@ -1,11 +1,4 @@
-﻿using EPiServer.Search.IndexingService.Helpers;
-using Lucene.Net.Documents;
-using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Lucene.Net.Documents;
 using Xunit;
 
 namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
@@ -23,14 +16,14 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
                 new TextField(IndexingServiceSettings.DisplayTextFieldName,"Body",Field.Store.YES),
                 new TextField(IndexingServiceSettings.MetadataFieldName,"Meta",Field.Store.YES),
             };
-            
+
             var namedIndex = new NamedIndex("NameIndexTest");
 
             var classInstant = SetupMock();
-            
+
             classInstant.AddAllSearchableContentsFieldToDocument(doc, namedIndex);
 
-            Assert.Contains("Title Body Meta",doc.Get(IndexingServiceSettings.DefaultFieldName));
+            Assert.Contains("Title Body Meta", doc.Get(IndexingServiceSettings.DefaultFieldName));
         }
     }
 }

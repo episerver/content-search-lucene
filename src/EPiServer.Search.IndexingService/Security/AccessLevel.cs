@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
-namespace EPiServer.Search.IndexingService.Security
+﻿namespace EPiServer.Search.IndexingService.Security
 {
     public enum AccessLevel
     {

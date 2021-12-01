@@ -1,7 +1,5 @@
-﻿using EPiServer.Security;
-using EPiServer.Framework;
+﻿using System;
 using EPiServer.Core;
-using System;
 using EPiServer.ServiceLocation;
 
 namespace EPiServer.Search.Queries.Lucene
@@ -14,10 +12,7 @@ namespace EPiServer.Search.Queries.Lucene
         /// </summary>
         /// <param name="query">The query to extend.</param>
         /// <param name="contentLink">The content link.</param>
-        public static void AddContentNodes(this VirtualPathQuery query, ContentReference contentLink)
-        {
-            query.AddContentNodes(contentLink, ServiceLocator.Current.GetInstance<ContentSearchHandler>());
-        }
+        public static void AddContentNodes(this VirtualPathQuery query, ContentReference contentLink) => query.AddContentNodes(contentLink, ServiceLocator.Current.GetInstance<ContentSearchHandler>());
 
         public static void AddContentNodes(this VirtualPathQuery query, ContentReference contentLink, ContentSearchHandler searchHandler)
         {
@@ -42,11 +37,7 @@ namespace EPiServer.Search.Queries.Lucene
         /// <exclude />
         [Obsolete("Use override that does not take IContentLoader")]
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-        public static void AddContentNodes(this VirtualPathQuery query, ContentReference contentLink, IContentLoader contentLoader)
-        {
-            query.AddContentNodes(contentLink);
-        }
+        public static void AddContentNodes(this VirtualPathQuery query, ContentReference contentLink, IContentLoader contentLoader) => query.AddContentNodes(contentLink);
 
     }
 }
- 

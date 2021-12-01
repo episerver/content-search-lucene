@@ -1,16 +1,13 @@
-﻿using EPiServer.Framework;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using EPiServer.Framework;
 using EPiServer.Models;
 using EPiServer.Search.Configuration;
 using EPiServer.Search.Data;
 using Microsoft.Extensions.Options;
 using Moq;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
-using System.ServiceModel.Syndication;
 using Xunit;
 
 namespace EPiServer.Search.Internal
@@ -18,7 +15,7 @@ namespace EPiServer.Search.Internal
     public class RequestQueueHandlerTest
     {
         private static readonly string DefaultIndexingService = "default";
-        private IOptions<SearchOptions> _defaultOptions;
+        private readonly IOptions<SearchOptions> _defaultOptions;
 
         public RequestQueueHandlerTest()
         {
@@ -156,10 +153,7 @@ namespace EPiServer.Search.Internal
                 timeProvider);
         }
 
-        private IndexRequestQueueItem QueueItem(string id, string service = null)
-        {
-            return QueueItem(new IndexRequestItem(id, IndexAction.None), service);
-        }
+        private IndexRequestQueueItem QueueItem(string id, string service = null) => QueueItem(new IndexRequestItem(id, IndexAction.None), service);
 
         private IndexRequestQueueItem QueueItem(IndexRequestItem item, string service = null)
         {
@@ -179,10 +173,7 @@ namespace EPiServer.Search.Internal
 
             public List<IndexRequestQueueItem> Items { get; } = new List<IndexRequestQueueItem>();
 
-            public override void Add(IndexRequestQueueItem item)
-            {
-                Items.Add(item);
-            }
+            public override void Add(IndexRequestQueueItem item) => Items.Add(item);
 
             public override IEnumerable<IndexRequestQueueItem> Get(string namedIndexingService, int maxCount)
             {
@@ -201,15 +192,9 @@ namespace EPiServer.Search.Internal
                 }
             }
 
-            public override void Truncate()
-            {
-                Items.Clear();
-            }
+            public override void Truncate() => Items.Clear();
 
-            public override void Truncate(string namedIndexingService, string namedIndex)
-            {
-                Items.RemoveAll(x => x.NamedIndexingService == namedIndexingService && x.NamedIndex == namedIndex);
-            }
+            public override void Truncate(string namedIndexingService, string namedIndex) => Items.RemoveAll(x => x.NamedIndexingService == namedIndexingService && x.NamedIndex == namedIndex);
 
             public IEnumerator<IndexRequestQueueItem> GetEnumerator() => ((IEnumerable<IndexRequestQueueItem>)Items).GetEnumerator();
 

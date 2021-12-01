@@ -1,4 +1,9 @@
-﻿using EPiServer.Construction;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Security.Principal;
+using EPiServer.Construction;
 using EPiServer.Construction.Internal;
 using EPiServer.DataAbstraction;
 using EPiServer.DataAbstraction.RuntimeModel;
@@ -12,27 +17,22 @@ using EPiServer.Security;
 using EPiServer.SpecializedProperties;
 using Microsoft.Extensions.Options;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Security.Principal;
 using Xunit;
 
 namespace EPiServer.Core
 {
     public class ContentSearchHandlerTests : IDisposable
     {
-        private ContentSearchHandler _testSubject;
-        private MockSearchHandler _searchHandler;
-        private Mock<IContentRepository> _contentRepositoryMock;
-        private PageReference _oldRootPage;
-        private Mock<IContentTypeRepository> _contentTypeRepositoryMock;
-        private Mock<IPrincipalAccessor> _principalAccessor;
-        private PageReference _oldWasteBasketPage;
-        private Mock<IAccessControlListQueryBuilder> _queryBuilder;
-        private RequestQueueHandler _requestQueueHandler;
-        private MockRequestHandler _requestHandler;
+        private readonly ContentSearchHandler _testSubject;
+        private readonly MockSearchHandler _searchHandler;
+        private readonly Mock<IContentRepository> _contentRepositoryMock;
+        private readonly PageReference _oldRootPage;
+        private readonly Mock<IContentTypeRepository> _contentTypeRepositoryMock;
+        private readonly Mock<IPrincipalAccessor> _principalAccessor;
+        private readonly PageReference _oldWasteBasketPage;
+        private readonly Mock<IAccessControlListQueryBuilder> _queryBuilder;
+        private readonly RequestQueueHandler _requestQueueHandler;
+        private readonly MockRequestHandler _requestHandler;
 
         public ContentSearchHandlerTests()
         {
@@ -57,8 +57,8 @@ namespace EPiServer.Core
 
             var count = 3;
             var contentList = new List<TestContent>();
-            ContentReference lastContent = ContentReference.EmptyReference;
-            for (int i = 0; i < count; i++)
+            var lastContent = ContentReference.EmptyReference;
+            for (var i = 0; i < count; i++)
             {
                 var content = new TestContent() { ContentGuid = Guid.NewGuid(), ContentLink = new ContentReference(1000 + i), ParentLink = lastContent };
                 lastContent = content.ContentLink;
@@ -87,7 +87,7 @@ namespace EPiServer.Core
             ContentReference.WasteBasket = new PageReference(2);
         }
 
-        
+
         public void Dispose()
         {
             ContentReference.RootPage = _oldRootPage;
@@ -97,7 +97,7 @@ namespace EPiServer.Core
         [Fact]
         public void UpdateItem_WhenContentIsProvided_ShouldUseContentGuidAndLanguageAsId()
         {
-            var sharedBlockCreator = new SharedBlockFactory(null, new ConstructorParameterResolver(), 
+            var sharedBlockCreator = new SharedBlockFactory(null, new ConstructorParameterResolver(),
                 new ServiceLocation.ServiceAccessor<ContentDataInterceptor>(() => new ContentDataInterceptor(new ContentDataInterceptorHandler(new ConstructorParameterResolver()))));
             _testSubject.ServiceActive = true;
 
@@ -109,14 +109,14 @@ namespace EPiServer.Core
 
             _testSubject.UpdateItem(block);
 
-            string expectedId = block.ContentGuid.ToString() + "|" + (block as ILocalizable).Language.Name;
+            var expectedId = block.ContentGuid.ToString() + "|" + (block as ILocalizable).Language.Name;
             Assert.Equal(expectedId, _searchHandler.UpdatedIndexItem.Id);
         }
 
         [Fact]
         public void UpdateItem_WhenContentIsProvided_ShouldUseNameAsTitle()
         {
-            var sharedBlockCreator = new SharedBlockFactory(null, new ConstructorParameterResolver(), 
+            var sharedBlockCreator = new SharedBlockFactory(null, new ConstructorParameterResolver(),
                 new ServiceLocation.ServiceAccessor<ContentDataInterceptor>(() => new ContentDataInterceptor(new ContentDataInterceptorHandler(new ConstructorParameterResolver()))));
             _testSubject.ServiceActive = true;
 
@@ -129,7 +129,7 @@ namespace EPiServer.Core
 
             _testSubject.UpdateItem(block);
 
-            string expectedName = block.Name;
+            var expectedName = block.Name;
             Assert.Equal(expectedName, _searchHandler.UpdatedIndexItem.Title);
         }
 
@@ -138,7 +138,7 @@ namespace EPiServer.Core
         {
             _testSubject.ServiceActive = true;
 
-            PageData page = new PageData();
+            var page = new PageData();
             page.Property.Add(MetaDataProperties.PageCreatedBy, new PropertyString("TestUser"));
             page.Property.Add(MetaDataProperties.PageLanguageBranch, new PropertyString("en"));
 
@@ -151,8 +151,8 @@ namespace EPiServer.Core
         public void UpdateItem_WhenContentHasCategories_ShouldAddCategoriesToIndexItem()
         {
             _testSubject.ServiceActive = true;
-            int firstCategoryId = 1;
-            PageData page = new PageData();
+            var firstCategoryId = 1;
+            var page = new PageData();
             page.Property.Add(MetaDataProperties.PageLanguageBranch, new PropertyString("en"));
             page.Property.Add(MetaDataProperties.PageCategory, new PropertyCategory(new CategoryList(new int[] { firstCategoryId, 2, 3 })));
 
@@ -166,7 +166,7 @@ namespace EPiServer.Core
         public void UpdateItem_WhenContentIsAPageAndACLGivesUserReadAccess_ShouldAddAclForThatUserToIndexItem()
         {
             _testSubject.ServiceActive = true;
-            PageData page = new PageData();
+            var page = new PageData();
             page.Property.Add(MetaDataProperties.PageLanguageBranch, new PropertyString("en"));
             var acl = new ContentAccessControlList();
             var userName = "user name";
@@ -181,7 +181,7 @@ namespace EPiServer.Core
         public void UpdateItem_WhenContentIsAPageAndACLGivesRoleReadAccess_ShouldAddAclForThatRoleToIndexItem()
         {
             _testSubject.ServiceActive = true;
-            PageData page = new PageData();
+            var page = new PageData();
             page.Property.Add(MetaDataProperties.PageLanguageBranch, new PropertyString("en"));
             var acl = new ContentAccessControlList();
             var roleName = "role name";
@@ -200,7 +200,7 @@ namespace EPiServer.Core
             var propertyDefinitionId = 1;
             var searchablePropertyValue = "my value";
 
-            PageData page = new PageData();
+            var page = new PageData();
             page.Property.Add(MetaDataProperties.PageLanguageBranch, new PropertyString("en"));
             page.Property.Add(MetaDataProperties.PageTypeID, new PropertyNumber(propertyDefinitionId));
             page.Property.Add(propertyDefinitionName, new PropertyStringForTest(searchablePropertyValue));
@@ -224,7 +224,7 @@ namespace EPiServer.Core
             var pageTypeId = 1;
             var searchablePropertyValue = "my value";
 
-            PageData page = new PageData();
+            var page = new PageData();
             page.Property.Add(MetaDataProperties.PageLanguageBranch, new PropertyString("en"));
             page.Property.Add(MetaDataProperties.PageTypeID, new PropertyNumber(pageTypeId));
             var block = new BlockData();
@@ -254,7 +254,7 @@ namespace EPiServer.Core
             var propertyDefinitionName = "myCategory";
             var pageType = new PageType() { ID = 1 };
 
-            PageData page = new PageData();
+            var page = new PageData();
             page.Property.Add(propertyDefinitionName, new PropertyCategory());
             page.Property.Add(MetaDataProperties.PageTypeID, new PropertyNumber(pageType.ID));
 
@@ -266,13 +266,13 @@ namespace EPiServer.Core
 
             Assert.Equal(string.Empty, _searchHandler.UpdatedIndexItem.DisplayText);
         }
-        
+
         [Fact]
         public void GetItemType_WhenTypeDoesNotInheritOtherType_ShouldBeTypeAndBaseItemType()
         {
             var result = _testSubject.GetItemType(typeof(TestContent));
 
-            string expected = string.Concat(
+            var expected = string.Concat(
                 ContentSearchHandler.GetItemTypeSection<TestContent>(),
                 ContentSearchHandlerImplementation.ItemTypeSeparator,
                 ContentSearchHandlerImplementation.BaseItemType);
@@ -285,7 +285,7 @@ namespace EPiServer.Core
         {
             var result = _testSubject.GetItemType(typeof(FirstLevelInheritedContent));
 
-            string expected = string.Concat(
+            var expected = string.Concat(
                 ContentSearchHandler.GetItemTypeSection<FirstLevelInheritedContent>(),
                 ContentSearchHandlerImplementation.ItemTypeSeparator,
                 ContentSearchHandler.GetItemTypeSection<ContentData>(),
@@ -300,7 +300,7 @@ namespace EPiServer.Core
         {
             var result = _testSubject.GetItemType(typeof(SecondLevelInheritedContent));
 
-            string expected = string.Concat(
+            var expected = string.Concat(
                 ContentSearchHandler.GetItemTypeSection<SecondLevelInheritedContent>(),
                 ContentSearchHandlerImplementation.ItemTypeSeparator,
                 ContentSearchHandler.GetItemTypeSection<FirstLevelInheritedContent>(),
@@ -319,10 +319,9 @@ namespace EPiServer.Core
 
             Assert.Equal(3, result.Count());
 
-            for (int i = 0; i < result.Count(); i++)
+            for (var i = 0; i < result.Count(); i++)
             {
-                Guid guid;
-                Assert.True(Guid.TryParse(result[i], out guid));
+                Assert.True(Guid.TryParse(result[i], out var guid));
             }
         }
 
@@ -337,7 +336,7 @@ namespace EPiServer.Core
         [Fact]
         public void GetContent_WhenIdIsNotAGuid_ShouldReturnNull()
         {
-            IndexResponseItem indexItem = new IndexResponseItem("not a guid");
+            var indexItem = new IndexResponseItem("not a guid");
             var result = _testSubject.GetContent<IContent>(indexItem);
             Assert.Null(result);
         }
@@ -345,10 +344,12 @@ namespace EPiServer.Core
         [Fact]
         public void GetContent_WhenIdIsAGuidWithLanguage_ShouldGetContentFromRepository()
         {
-            Guid guid = Guid.NewGuid();
-            var id = String.Format("{0}{1}{2}", guid, ContentSearchHandlerImplementation.SearchItemIdSeparator, "en");
-            IndexResponseItem indexItem = new IndexResponseItem(id);
-            indexItem.Culture = "en";
+            var guid = Guid.NewGuid();
+            var id = string.Format("{0}{1}{2}", guid, ContentSearchHandlerImplementation.SearchItemIdSeparator, "en");
+            var indexItem = new IndexResponseItem(id)
+            {
+                Culture = "en"
+            };
 
             var result = _testSubject.GetContent<IContent>(indexItem);
             _contentRepositoryMock.Verify(repository => repository.Get<IContent>(guid, It.IsAny<LoaderOptions>()), Times.Once());
@@ -357,12 +358,14 @@ namespace EPiServer.Core
         [Fact]
         public void GetContent_WhenCultureIsNull_ShouldUseLanguageSelectorFactoryToGetLanguageSelector()
         {
-            Guid guid = Guid.NewGuid();
-            var id = String.Format("{0}{1}{2}", guid, ContentSearchHandlerImplementation.SearchItemIdSeparator, "en");
-            IndexResponseItem indexItem = new IndexResponseItem(id);
-            indexItem.Culture = null;
+            var guid = Guid.NewGuid();
+            var id = string.Format("{0}{1}{2}", guid, ContentSearchHandlerImplementation.SearchItemIdSeparator, "en");
+            var indexItem = new IndexResponseItem(id)
+            {
+                Culture = null
+            };
 
-            CultureInfo culture = CultureInfo.GetCultureInfo("fi");
+            var culture = CultureInfo.GetCultureInfo("fi");
             _contentRepositoryMock.Setup(c => c.Get<IContent>(It.IsAny<Guid>(), It.IsAny<LoaderOptions>()))
                 .Callback<Guid, LoaderOptions>((c, l) =>
                     {
@@ -377,9 +380,9 @@ namespace EPiServer.Core
         [Fact]
         public void GetContent_WhenFilterByCultureIsTrue_ShouldGetLanguageSelectorUsingAutoDetect()
         {
-            Guid guid = Guid.NewGuid();
-            var id = String.Format("{0}{1}{2}", guid, ContentSearchHandlerImplementation.SearchItemIdSeparator, "en");
-            IndexResponseItem indexItem = new IndexResponseItem(id);
+            var guid = Guid.NewGuid();
+            var id = string.Format("{0}{1}{2}", guid, ContentSearchHandlerImplementation.SearchItemIdSeparator, "en");
+            var indexItem = new IndexResponseItem(id);
 
             LoaderOptions loaderOptions = null;
             _contentRepositoryMock.Setup(c => c.Get<IContent>(It.IsAny<Guid>(), It.IsAny<LoaderOptions>()))
@@ -398,7 +401,7 @@ namespace EPiServer.Core
         {
             _testSubject.ServiceActive = false;
 
-            var result = _testSubject.GetSearchResults<IContent>(String.Empty, 1, 100);
+            var result = _testSubject.GetSearchResults<IContent>(string.Empty, 1, 100);
 
             Assert.Null(result);
         }
@@ -411,28 +414,28 @@ namespace EPiServer.Core
 
             _testSubject.ServiceActive = true;
 
-            string searchString = "A custom search string";
+            var searchString = "A custom search string";
             var result = _testSubject.GetSearchResults<IContent>(searchString, 1, 100);
 
-            GroupQuery executedQuery = _searchHandler.ExecutedSearchQuery as GroupQuery;
+            var executedQuery = _searchHandler.ExecutedSearchQuery as GroupQuery;
             Assert.Equal(searchString, executedQuery.QueryExpressions.OfType<FieldQuery>().First().Expression);
         }
 
         [Fact]
         public void GetSearchResult_WhenQueryIsExecuted_ContentQueryShouldBeAdded()
         {
-            var sharedBlockCreator = new SharedBlockFactory(null, new ConstructorParameterResolver(), 
+            var sharedBlockCreator = new SharedBlockFactory(null, new ConstructorParameterResolver(),
                 new ServiceLocation.ServiceAccessor<ContentDataInterceptor>(() => new ContentDataInterceptor(new ContentDataInterceptorHandler(new ConstructorParameterResolver()))));
-            IContent content = sharedBlockCreator.CreateSharedBlock(typeof(BlockData));
+            var content = sharedBlockCreator.CreateSharedBlock(typeof(BlockData));
             content.ContentLink = new ContentReference(1);
             _contentRepositoryMock.Setup(r => r.Get<IContent>(It.IsAny<ContentReference>())).Returns(content);
 
             _testSubject.ServiceActive = true;
 
-            string searchString = "A custom search string";
+            var searchString = "A custom search string";
             var result = _testSubject.GetSearchResults<IContent>(searchString, 1, 100);
 
-            GroupQuery executedQuery = _searchHandler.ExecutedSearchQuery as GroupQuery;
+            var executedQuery = _searchHandler.ExecutedSearchQuery as GroupQuery;
 
             Assert.True(executedQuery.QueryExpressions.OfType<ContentQuery<IContent>>().Any());
         }
@@ -440,36 +443,33 @@ namespace EPiServer.Core
         [Fact]
         public void GetSearchResult_WhenQueryIsExecuted_CurrentUserShouldBeAddedToAcl()
         {
-            string userName = "testUser";
+            var userName = "testUser";
 
-            Mock<IPrincipal> mockPrincipal = new Mock<IPrincipal>();
+            var mockPrincipal = new Mock<IPrincipal>();
             mockPrincipal.Setup(p => p.Identity.Name).Returns(userName);
 
             _principalAccessor.Setup(p => p.Principal).Returns(mockPrincipal.Object);
 
             _queryBuilder.Setup(q => q.AddUser(It.IsAny<AccessControlListQuery>(), mockPrincipal.Object, It.IsAny<object>()))
-                .Callback<AccessControlListQuery, IPrincipal, Object>((q, p, o) => { q.AddUser(p.Identity.Name); });
+                .Callback<AccessControlListQuery, IPrincipal, object>((q, p, o) => { q.AddUser(p.Identity.Name); });
 
-            var sharedBlockCreator = new SharedBlockFactory(null, new ConstructorParameterResolver(), 
+            var sharedBlockCreator = new SharedBlockFactory(null, new ConstructorParameterResolver(),
                 new ServiceLocation.ServiceAccessor<ContentDataInterceptor>(() => new ContentDataInterceptor(new ContentDataInterceptorHandler(new ConstructorParameterResolver()))));
-            IContent content = sharedBlockCreator.CreateSharedBlock(typeof(BlockData));
+            var content = sharedBlockCreator.CreateSharedBlock(typeof(BlockData));
             content.ContentLink = new ContentReference(1);
             _contentRepositoryMock.Setup(r => r.Get<IContent>(It.IsAny<ContentReference>())).Returns(content);
 
             _testSubject.ServiceActive = true;
 
-            var result = _testSubject.GetSearchResults<IContent>(String.Empty, 1, 100);
+            var result = _testSubject.GetSearchResults<IContent>(string.Empty, 1, 100);
 
-            GroupQuery executedQuery = _searchHandler.ExecutedSearchQuery as GroupQuery;
+            var executedQuery = _searchHandler.ExecutedSearchQuery as GroupQuery;
             Assert.True(((AccessControlListQuery)executedQuery.QueryExpressions[2]).Items.Contains("U:" + userName));
 
         }
 
         [Fact]
-        public void RemoveItemsByVirtualPath_WhenNodesIsNull_ShouldThrowArgumentNullException()
-        {
-            Assert.Throws<ArgumentNullException>(() => _testSubject.RemoveItemsByVirtualPath(null));
-        }
+        public void RemoveItemsByVirtualPath_WhenNodesIsNull_ShouldThrowArgumentNullException() => Assert.Throws<ArgumentNullException>(() => _testSubject.RemoveItemsByVirtualPath(null));
 
         [Fact]
         public void RemoveItemsByVirtualPath_WhenNodesIsEmpty_ShouldNotSendAnyItemToSearchHandler()
@@ -535,7 +535,7 @@ namespace EPiServer.Core
         {
             _testSubject.ServiceActive = true;
 
-            PageData childPage = new PageData();
+            var childPage = new PageData();
             var contentReference = new ContentReference(123);
             var createdBy = "Test user";
             childPage.Property.Add(MetaDataProperties.PageCreatedBy, new PropertyString(createdBy));
@@ -544,7 +544,7 @@ namespace EPiServer.Core
             childPage.Property.Add(MetaDataProperties.PageLink, new PropertyContentReference(contentReference));
 
             var childPages = new PageData[] { childPage };
-            _contentRepositoryMock.Setup(repository => repository.GetLanguageBranches<IContent>(ContentReference.RootPage)).Returns(new PageData[] { new PageData() } );
+            _contentRepositoryMock.Setup(repository => repository.GetLanguageBranches<IContent>(ContentReference.RootPage)).Returns(new PageData[] { new PageData() });
             _contentRepositoryMock.Setup(repository => repository.GetLanguageBranches<IContent>(contentReference)).Returns(childPages);
             _contentRepositoryMock.Setup(repository => repository.GetChildren<IContent>(ContentReference.RootPage, CultureInfo.InvariantCulture)).Returns(childPages);
             _contentRepositoryMock.Setup(repository => repository.Get<IContent>(contentReference)).Returns(childPage);
@@ -575,15 +575,9 @@ namespace EPiServer.Core
             public IndexItemBase UpdatedIndexItem { get; set; }
             public IQueryExpression ExecutedSearchQuery { get; set; }
 
-            public override void UpdateIndex(IndexRequestItem item)
-            {
-                UpdatedIndexItem = item;
-            }
+            public override void UpdateIndex(IndexRequestItem item) => UpdatedIndexItem = item;
 
-            public override void UpdateIndex(IndexRequestItem item, string namedIndexingService)
-            {
-                UpdatedIndexItem = item;
-            }
+            public override void UpdateIndex(IndexRequestItem item, string namedIndexingService) => UpdatedIndexItem = item;
 
             public override SearchResults GetSearchResults(IQueryExpression queryExpression, int page, int pageSize)
             {
@@ -619,14 +613,11 @@ namespace EPiServer.Core
         private class FirstLevelInheritedContent : ContentData { }
         private class SecondLevelInheritedContent : FirstLevelInheritedContent { }
 
-        private class PropertyStringForTest : PropertyString 
+        private class PropertyStringForTest : PropertyString
         {
             public PropertyStringForTest(string value) : base(value) { }
 
-            public override string ToWebString()
-            {
-                return Value.ToString();
-            }
+            public override string ToWebString() => Value.ToString();
         }
     }
 

@@ -9,7 +9,6 @@ using EPiServer.Cms.Shell.UI.Test.Fakes;
 using EPiServer.Core;
 using EPiServer.DataAbstraction;
 using EPiServer.Framework.Localization;
-using EPiServer.Globalization;
 using EPiServer.Search;
 using EPiServer.Search.Queries;
 using EPiServer.Search.Queries.Lucene;
@@ -27,13 +26,13 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
 {
     public class EPiServerSearchProviderBaseTest
     {
-        private Mock<SearchHandler> _searchHandler;
-        private Mock<IContentRepository> _contentRepository;
-        private FakeSearchProvider _searchProvider;
-        private Mock<ILanguageBranchRepository> _languageBranchRespository;
-        private ContentSearchHandler _contentSearchHandler;
-        private Mock<IContentTypeRepository> _contentTypeRepository;
-        private Mock<ISiteDefinitionResolver> _siteDefinitionResolver;
+        private readonly Mock<SearchHandler> _searchHandler;
+        private readonly Mock<IContentRepository> _contentRepository;
+        private readonly FakeSearchProvider _searchProvider;
+        private readonly Mock<ILanguageBranchRepository> _languageBranchRespository;
+        private readonly ContentSearchHandler _contentSearchHandler;
+        private readonly Mock<IContentTypeRepository> _contentTypeRepository;
+        private readonly Mock<ISiteDefinitionResolver> _siteDefinitionResolver;
 
         public EPiServerSearchProviderBaseTest()
         {
@@ -68,9 +67,11 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
                 }, null),
                 Mock.Of<IContentLanguageAccessor>(),
                 Mock.Of<UrlResolver>(),
-                Mock.Of<TemplateResolver>());
-            _searchProvider.HasAdminAccess = () => true;
-            _searchProvider.IsSearchActive = true;
+                Mock.Of<TemplateResolver>())
+            {
+                HasAdminAccess = () => true,
+                IsSearchActive = true
+            };
         }
 
         [Fact]
@@ -165,7 +166,7 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
 
             _searchHandler.Setup(x => x.GetSearchResults(It.Is<GroupQuery>(groupQuery => validate(groupQuery)), It.IsAny<string>(), It.IsAny<Collection<string>>(), It.IsAny<int>(), It.IsAny<int>())).Verifiable();
 
-            var query = new Query("Todd", new Dictionary<string, object>() { { "allowedTypes", "crapdata" }});
+            var query = new Query("Todd", new Dictionary<string, object>() { { "allowedTypes", "crapdata" } });
             _searchProvider.Search(query);
 
             _searchHandler.Verify();
@@ -227,7 +228,7 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
 
             Func<GroupQuery, bool> validate = (groupQuery) =>
             {
-                var contentTypeGroup = (GroupQuery) groupQuery.QueryExpressions[1];
+                var contentTypeGroup = (GroupQuery)groupQuery.QueryExpressions[1];
 
                 Assert.Equal(LuceneOperator.NOT, contentTypeGroup.InnerOperator);
                 return true;
@@ -255,16 +256,13 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
 
             _searchHandler.Setup(x => x.GetSearchResults(It.Is<GroupQuery>(groupQuery => validate(groupQuery)), It.IsAny<string>(), It.IsAny<Collection<string>>(), It.IsAny<int>(), It.IsAny<int>())).Verifiable();
 
-            var query = new Query("track", new Dictionary<string, object> { { "allowedTypes", new JArray("episerver.core.icontentimage", "episerver.core.icontentvideo") }});
+            var query = new Query("track", new Dictionary<string, object> { { "allowedTypes", new JArray("episerver.core.icontentimage", "episerver.core.icontentvideo") } });
             _searchProvider.Search(query);
 
             _searchHandler.Verify();
         }
 
-        private void TotalNumberOfContentTypeQueriesShouldBe(GroupQuery query, int number)
-        {
-           Assert.Equal(number, query.QueryExpressions.Count);
-        }
+        private void TotalNumberOfContentTypeQueriesShouldBe(GroupQuery query, int number) => Assert.Equal(number, query.QueryExpressions.Count);
 
         private void ThereShouldBeAtLeastOneQueryMatchingGivenType(GroupQuery query, Type type)
         {
@@ -278,15 +276,9 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
             Assert.False(allContentTypesQueries.Any(q => q.Type == type));
         }
 
-        private GroupQuery GetAllowedGroup(GroupQuery groupQuery)
-        {
-            return ((GroupQuery)groupQuery.QueryExpressions[1]).QueryExpressions[0] as GroupQuery;
-        }
+        private GroupQuery GetAllowedGroup(GroupQuery groupQuery) => ((GroupQuery)groupQuery.QueryExpressions[1]).QueryExpressions[0] as GroupQuery;
 
-        private GroupQuery GetRestrictedGroup(GroupQuery groupQuery)
-        {
-            return ((GroupQuery)groupQuery.QueryExpressions[1]).QueryExpressions[1] as GroupQuery;
-        }
+        private GroupQuery GetRestrictedGroup(GroupQuery groupQuery) => ((GroupQuery)groupQuery.QueryExpressions[1]).QueryExpressions[1] as GroupQuery;
 
         public class MySpecialVideo : VideoData
         {
@@ -297,7 +289,7 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
         }
     }
 
-    class FakeSearchProvider : EPiServerSearchProviderBase<IContent, ContentType>
+    internal class FakeSearchProvider : EPiServerSearchProviderBase<IContent, ContentType>
     {
         public FakeSearchProvider(
             LocalizationService localizationService,
@@ -317,19 +309,10 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
         {
         }
 
-        public override string Area
-        {
-            get { return ""; }
-        }
+        public override string Area => "";
 
-        public override string Category
-        {
-            get { return ""; }
-        }
+        public override string Category => "";
 
-        protected override string IconCssClass
-        {
-            get { return ""; }
-        }
+        protected override string IconCssClass => "";
     }
 }

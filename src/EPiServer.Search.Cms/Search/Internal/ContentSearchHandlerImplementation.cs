@@ -4,21 +4,19 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Web;
+using EPiServer.Core;
+using EPiServer.Core.Internal;
 using EPiServer.DataAbstraction;
 using EPiServer.Framework;
 using EPiServer.Framework.Blobs;
 using EPiServer.Logging.Compatibility;
+using EPiServer.Search.Data;
 using EPiServer.Search.Queries.Lucene;
 using EPiServer.Security;
 using EPiServer.ServiceLocation;
 using EPiServer.SpecializedProperties;
 using EPiServer.Web;
-using EPiServer.Core;
-using EPiServer.Search.Queries.Lucene.Internal;
-using EPiServer.Core.Internal;
 using Microsoft.Extensions.Options;
-using EPiServer.Search.Data;
 
 namespace EPiServer.Search.Internal
 {
@@ -33,11 +31,11 @@ namespace EPiServer.Search.Internal
         public static readonly string BaseItemType = GetItemTypeSection<IContent>();
         public const char SearchItemIdSeparator = '|';
 
-        private IContentTypeRepository _contentTypeRepository;
-        private IContentRepository _contentRepository;
-        private SearchHandler _searchHandler;
-        private Collection<String> _namedIndexes = null;
-        private SearchIndexConfig _searchIndexConfig;
+        private readonly IContentTypeRepository _contentTypeRepository;
+        private readonly IContentRepository _contentRepository;
+        private readonly SearchHandler _searchHandler;
+        private readonly Collection<string> _namedIndexes = null;
+        private readonly SearchIndexConfig _searchIndexConfig;
         private readonly IPrincipalAccessor _principalAccessor;
         private bool? _searchActive;
         private readonly IAccessControlListQueryBuilder _queryBuilder;
@@ -67,8 +65,10 @@ namespace EPiServer.Search.Internal
             _queryBuilder = queryBuilder;
             if (NamedIndex != null)
             {
-                _namedIndexes = new Collection<string>();
-                _namedIndexes.Add(NamedIndex);
+                _namedIndexes = new Collection<string>
+                {
+                    NamedIndex
+                };
             }
             _options = options.Value;
             _requestQueueHandler = requestQueueHandler;
@@ -86,7 +86,7 @@ namespace EPiServer.Search.Internal
                 return;
             }
 
-            SlimContentReader reader = new SlimContentReader(_contentRepository, ContentReference.RootPage, c => { var s = c as ISearchable; return s == null ? true : s.AllowReIndexChildren; });
+            var reader = new SlimContentReader(_contentRepository, ContentReference.RootPage, c => { var s = c as ISearchable; return s == null ? true : s.AllowReIndexChildren; });
 
             var requestQueueItems = new List<IndexRequestQueueItem>();
 
@@ -94,7 +94,7 @@ namespace EPiServer.Search.Internal
             {
                 if (!reader.Current.ContentLink.CompareToIgnoreWorkID(ContentReference.RootPage))
                 {
-                    IVersionable versionStatus = reader.Current as IVersionable;
+                    var versionStatus = reader.Current as IVersionable;
 
                     // If the content supports version status, we check that we don't index any non published content.
                     if (versionStatus == null || (versionStatus.Status == VersionStatus.Published))
@@ -129,7 +129,7 @@ namespace EPiServer.Search.Internal
 
                         var feed = _requestQueueHandler.GetUnprocessedFeed(contentRequestToIndex);
 
-                        bool success = _requestHandler.SendRequest(feed, serviceReference.Name);
+                        var success = _requestHandler.SendRequest(feed, serviceReference.Name);
                     }
                 }
                 catch (Exception ex)
@@ -211,18 +211,18 @@ namespace EPiServer.Search.Internal
                 return;
             }
 
-            IContent contentItem;
-            if (!_contentRepository.TryGet<IContent>(contentLink, CultureInfo.InvariantCulture, out contentItem))
+            if (!_contentRepository.TryGet<IContent>(contentLink, CultureInfo.InvariantCulture, out var contentItem))
             {
                 // Move between providers means delete from source provider
                 return;
             }
 
-            string searchId = GetSearchId(contentItem);
+            var searchId = GetSearchId(contentItem);
 
-            IndexRequestItem item = new IndexRequestItem(searchId, IndexAction.Update);
-
-            item.AutoUpdateVirtualPath = true;
+            var item = new IndexRequestItem(searchId, IndexAction.Update)
+            {
+                AutoUpdateVirtualPath = true
+            };
 
             // We still need to include all info since this is updated server side.
             ConvertContentToIndexItem(contentItem, item);
@@ -269,9 +269,11 @@ namespace EPiServer.Search.Internal
                 return;
             }
 
-            string searchId = GetSearchId(contentItem);
-            var item = new IndexRequestItem(searchId, IndexAction.Remove);
-            item.NamedIndex = NamedIndex;
+            var searchId = GetSearchId(contentItem);
+            var item = new IndexRequestItem(searchId, IndexAction.Remove)
+            {
+                NamedIndex = NamedIndex
+            };
             _searchHandler.UpdateIndex(item, NamedIndexingService);
         }
 
@@ -350,14 +352,13 @@ namespace EPiServer.Search.Internal
         /// </remarks>
         public override T GetContent<T>(IndexItemBase indexItem, bool filterOnCulture)
         {
-            if (indexItem == null || String.IsNullOrEmpty(indexItem.Id))
+            if (indexItem == null || string.IsNullOrEmpty(indexItem.Id))
             {
                 return default(T);
             }
 
-            string guidString = indexItem.Id.Split(SearchItemIdSeparator).FirstOrDefault();
-            Guid contentGuid;
-            if (Guid.TryParse(guidString, out contentGuid))
+            var guidString = indexItem.Id.Split(SearchItemIdSeparator).FirstOrDefault();
+            if (Guid.TryParse(guidString, out var contentGuid))
             {
                 var selector = filterOnCulture ? new LoaderOptions() { LanguageLoaderOption.Fallback() } : GetLoaderOptions(indexItem.Culture);
 
@@ -393,7 +394,7 @@ namespace EPiServer.Search.Internal
                 return null;
             }
 
-            GroupQuery groupQuery = new GroupQuery(LuceneOperator.AND);
+            var groupQuery = new GroupQuery(LuceneOperator.AND);
 
             groupQuery.QueryExpressions.Add(new ContentQuery<T>());
             groupQuery.QueryExpressions.Add(new FieldQuery(searchQuery));
@@ -420,20 +421,14 @@ namespace EPiServer.Search.Internal
 
         public override bool ServiceActive
         {
-            get
-            {
-                return _searchActive.HasValue ? (bool)_searchActive : SearchSettings.Options.Active;
-            }
-            set
-            {
-                _searchActive = value;
-            }
+            get => _searchActive.HasValue ? (bool)_searchActive : SearchSettings.Options.Active;
+            set => _searchActive = value;
         }
 
         private static string GetSearchId(IContent content)
         {
             CultureInfo language = null;
-            ILocale languageData = content as ILocale;
+            var languageData = content as ILocale;
             if (languageData != null)
             {
                 language = languageData.Language;
@@ -442,14 +437,11 @@ namespace EPiServer.Search.Internal
             return CreateSearchId(content.ContentGuid, language);
         }
 
-        private static string CreateSearchId(Guid contentGuid, CultureInfo language)
-        {
-            return String.Concat(contentGuid, SearchItemIdSeparator, GetCultureIdentifier(language));
-        }
+        private static string CreateSearchId(Guid contentGuid, CultureInfo language) => string.Concat(contentGuid, SearchItemIdSeparator, GetCultureIdentifier(language));
 
         private LoaderOptions GetLoaderOptions(string languageCode)
         {
-            if (String.IsNullOrEmpty(languageCode))
+            if (string.IsNullOrEmpty(languageCode))
             {
                 return new LoaderOptions() { LanguageLoaderOption.FallbackWithMaster() };
             }
@@ -463,8 +455,8 @@ namespace EPiServer.Search.Internal
 
         private void ConvertContentToIndexItem(IContent content, IndexRequestItem item)
         {
-            IContentSecurable securable = content as IContentSecurable;
-            ICategorizable categorizable = content as ICategorizable;
+            var securable = content as IContentSecurable;
+            var categorizable = content as ICategorizable;
 
             AddUriToIndexItem(content, item);
             AddMetaDataToIndexItem(content, item);
@@ -481,7 +473,7 @@ namespace EPiServer.Search.Internal
             else
             {
                 // If the item doesn't support access rights, add the everyone role
-                item.AccessControlList.Add(String.Format(CultureInfo.InvariantCulture, "G:{0}", EveryoneRole.RoleName));
+                item.AccessControlList.Add(string.Format(CultureInfo.InvariantCulture, "G:{0}", EveryoneRole.RoleName));
             }
 
             if (categorizable != null)
@@ -534,9 +526,9 @@ namespace EPiServer.Search.Internal
             item.Title = content.Name;
             item.Created = changeTrackable != null ? new DateTimeOffset(changeTrackable.Created) : DateTimeOffset.MinValue;
             item.Modified = changeTrackable != null ? new DateTimeOffset(changeTrackable.Changed) : DateTimeOffset.MinValue;
-            item.Culture = languageData != null ? GetCultureIdentifier(languageData.Language) : String.Empty;
+            item.Culture = languageData != null ? GetCultureIdentifier(languageData.Language) : string.Empty;
             item.ItemType = GetItemType(content.GetOriginalType());
-            item.Authors.Add(changeTrackable != null ? changeTrackable.CreatedBy : String.Empty);
+            item.Authors.Add(changeTrackable != null ? changeTrackable.CreatedBy : string.Empty);
         }
 
         /// <summary>
@@ -544,20 +536,11 @@ namespace EPiServer.Search.Internal
         /// </summary>
         /// <param name="content">The <see cref="IContent"/></param>
         /// <param name="item">The <see cref="IndexRequestItem"/></param>
-        private void AddSearchablePropertiesToIndexItem(IContent content, IndexRequestItem item)
-        {
-            item.DisplayText = string.Join(Environment.NewLine, GetSearchablePropertyValues(content, content.ContentTypeID).ToArray());
-        }
+        private void AddSearchablePropertiesToIndexItem(IContent content, IndexRequestItem item) => item.DisplayText = string.Join(Environment.NewLine, GetSearchablePropertyValues(content, content.ContentTypeID).ToArray());
 
-        private IEnumerable<string> GetSearchablePropertyValues(IContentData contentData, int contentTypeID)
-        {
-            return GetSearchablePropertyValues(contentData, _contentTypeRepository.Load(contentTypeID));
-        }
+        private IEnumerable<string> GetSearchablePropertyValues(IContentData contentData, int contentTypeID) => GetSearchablePropertyValues(contentData, _contentTypeRepository.Load(contentTypeID));
 
-        private IEnumerable<string> GetSearchablePropertyValues(IContentData contentData, Type modelType)
-        {
-            return GetSearchablePropertyValues(contentData, _contentTypeRepository.Load(modelType));
-        }
+        private IEnumerable<string> GetSearchablePropertyValues(IContentData contentData, Type modelType) => GetSearchablePropertyValues(contentData, _contentTypeRepository.Load(modelType));
 
         private IEnumerable<string> GetSearchablePropertyValues(IContentData contentData, ContentType contentType)
         {
@@ -600,7 +583,7 @@ namespace EPiServer.Search.Internal
         {
             if (!ContentReference.IsNullOrEmpty(contentLink))
             {
-                foreach (string node in GetVirtualPathNodes(contentLink))
+                foreach (var node in GetVirtualPathNodes(contentLink))
                 {
                     item.VirtualPathNodes.Add(node);
                 }
@@ -611,10 +594,7 @@ namespace EPiServer.Search.Internal
         /// Adds a category with the status approved
         /// </summary>
         /// <param name="item">The <see cref="IndexRequestItem"/> that should have the status category set</param>
-        private static void AddItemStatusToIndexItem(IndexRequestItem item)
-        {
-            item.ItemStatus = ItemStatus.Approved;
-        }
+        private static void AddItemStatusToIndexItem(IndexRequestItem item) => item.ItemStatus = ItemStatus.Approved;
 
         /// <summary>
         /// Adds the passed <see cref="IContent"/> StopPublish as expiration date to the passed <see cref="IndexRequestItem"/>
@@ -641,7 +621,7 @@ namespace EPiServer.Search.Internal
             {
                 if ((kvp.Access & EPiServer.Security.AccessLevel.Read) == EPiServer.Security.AccessLevel.Read)
                 {
-                    item.AccessControlList.Add(String.Format("{0}:{1}", kvp.EntityType == EPiServer.Security.SecurityEntityType.User ? "U" : "G", kvp.Name));
+                    item.AccessControlList.Add(string.Format("{0}:{1}", kvp.EntityType == EPiServer.Security.SecurityEntityType.User ? "U" : "G", kvp.Name));
                 }
             }
         }
@@ -649,18 +629,12 @@ namespace EPiServer.Search.Internal
         /// <summary>
         /// Gets the index of the named.
         /// </summary>
-        public override string NamedIndex
-        {
-            get { return _searchIndexConfig != null ? _searchIndexConfig.CMSNamedIndex : null; }
-        }
+        public override string NamedIndex => _searchIndexConfig != null ? _searchIndexConfig.CMSNamedIndex : null;
 
         /// <summary>
         /// Gets the named indexing service.
         /// </summary>
-        public override string NamedIndexingService
-        {
-            get { return _searchIndexConfig != null ? _searchIndexConfig.NamedIndexingService : null; }
-        }
+        public override string NamedIndexingService => _searchIndexConfig != null ? _searchIndexConfig.NamedIndexingService : null;
 
         private IndexRequestItem GetItemToIndex(IContent contentItem)
         {
@@ -678,9 +652,9 @@ namespace EPiServer.Search.Internal
                 return null;
             }
 
-            string searchId = GetSearchId(contentItem);
+            var searchId = GetSearchId(contentItem);
 
-            IndexRequestItem item = new IndexRequestItem(searchId, IndexAction.Update);
+            var item = new IndexRequestItem(searchId, IndexAction.Update);
 
             ConvertContentToIndexItem(contentItem, item);
 

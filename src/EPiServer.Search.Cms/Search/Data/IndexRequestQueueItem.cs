@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using EPiServer.Data.Dynamic;
 
 namespace EPiServer.Search.Data
@@ -48,7 +45,7 @@ namespace EPiServer.Search.Data
         }
 
         [EPiServerDataIndex]
-        public String NamedIndex
+        public string NamedIndex
         {
             get;
             set;

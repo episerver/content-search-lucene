@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using EPiServer.Framework;
 using EPiServer.Search.Configuration;
 using EPiServer.Search.Filter;
 using EPiServer.ServiceLocation;

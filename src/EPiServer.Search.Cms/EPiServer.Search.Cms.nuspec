@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>EPiServer.Search.Cms</id>
+    <version>$version$</version>
+    <title>EPiServer Search for CMS</title>
+    <authors>EPiServer AB</authors>
+    <owners>EPiServer</owners>
+    <license type="file">LICENSE.txt</license>
+    <projectUrl>http://www.episerver.com/web-content-management/</projectUrl>
+    <iconUrl>http://www.episerver.com/Framework/Styles/Images/Products/Content.png</iconUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>Episerver Search CMS integration</description>
+    <copyright>Copyright EPiServer AB 2017</copyright>
+    <tags>Search</tags>
+    <frameworkAssemblies/>
+    <dependencies>
+      <dependency id="EPiServer.CMS.UI.Core" version="[12,13)" />
+      <dependency id="EPiServer.CMS.AspNetCore.Templating" version="[12,13)" />
+      <dependency id="Microsoft.Extensions.Configuration" version="[5]" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="src\EPiServer.Search.Cms\license.txt" target="" />
+    <file src="src\EPiServer.Search.Cms\bin\$Configuration$\net5.0\EPiServer.Search.Cms.dll" target="lib\net5.0\EPiServer.Search.Cms.dll" />
+</files>
+</package>

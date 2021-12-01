@@ -1,16 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Moq;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Moq;
 using Xunit;
 
 namespace EPiServer.Search.IndexingService.Test.Controllers
 {
     [Trait(nameof(EPiServer.Search.IndexingService.Controllers.IndexingController), nameof(EPiServer.Search.IndexingService.Controllers.IndexingController.GetSearchResultsJson))]
-    public class GetSearchResultsJsonTest:IndexingControllerTestBase
+    public class GetSearchResultsJsonTest : IndexingControllerTestBase
     {
         [Fact]
         public void GetSearchResultsJson_WhenAccessKeyIsInvalid_ShouldReturnUnauthorizedStatusCode()
@@ -46,9 +43,9 @@ namespace EPiServer.Search.IndexingService.Test.Controllers
             _securityHandlerMock.Setup(x => x.IsAuthenticated(It.IsAny<string>(), It.IsAny<Security.AccessLevel>())).Returns(true);
             _indexingServiceHandlerMock
                 .Setup(x => x.GetSearchResults(
-                    It.IsAny<string>(), 
-                    It.Is<string>(y => !string.IsNullOrEmpty(y)), 
-                    It.Is<int>(y => y >= 0), 
+                    It.IsAny<string>(),
+                    It.Is<string>(y => !string.IsNullOrEmpty(y)),
+                    It.Is<int>(y => y >= 0),
                     It.Is<int>(y => y > 0)))
                 .Returns(feed);
 

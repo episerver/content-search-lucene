@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Text;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace EPiServer.Search.IndexingService
 {
@@ -90,8 +90,10 @@ namespace EPiServer.Search.IndexingService
         {
             get
             {
-                PropVariant p = new PropVariant();
-                p.variantType = (short)VarEnum.VT_EMPTY;
+                var p = new PropVariant
+                {
+                    variantType = (short)VarEnum.VT_EMPTY
+                };
                 return p;
             }
         }
@@ -116,11 +118,15 @@ namespace EPiServer.Search.IndexingService
 
         public override string ToString()
         {
-            VarEnum v = (VarEnum)variantType;
+            var v = (VarEnum)variantType;
             if (pointerValue != IntPtr.Zero)
+            {
                 return Marshal.PtrToStringUni(pointerValue);
+            }
             else
-                return String.Empty;
+            {
+                return string.Empty;
+            }
         }
 
     }
@@ -181,13 +187,13 @@ namespace EPiServer.Search.IndexingService
         internal struct STGOptions
         {
             [FieldOffset(0)]
-            ushort usVersion;
+            private readonly ushort usVersion;
             [FieldOffset(2)]
-            ushort reserved;
+            private readonly ushort reserved;
             [FieldOffset(4)]
-            uint uiSectorSize;
+            private readonly uint uiSectorSize;
             [FieldOffset(8), MarshalAs(UnmanagedType.LPWStr)]
-            string
+            private readonly string
                 pwcsTemplateFile;
         }
 
@@ -399,14 +405,14 @@ namespace EPiServer.Search.IndexingService
     internal class TextFilter
     {
         [DllImport("query.dll", CharSet = CharSet.Unicode)]
-        internal extern static int LoadIFilter(
+        internal static extern int LoadIFilter(
             string pwcsPath,
             [MarshalAs(UnmanagedType.IUnknown)] object pUnkOuter,
             ref IFilter ppIUnk
             );
 
         [DllImport("iprop.dll", CharSet = CharSet.Unicode)]
-        internal extern static int PropVariantClear(IntPtr pvar);
+        internal static extern int PropVariantClear(IntPtr pvar);
     }
 
     [ComImport, Guid("00000000-0000-0000-C000-000000000046")]
@@ -434,7 +440,7 @@ namespace EPiServer.Search.IndexingService
         IFilterReturnCodes Init(
             //[in] Flag settings from the IFILTER_INIT enumeration for controlling text standardization, property output, embedding scope, and IFilter access patterns. 
             [MarshalAs(UnmanagedType.U4)]
-				IFILTER_INIT grfFlags,
+                IFILTER_INIT grfFlags,
             // [in] The size of the attributes array. When nonzero, cAttributes takes 
             // precedence over attributes specified in grfFlags. If no attribute flags 
             // are specified and cAttributes is zero, the default is given by the 
@@ -449,7 +455,7 @@ namespace EPiServer.Search.IndexingService
             IntPtr aAttributes,
             // [out] Information about additional properties available to the caller; from the IFILTER_FLAGS enumeration. 
             [MarshalAs(UnmanagedType.U4)]
-				ref IFILTER_FLAGS pdwFlags);
+                ref IFILTER_FLAGS pdwFlags);
 
         /// <summary>
         /// The IFilter::GetChunk method positions the filter at the beginning of the next chunk, 
@@ -468,8 +474,8 @@ namespace EPiServer.Search.IndexingService
             // Note that this value is not the number of bytes in the buffer. 
             ref int pcwcBuffer,
             // Text retrieved from the current chunk. Do not terminate the buffer with a character.  
-            [Out(), MarshalAs(UnmanagedType.LPWStr)] 
-				StringBuilder awcBuffer
+            [Out(), MarshalAs(UnmanagedType.LPWStr)]
+                StringBuilder awcBuffer
             );
 
         /// <summary>
@@ -500,10 +506,10 @@ namespace EPiServer.Search.IndexingService
     [StructLayoutAttribute(LayoutKind.Sequential, Pack = 4, Size = 0, CharSet = CharSet.Auto)]
     internal struct PROPVARIANT
     {
-        internal Int16 vt;
-        internal Int16 wReserved1;
-        internal Int16 wReserved2;
-        internal Int16 wReserved3;
+        internal short vt;
+        internal short wReserved1;
+        internal short wReserved2;
+        internal short wReserved3;
         internal IntPtr data;
     }
     [StructLayoutAttribute(LayoutKind.Sequential)]

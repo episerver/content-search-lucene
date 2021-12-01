@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Collections.ObjectModel;
+using System.Text;
 
 namespace EPiServer.Search.Queries.Lucene
 {
     public abstract class CollectionQueryBase : IQueryExpression
     {
-        Collection<string> _items = new Collection<string>();
+        private readonly Collection<string> _items = new Collection<string>();
 
         protected CollectionQueryBase(string itemFieldName, LuceneOperator innerOperator)
         {
@@ -37,13 +36,7 @@ namespace EPiServer.Search.Queries.Lucene
         /// <summary>
         /// Items to add to this collection query
         /// </summary>
-        public Collection<string> Items
-        {
-            get
-            {
-                return _items;
-            }
-        }
+        public Collection<string> Items => _items;
 
         /// <summary> 
         /// Gets the query expression for this <see cref="AccessControlListQuery"/> in Lucene syntax
@@ -51,11 +44,11 @@ namespace EPiServer.Search.Queries.Lucene
         /// <returns></returns>
         public virtual string GetQueryExpression()
         {
-            StringBuilder expr = new StringBuilder();
-            Collection<string> nonDupeList = RemoveDuplicates(Items);
-            int i = 0;
+            var expr = new StringBuilder();
+            var nonDupeList = RemoveDuplicates(Items);
+            var i = 0;
 
-            foreach (string racl in nonDupeList)
+            foreach (var racl in nonDupeList)
             {
                 i++;
 
@@ -81,10 +74,10 @@ namespace EPiServer.Search.Queries.Lucene
 
         private static Collection<string> RemoveDuplicates(Collection<string> inputList)
         {
-            Dictionary<string, int> uniqueStore = new Dictionary<string, int>();
-            Collection<string> finalList = new Collection<string>();
+            var uniqueStore = new Dictionary<string, int>();
+            var finalList = new Collection<string>();
 
-            foreach (string currValue in inputList)
+            foreach (var currValue in inputList)
             {
                 if (!uniqueStore.ContainsKey(currValue))
                 {

@@ -1,19 +1,15 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Net;
-using System.ServiceModel;
-using System.Threading;
 using EPiServer.Search.IndexingService.Configuration;
 using EPiServer.Search.IndexingService.Controllers;
 using EPiServer.Search.IndexingService.Helpers;
-using log4net;
 using Lucene.Net.Analysis;
 using Lucene.Net.Analysis.Core;
 using Lucene.Net.Analysis.Miscellaneous;
 using Lucene.Net.Analysis.Standard;
-using Lucene.Net.Documents;
 using Lucene.Net.Store;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace EPiServer.Search.IndexingService
@@ -69,19 +65,19 @@ namespace EPiServer.Search.IndexingService
 
         private static string _defaultIndexName;
         private static Analyzer _analyzer;
-        private static Dictionary<string, ClientElement> _clientElements = new Dictionary<string, ClientElement>();
-        private static Dictionary<string, NamedIndexElement> _namedIndexElements = new Dictionary<string, NamedIndexElement>();
-        private static Dictionary<string, Directory> _namedIndexDirectories = new Dictionary<string, Directory>();
-        private static Dictionary<string, Directory> _referenceIndexDirectories = new Dictionary<string, Directory>();
-        private static Dictionary<string, System.IO.DirectoryInfo> _mainDirectoryInfos = new Dictionary<string, System.IO.DirectoryInfo>();
-        private static Dictionary<string, System.IO.DirectoryInfo> _referenceDirectoryInfos = new Dictionary<string, System.IO.DirectoryInfo>();
-        private static Dictionary<string, int> _indexWriteCounters = new Dictionary<string, int>();
-        private static Dictionary<string, Analyzer> _indexAnalyzers = new Dictionary<string, Analyzer>();
-        private static IList<string> _lowercaseFields = new List<string>() { DefaultFieldName, TitleFieldName, DisplayTextFieldName, AuthorsFieldName };
+        private static readonly Dictionary<string, ClientElement> _clientElements = new Dictionary<string, ClientElement>();
+        private static readonly Dictionary<string, NamedIndexElement> _namedIndexElements = new Dictionary<string, NamedIndexElement>();
+        private static readonly Dictionary<string, Directory> _namedIndexDirectories = new Dictionary<string, Directory>();
+        private static readonly Dictionary<string, Directory> _referenceIndexDirectories = new Dictionary<string, Directory>();
+        private static readonly Dictionary<string, System.IO.DirectoryInfo> _mainDirectoryInfos = new Dictionary<string, System.IO.DirectoryInfo>();
+        private static readonly Dictionary<string, System.IO.DirectoryInfo> _referenceDirectoryInfos = new Dictionary<string, System.IO.DirectoryInfo>();
+        private static readonly Dictionary<string, int> _indexWriteCounters = new Dictionary<string, int>();
+        private static readonly Dictionary<string, Analyzer> _indexAnalyzers = new Dictionary<string, Analyzer>();
+        private static readonly IList<string> _lowercaseFields = new List<string>() { DefaultFieldName, TitleFieldName, DisplayTextFieldName, AuthorsFieldName };
 
         private readonly IndexingServiceOptions _indexingServiceOpts;
         private readonly IHostEnvironment _hostEnvironment;
-        private EpiserverFrameworkOptions _episerverFrameworkOpts;
+        private readonly EpiserverFrameworkOptions _episerverFrameworkOpts;
         private readonly ILuceneHelper _luceneHelper;
         private readonly IDocumentHelper _documentHelper;
         #endregion
@@ -89,7 +85,7 @@ namespace EPiServer.Search.IndexingService
         #region Construct and Init
 
         public IndexingServiceSettings(IOptions<IndexingServiceOptions> indexingServiceOpts,
-             IHostEnvironment hostEnvironment, 
+             IHostEnvironment hostEnvironment,
              IOptions<EpiserverFrameworkOptions> episerverFrameworkOpts,
              ILuceneHelper luceneHelper,
              IDocumentHelper documentHelper)
@@ -110,7 +106,7 @@ namespace EPiServer.Search.IndexingService
         public void Init()
         {
             //Start logging
-            IndexingServiceServiceLog = LogManager.GetLogger(typeof(IndexingController));
+            IndexingServiceServiceLog = new LoggerFactory().CreateLogger<IndexingController>();
 
             //Must check breaking changes and database format compatibility before 'upgrading' this
             LuceneVersion = Lucene.Net.Util.LuceneVersion.LUCENE_48;
@@ -123,7 +119,7 @@ namespace EPiServer.Search.IndexingService
 
             LoadAnalyzer();
 
-            IndexingServiceServiceLog.Info("EPiServer Indexing Service Started!");
+            IndexingServiceServiceLog.LogInformation("EPiServer Indexing Service Started!");
         }
 
         #endregion
@@ -190,14 +186,17 @@ namespace EPiServer.Search.IndexingService
         /// <summary>
         /// Gets and sets the Log4Net logger
         /// </summary>
-        public static ILog IndexingServiceServiceLog { get; set; }
+        public static ILogger IndexingServiceServiceLog { get; set; }
 
         public static Analyzer Analyzer
         {
             get
             {
-                if(_analyzer==null)
+                if (_analyzer == null)
+                {
                     LoadAnalyzer();
+                }
+
                 return _analyzer;
             }
         }
@@ -205,98 +204,55 @@ namespace EPiServer.Search.IndexingService
         /// <summary>
         /// Gets named indexes config elements
         /// </summary>
-        public static Dictionary<string, NamedIndexElement> NamedIndexElements
-        {
-            get
-            {
-                return _namedIndexElements;
-            }
-        }
+        public static Dictionary<string, NamedIndexElement> NamedIndexElements => _namedIndexElements;
 
         /// <summary>
         /// Gets named indexes Lucene directories
         /// </summary>
-        public static Dictionary<string, Directory> NamedIndexDirectories
-        {
-            get
-            {
-                return _namedIndexDirectories;
-            }
-        }
+        public static Dictionary<string, Directory> NamedIndexDirectories => _namedIndexDirectories;
 
         /// <summary>
         /// Gets named reference indexes Lucene directories
         /// </summary>
-        public static Dictionary<string, Directory> ReferenceIndexDirectories
-        {
-            get
-            {
-                return _referenceIndexDirectories;
-            }
-        }
+        public static Dictionary<string, Directory> ReferenceIndexDirectories => _referenceIndexDirectories;
 
         /// <summary>
         /// Gets named indexes DirectoryInfos
         /// </summary>
-        public static Dictionary<string, System.IO.DirectoryInfo> MainDirectoryInfos
-        {
-            get
-            {
-                return _mainDirectoryInfos;
-            }
-        }
+        public static Dictionary<string, System.IO.DirectoryInfo> MainDirectoryInfos => _mainDirectoryInfos;
 
         /// <summary>
         /// Gets reference indexes DirectoryInfos
         /// </summary>
-        public static Dictionary<string, System.IO.DirectoryInfo> ReferenceDirectoryInfos
-        {
-            get
-            {
-                return _referenceDirectoryInfos;
-            }
-        }
+        public static Dictionary<string, System.IO.DirectoryInfo> ReferenceDirectoryInfos => _referenceDirectoryInfos;
 
         /// <summary>
         /// Get fields that are made lowercase (case insensitive) in analysis
         /// </summary>
-        internal static IList<string> LowercaseFields
-        {
-            get
-            {
-                return _lowercaseFields;
-            }
-        }
+        internal static IList<string> LowercaseFields => _lowercaseFields;
 
         /// <summary>
         /// Gets and sets the default index name
         /// </summary>
         public static string DefaultIndexName
         {
-            get
-            {
-                return _defaultIndexName;
-            }
+            get => _defaultIndexName;
             set
             {
                 _defaultIndexName = value;
 
                 //re-set default directory
                 if (NamedIndexDirectories[DefaultIndexName] != null)
-                    DefaultDirectory = (Directory)NamedIndexDirectories[value];
+                {
+                    DefaultDirectory = NamedIndexDirectories[value];
+                }
             }
         }
 
         /// <summary>
         /// Gets client config elements
         /// </summary>
-        internal static Dictionary<string, ClientElement> ClientElements
-        {
-            get
-            {
-                return _clientElements;
-            }
-        }
+        internal static Dictionary<string, ClientElement> ClientElements => _clientElements;
 
         #endregion
 
@@ -309,12 +265,12 @@ namespace EPiServer.Search.IndexingService
             MaxDisplayTextLength = _indexingServiceOpts.MaxDisplayTextLength;
             FIPSCompliant = _indexingServiceOpts.FIPSCompliant;
 
-            foreach (ClientElement e in _indexingServiceOpts.Clients)
+            foreach (var e in _indexingServiceOpts.Clients)
             {
                 ClientElements.Add(e.Name, e);
             }
 
-            foreach (NamedIndexElement e in _indexingServiceOpts.NamedIndexes.Indexes)
+            foreach (var e in _indexingServiceOpts.NamedIndexes.Indexes)
             {
                 NamedIndexElements.Add(e.Name, e);
             }
@@ -324,17 +280,17 @@ namespace EPiServer.Search.IndexingService
 
         private void LoadIndexes()
         {
-            foreach (NamedIndexElement e in NamedIndexElements.Values)
+            foreach (var e in NamedIndexElements.Values)
             {
-                System.IO.DirectoryInfo directoryMain = new System.IO.DirectoryInfo(System.IO.Path.Combine(GetDirectoryPath(e.DirectoryPath), "Main"));
-                System.IO.DirectoryInfo directoryRef = new System.IO.DirectoryInfo(System.IO.Path.Combine(GetDirectoryPath(e.DirectoryPath), "Ref"));
+                var directoryMain = new System.IO.DirectoryInfo(System.IO.Path.Combine(GetDirectoryPath(e.DirectoryPath), "Main"));
+                var directoryRef = new System.IO.DirectoryInfo(System.IO.Path.Combine(GetDirectoryPath(e.DirectoryPath), "Ref"));
 
                 try
                 {
                     if (!directoryMain.Exists)
                     {
                         directoryMain.Create();
-                        Directory dir = _documentHelper.CreateIndex(e.Name, directoryMain);
+                        var dir = _documentHelper.CreateIndex(e.Name, directoryMain);
                         NamedIndexDirectories.Add(e.Name, dir);
                     }
                     else
@@ -345,7 +301,7 @@ namespace EPiServer.Search.IndexingService
                     if (!directoryRef.Exists)
                     {
                         directoryRef.Create();
-                        Directory refDir = _documentHelper.CreateIndex(e.Name + RefIndexSuffix, directoryRef);
+                        var refDir = _documentHelper.CreateIndex(e.Name + RefIndexSuffix, directoryRef);
                         ReferenceIndexDirectories.Add(e.Name, refDir);
                     }
                     else
@@ -359,37 +315,39 @@ namespace EPiServer.Search.IndexingService
                     //IndexAnalyzers.Add(e.Name, new StandardAnalyzer(IndexingServiceSettings.LuceneVersion));    
 
                     //Set default index
-                    DefaultDirectory = (Directory)NamedIndexDirectories[DefaultIndexName];
-                    DefaultReferenceDirectory = (Directory)NamedIndexDirectories[DefaultIndexName];
+                    DefaultDirectory = NamedIndexDirectories[DefaultIndexName];
+                    DefaultReferenceDirectory = NamedIndexDirectories[DefaultIndexName];
                 }
                 catch (Exception ex)
                 {
-                    IndexingServiceServiceLog.Fatal(String.Format("Failed to load or create index: \"{0}\". Message: {1}", e.Name, ex.Message), ex);
+                    IndexingServiceServiceLog.LogError(string.Format("Failed to load or create index: \"{0}\". Message: {1}", e.Name, ex.Message), ex);
                 }
             }
         }
 
         private static void LoadAnalyzer()
         {
-            System.String[] stopWords = new System.String[] { };
-            var fieldAnalyzers = new Dictionary<string, Analyzer>();
+            var stopWords = new string[] { };
+            var fieldAnalyzers = new Dictionary<string, Analyzer>
+            {
 
-            // Untokenized fields uses keyword analyzer at all times
-            fieldAnalyzers.Add(IndexingServiceSettings.IdFieldName, new KeywordAnalyzer());
-            fieldAnalyzers.Add(IndexingServiceSettings.CultureFieldName, new KeywordAnalyzer());
-            fieldAnalyzers.Add(IndexingServiceSettings.ReferenceIdFieldName, new KeywordAnalyzer());
-            fieldAnalyzers.Add(IndexingServiceSettings.AuthorStorageFieldName, new KeywordAnalyzer());
+                // Untokenized fields uses keyword analyzer at all times
+                { IndexingServiceSettings.IdFieldName, new KeywordAnalyzer() },
+                { IndexingServiceSettings.CultureFieldName, new KeywordAnalyzer() },
+                { IndexingServiceSettings.ReferenceIdFieldName, new KeywordAnalyzer() },
+                { IndexingServiceSettings.AuthorStorageFieldName, new KeywordAnalyzer() },
 
-            // Categories, ACL and VirtualPath field uses Whitespace analyzer at all times. Whitespace analyser leaves stop words and other non literal chars intact. 
-            fieldAnalyzers.Add(IndexingServiceSettings.CategoriesFieldName, new WhitespaceAnalyzer(LuceneVersion));
-            fieldAnalyzers.Add(IndexingServiceSettings.AclFieldName, new WhitespaceAnalyzer(LuceneVersion));
-            fieldAnalyzers.Add(IndexingServiceSettings.VirtualPathFieldName, new WhitespaceAnalyzer(LuceneVersion));
-            fieldAnalyzers.Add(IndexingServiceSettings.TypeFieldName, new WhitespaceAnalyzer(LuceneVersion));
-            fieldAnalyzers.Add(IndexingServiceSettings.CreatedFieldName, new WhitespaceAnalyzer(LuceneVersion));
-            fieldAnalyzers.Add(IndexingServiceSettings.ModifiedFieldName, new WhitespaceAnalyzer(LuceneVersion));
-            fieldAnalyzers.Add(IndexingServiceSettings.PublicationEndFieldName, new WhitespaceAnalyzer(LuceneVersion));
-            fieldAnalyzers.Add(IndexingServiceSettings.PublicationStartFieldName, new WhitespaceAnalyzer(LuceneVersion));
-            fieldAnalyzers.Add(IndexingServiceSettings.ItemStatusFieldName, new WhitespaceAnalyzer(LuceneVersion));
+                // Categories, ACL and VirtualPath field uses Whitespace analyzer at all times. Whitespace analyser leaves stop words and other non literal chars intact. 
+                { IndexingServiceSettings.CategoriesFieldName, new WhitespaceAnalyzer(LuceneVersion) },
+                { IndexingServiceSettings.AclFieldName, new WhitespaceAnalyzer(LuceneVersion) },
+                { IndexingServiceSettings.VirtualPathFieldName, new WhitespaceAnalyzer(LuceneVersion) },
+                { IndexingServiceSettings.TypeFieldName, new WhitespaceAnalyzer(LuceneVersion) },
+                { IndexingServiceSettings.CreatedFieldName, new WhitespaceAnalyzer(LuceneVersion) },
+                { IndexingServiceSettings.ModifiedFieldName, new WhitespaceAnalyzer(LuceneVersion) },
+                { IndexingServiceSettings.PublicationEndFieldName, new WhitespaceAnalyzer(LuceneVersion) },
+                { IndexingServiceSettings.PublicationStartFieldName, new WhitespaceAnalyzer(LuceneVersion) },
+                { IndexingServiceSettings.ItemStatusFieldName, new WhitespaceAnalyzer(LuceneVersion) }
+            };
 
             // Get the selected analyzer for the rest of the fields
             Analyzer indexAnalyzer = new StandardAnalyzer(LuceneVersion, StopFilter.MakeStopSet(LuceneVersion, stopWords));
@@ -398,21 +356,21 @@ namespace EPiServer.Search.IndexingService
             fieldAnalyzers.Add(IndexingServiceSettings.AuthorsFieldName, indexAnalyzer);
             fieldAnalyzers.Add(IndexingServiceSettings.DefaultFieldName, indexAnalyzer);
 
-            PerFieldAnalyzerWrapper perf = new PerFieldAnalyzerWrapper(new StandardAnalyzer(LuceneVersion, StopFilter.MakeStopSet(LuceneVersion, stopWords)), fieldAnalyzers);
+            var perf = new PerFieldAnalyzerWrapper(new StandardAnalyzer(LuceneVersion, StopFilter.MakeStopSet(LuceneVersion, stopWords)), fieldAnalyzers);
 
             _analyzer = perf;
         }
 
-        public const String AppDataPathKey = "[appDataPath]";
+        public const string AppDataPathKey = "[appDataPath]";
         public const string DefaultAppDataFolderName = "App_Data";
-        public String GetDirectoryPath(string directoryPath)
+        public string GetDirectoryPath(string directoryPath)
         {
-            string path = directoryPath;
+            var path = directoryPath;
 
             if (path.StartsWith(AppDataPathKey, StringComparison.OrdinalIgnoreCase))
             {
-                string basePath = _episerverFrameworkOpts.AppDataPath;
-                if (String.IsNullOrEmpty(basePath))
+                var basePath = _episerverFrameworkOpts.AppDataPath;
+                if (string.IsNullOrEmpty(basePath))
                 {
                     basePath = DefaultAppDataFolderName;
                 }

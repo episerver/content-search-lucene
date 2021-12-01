@@ -1,13 +1,8 @@
-﻿using EPiServer.Search.IndexingService.Helpers;
-using log4net;
-using Moq;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using EPiServer.Search.IndexingService.Helpers;
+using Microsoft.Extensions.Logging;
+using Moq;
 
 namespace EPiServer.Search.IndexingService.Test.Helpers.DocumentHelper
 {
@@ -18,7 +13,7 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.DocumentHelper
         {
             _responseExceptionHelperMock = new Mock<IResponseExceptionHelper>();
 
-            var logMock = new Mock<ILog>();
+            var logMock = new Mock<ILogger>();
             IndexingServiceSettings.IndexingServiceServiceLog = logMock.Object;
 
         }
@@ -31,10 +26,10 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.DocumentHelper
 
         public void AddDocumentForTest(NamedIndex namedIndex, string itemId)
         {
-            Mock<IFeedHelper> _feedHelperMock = new Mock<IFeedHelper>();
-            Mock<ICommonFunc> _commonFuncMock = new Mock<ICommonFunc>();
-            Mock<IResponseExceptionHelper> _responseExceptionHelperMock = new Mock<IResponseExceptionHelper>();
-            Mock<IDocumentHelper> _documentHelperMock = new Mock<IDocumentHelper>();
+            var _feedHelperMock = new Mock<IFeedHelper>();
+            var _commonFuncMock = new Mock<ICommonFunc>();
+            var _responseExceptionHelperMock = new Mock<IResponseExceptionHelper>();
+            var _documentHelperMock = new Mock<IDocumentHelper>();
 
             var _luceneHelper = new EPiServer.Search.IndexingService.Helpers.LuceneHelper(
                 _feedHelperMock.Object,
@@ -75,10 +70,10 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.DocumentHelper
         }
         public void DeleteDocumentForTest(NamedIndex namedIndex, string itemId)
         {
-            Mock<IFeedHelper> _feedHelperMock = new Mock<IFeedHelper>();
-            Mock<ICommonFunc> _commonFuncMock = new Mock<ICommonFunc>();
-            Mock<IResponseExceptionHelper> _responseExceptionHelperMock = new Mock<IResponseExceptionHelper>();
-            Mock<IDocumentHelper> _documentHelperMock = new Mock<IDocumentHelper>();
+            var _feedHelperMock = new Mock<IFeedHelper>();
+            var _commonFuncMock = new Mock<ICommonFunc>();
+            var _responseExceptionHelperMock = new Mock<IResponseExceptionHelper>();
+            var _documentHelperMock = new Mock<IDocumentHelper>();
 
             var _luceneHelper = new EPiServer.Search.IndexingService.Helpers.LuceneHelper(
                 _feedHelperMock.Object,

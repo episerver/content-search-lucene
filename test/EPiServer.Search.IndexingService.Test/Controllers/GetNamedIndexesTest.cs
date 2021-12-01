@@ -1,10 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Moq;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Moq;
 using Xunit;
 
 namespace EPiServer.Search.IndexingService.Test.Controllers
@@ -45,5 +42,5 @@ namespace EPiServer.Search.IndexingService.Test.Controllers
             Assert.Equal("default", resultFeed.Items.ToList()[0].Title);
         }
     }
-    
+
 }

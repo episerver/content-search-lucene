@@ -3,15 +3,11 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
-using EPiServer.Cms.Shell.Search;
 using EPiServer.Cms.Shell.Search.Internal;
 using EPiServer.Cms.Shell.UI.Test.Fakes;
-using EPiServer.Construction;
 using EPiServer.Core;
 using EPiServer.DataAbstraction;
-using EPiServer.DataAbstraction.RuntimeModel;
 using EPiServer.Framework.Localization;
-using EPiServer.Globalization;
 using EPiServer.Search;
 using EPiServer.Search.Queries.Lucene;
 using EPiServer.Security;
@@ -50,10 +46,7 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
         }
 
         [Fact]
-        public void the_content_found_should_be_added()
-        {
-            _contentRepository.Verify(r => r.Get<IContent>(It.IsAny<ContentReference>()), Times.Never());
-        }
+        public void the_content_found_should_be_added() => _contentRepository.Verify(r => r.Get<IContent>(It.IsAny<ContentReference>()), Times.Never());
     }
 
     public class when_the_same_block_was_found_in_different_languages_and_none_match_the_preferredCulture : BlockSearchProviderFilterTestContext
@@ -79,10 +72,7 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
         }
 
         [Fact]
-        public void the_master_language_version_should_be_returned()
-        {
-            Assert.Equal("sv-SE", _results.FirstOrDefault().Metadata["LanguageBranch"]);
-        }
+        public void the_master_language_version_should_be_returned() => Assert.Equal("sv-SE", _results.FirstOrDefault().Metadata["LanguageBranch"]);
     }
 
     public class when_the_same_block_was_found_in_different_languages_and_one_match_the_preferredCulture : BlockSearchProviderFilterTestContext
@@ -140,10 +130,7 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
         }
 
         [Fact]
-        public void the_first_duplicate_item_should_be_returned()
-        {
-            Assert.Equal("en-US", _results.FirstOrDefault().Metadata["LanguageBranch"]);
-        }
+        public void the_first_duplicate_item_should_be_returned() => Assert.Equal("en-US", _results.FirstOrDefault().Metadata["LanguageBranch"]);
     }
 
     public abstract class BlockSearchProviderFilterTestContext
@@ -207,17 +194,20 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
                 _languageResolver.Object,
                 Mock.Of<UrlResolver>(),
                 Mock.Of<TemplateResolver>(),
-                Mock.Of<IBlobResolver>());
-
-            _searchProvider.EditPath = (cr, a, b) => { return string.Empty; };
-            _searchProvider.HasAdminAccess = () => true;
-            _searchProvider.IsSearchActive = true;
+                Mock.Of<IBlobResolver>())
+            {
+                EditPath = (cr, a, b) => { return string.Empty; },
+                HasAdminAccess = () => true,
+                IsSearchActive = true
+            };
         }
 
         protected void AddBlock(Guid id, ContentReference contentReference, CultureInfo culture, bool isMasterLanguageVersion = false)
         {
-            var block = new Mock<BlockData>();
-            block.CallBase = true;
+            var block = new Mock<BlockData>
+            {
+                CallBase = true
+            };
 
             var content = block.As<IContent>();
 
@@ -248,7 +238,7 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
 
             _contentRepository.Setup(r => r.Get<IContent>(It.Is<ContentReference>(cr => cr.Equals(contentReference)))).Returns(content.Object).Verifiable();
 
-            _contentSearchHandler.Setup(h => h.GetContent<IContent>(It.Is<IndexItemBase>(i => Guid.Parse(i.Id).Equals(id)), It.IsAny<Boolean>())).Returns(content.Object);
+            _contentSearchHandler.Setup(h => h.GetContent<IContent>(It.Is<IndexItemBase>(i => Guid.Parse(i.Id).Equals(id)), It.IsAny<bool>())).Returns(content.Object);
         }
     }
 }

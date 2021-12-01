@@ -1,13 +1,7 @@
-﻿using EPiServer.Logging.Compatibility;
-using EPiServer.Search.IndexingService.Helpers;
+﻿using EPiServer.Search.IndexingService.Helpers;
 using EPiServer.Search.IndexingService.Security;
+using Microsoft.Extensions.Logging;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Xunit;
 
 namespace EPiServer.Search.IndexingService.Test.Controllers
 {
@@ -24,7 +18,7 @@ namespace EPiServer.Search.IndexingService.Test.Controllers
             _indexingServiceHandlerMock = new Mock<IIndexingServiceHandler>();
             _securityHandlerMock = new Mock<ISecurityHandler>();
 
-            var logMock = new Mock<ILog>();
+            var logMock = new Mock<ILogger>();
             IndexingServiceSettings.IndexingServiceServiceLog = logMock.Object;
         }
 

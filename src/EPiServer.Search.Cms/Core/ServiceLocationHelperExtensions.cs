@@ -12,9 +12,6 @@ namespace EPiServer.Core
         /// </summary>  
         /// <param name="serviceLocationHelper">The service location helper.</param>  
         /// <returns>An instance of the currently registered <see cref="ContentSearchHandler"/> service.</returns>  
-        public static ContentSearchHandler ContentSearchHandler(this ServiceProviderHelper serviceLocationHelper)
-        {
-            return serviceLocationHelper.Advanced.GetInstance<ContentSearchHandler>();
-        }
+        public static ContentSearchHandler ContentSearchHandler(this ServiceProviderHelper serviceLocationHelper) => serviceLocationHelper.Advanced.GetInstance<ContentSearchHandler>();
     }
 }

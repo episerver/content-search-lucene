@@ -1,10 +1,7 @@
-﻿using Moq;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Moq;
 using Xunit;
 
 namespace EPiServer.Search.IndexingService.Test.IndexingServiceHandler
@@ -23,7 +20,7 @@ namespace EPiServer.Search.IndexingService.Test.IndexingServiceHandler
             _responseExceptionHelperMock.Setup(x => x.HandleServiceError(It.IsAny<string>())).Throws(new HttpResponseException() { Status = 500 });
 
             var classInstant = SetupMock();
-            var caughtException = Assert.Throws<HttpResponseException>(() => classInstant.GetSearchResults("",namedIndexNames,0,1));
+            var caughtException = Assert.Throws<HttpResponseException>(() => classInstant.GetSearchResults("", namedIndexNames, 0, 1));
             Assert.Equal(500, caughtException.Status);
         }
 
@@ -42,8 +39,8 @@ namespace EPiServer.Search.IndexingService.Test.IndexingServiceHandler
             IndexingServiceSettings.MainDirectoryInfos.Add(namedIndexMock.Object.Name, dir1);
             IndexingServiceSettings.ReferenceDirectoryInfos.Add(namedIndexMock.Object.Name, dir2);
 
-            int totalHits = 0;
-            Collection<ScoreDocument> docs = new Collection<ScoreDocument>() { new ScoreDocument(new Lucene.Net.Documents.Document(),1) };
+            var totalHits = 0;
+            var docs = new Collection<ScoreDocument>() { new ScoreDocument(new Lucene.Net.Documents.Document(), 1) };
             _luceneHelperMock.Setup(x => x.GetScoreDocuments(
                 It.IsAny<string>(),
                 It.IsAny<bool>(),
@@ -52,7 +49,7 @@ namespace EPiServer.Search.IndexingService.Test.IndexingServiceHandler
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 out totalHits)).Returns(docs);
-            
+
             var feedItem = new FeedItemModel()
             {
                 Id = "1",

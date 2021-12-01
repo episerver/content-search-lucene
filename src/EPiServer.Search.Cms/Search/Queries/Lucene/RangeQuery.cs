@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Text;
 
 namespace EPiServer.Search.Queries.Lucene
 {
@@ -64,7 +61,7 @@ namespace EPiServer.Search.Queries.Lucene
         /// <returns></returns>
         public string GetQueryExpression()
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             sb.Append(SearchSettings.GetFieldNameForField(Field));
             sb.Append(":");
             sb.Append((Inclusive ? "[" : "{"));

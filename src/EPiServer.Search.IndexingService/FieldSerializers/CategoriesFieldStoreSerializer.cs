@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.ServiceModel.Syndication;
-using System.Collections;
-using System.Text;
+﻿using System.Text;
 using System.Text.RegularExpressions;
 
 namespace EPiServer.Search.IndexingService.FieldSerializers
@@ -33,9 +27,9 @@ namespace EPiServer.Search.IndexingService.FieldSerializers
         {
             if (FeedItem != null)
             {
-                StringBuilder categories = new StringBuilder();
+                var categories = new StringBuilder();
 
-                foreach (string category in FeedItem.Categories)
+                foreach (var category in FeedItem.Categories)
                 {
                     // Add prefix and suffix to ensure that categories with white spaces always stick together 
                     // in searches and getting them back in its original shape and form
@@ -59,9 +53,9 @@ namespace EPiServer.Search.IndexingService.FieldSerializers
         /// <param name="syndicationItem">The <see cref="SyndicationItem"/> for which to add syndication categories</param>
         internal override void AddFieldStoreValueToSyndicationItem(FeedItemModel feedItem)
         {
-            if (!String.IsNullOrEmpty(FieldStoreValue))
+            if (!string.IsNullOrEmpty(FieldStoreValue))
             {
-                MatchCollection matches = base.SplitFieldStoreValue();
+                var matches = base.SplitFieldStoreValue();
                 foreach (Match match in matches)
                 {
                     feedItem.Categories.Add(base.GetOriginalValue(match.Value));

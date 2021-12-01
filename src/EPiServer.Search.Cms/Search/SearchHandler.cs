@@ -28,18 +28,15 @@ namespace EPiServer.Search
         [Obsolete("Request the SearchHandler from the service container.")]
         public static SearchHandler Instance
         {
-            get { return _instance ?? ServiceLocator.Current.GetInstance<SearchHandler>(); }
-            set { _instance = value; }
+            get => _instance ?? ServiceLocator.Current.GetInstance<SearchHandler>();
+            set => _instance = value;
         }
 
         /// <summary>
         /// Updates the index with the passed <see cref="IndexRequestItem"/>
         /// </summary>
         /// <param name="item">The <see cref="IndexRequestItem"/> containing data to use when updating the default search index</param>
-        public virtual void UpdateIndex(IndexRequestItem item)
-        {
-            UpdateIndex(item, null);
-        }
+        public virtual void UpdateIndex(IndexRequestItem item) => UpdateIndex(item, null);
 
         /// <summary>
         /// Updates the index with the passed <see cref="IndexRequestItem"/>
@@ -49,13 +46,19 @@ namespace EPiServer.Search
         public virtual void UpdateIndex(IndexRequestItem item, string namedIndexingService)
         {
             if (!_options.Active)
+            {
                 throw new InvalidOperationException("Can not perform this operation when EPiServer.Search is not set as active in configuration");
+            }
 
             if (item == null)
+            {
                 throw new ArgumentNullException("item");
+            }
 
             if (string.IsNullOrEmpty(item.Id))
+            {
                 throw new ArgumentException("The Id property cannot be null");
+            }
 
             _requestQueueHandler.Enqueue(item, namedIndexingService);
         }
@@ -67,10 +70,7 @@ namespace EPiServer.Search
         /// <param name="page">The search result page, starting a 1</param>
         /// <param name="pageSize">The number of items per page</param>
         /// <returns></returns>
-        public virtual SearchResults GetSearchResults(IQueryExpression queryExpression, int page, int pageSize)
-        {
-            return GetSearchResults(queryExpression, null, null, page, pageSize);
-        }
+        public virtual SearchResults GetSearchResults(IQueryExpression queryExpression, int page, int pageSize) => GetSearchResults(queryExpression, null, null, page, pageSize);
 
         /// <summary>
         /// Gets search results for a <see cref="IQueryExpression"/> and a list of named indexes
@@ -84,7 +84,9 @@ namespace EPiServer.Search
         public virtual SearchResults GetSearchResults(IQueryExpression queryExpression, string namedIndexingService, Collection<string> namedIndexes, int page, int pageSize)
         {
             if (!_options.Active)
+            {
                 throw new InvalidOperationException("Can not perform this operation when EPiServer.Search is not set as active in configuration");
+            }
 
             if (page <= 0)
             {
@@ -95,8 +97,8 @@ namespace EPiServer.Search
                 throw new ArgumentOutOfRangeException("pageSize", page, "The number of results returned can not be less than 0");
             }
 
-            int offset = (page * pageSize) - pageSize;
-            int limit = pageSize;
+            var offset = (page * pageSize) - pageSize;
+            var limit = pageSize;
 
             return _requestHandler.GetSearchResults(queryExpression.GetQueryExpression(), namedIndexingService, namedIndexes, offset, limit);
         }
@@ -109,7 +111,9 @@ namespace EPiServer.Search
         public virtual Collection<string> GetNamedIndexes(string namedIndexingService)
         {
             if (!_options.Active)
+            {
                 throw new InvalidOperationException("Can not perform this operation when EPiServer.Search is not set as active in configuration");
+            }
 
             return _requestHandler.GetNamedIndexes(namedIndexingService);
         }
@@ -118,10 +122,7 @@ namespace EPiServer.Search
         /// Gets a list of named indexes from the default indexing service
         /// </summary>
         /// <returns></returns>
-        public virtual Collection<string> GetNamedIndexes()
-        {
-            return GetNamedIndexes(null);
-        }
+        public virtual Collection<string> GetNamedIndexes() => GetNamedIndexes(null);
 
         /// <summary>
         /// Send a request to the passed indexing service to reset the passed named index. NOTE: this wipes and recreates the index.
@@ -132,7 +133,9 @@ namespace EPiServer.Search
         public virtual void ResetIndex(string namedIndexingService, string namedIndex)
         {
             if (!_options.Active)
+            {
                 throw new InvalidOperationException("Can not perform this operation when EPiServer.Search is not set as active in configuration");
+            }
 
             _requestHandler.ResetIndex(namedIndexingService, namedIndex);
         }
@@ -142,10 +145,7 @@ namespace EPiServer.Search
         /// </summary>
         /// <param name="namedIndex">The named index to reset</param>
         /// <remarks>Reset requests are not enqueued but sent immediately</remarks>
-        public virtual void ResetIndex(string namedIndex)
-        {
-            ResetIndex(null, namedIndex);
-        }
+        public virtual void ResetIndex(string namedIndex) => ResetIndex(null, namedIndex);
 
         /// <summary>
         /// Removes the request items from queue (unprocessed items).
@@ -155,7 +155,10 @@ namespace EPiServer.Search
         public virtual void TruncateQueue(string namedIndexingService, string namedIndex)
         {
             if (!_options.Active)
+            {
                 throw new InvalidOperationException("Can not perform this operation when EPiServer.Search is not set as active in configuration");
+            }
+
             _requestQueueHandler.TruncateQueue(namedIndexingService, namedIndex);
         }
 

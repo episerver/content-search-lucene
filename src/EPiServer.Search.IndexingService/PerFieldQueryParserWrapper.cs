@@ -12,9 +12,9 @@ namespace EPiServer.Search.IndexingService
     /// </summary>
     internal class PerFieldQueryParserWrapper : QueryParser
     {
-        private IList<string> _lowercaseFields;
+        private readonly IList<string> _lowercaseFields;
 
-        public PerFieldQueryParserWrapper(LuceneVersion matchVersion, System.String f, Analyzer a, IList<string> lowercaseFields)
+        public PerFieldQueryParserWrapper(LuceneVersion matchVersion, string f, Analyzer a, IList<string> lowercaseFields)
             : base(matchVersion, f, a)
         {
             _lowercaseFields = lowercaseFields;

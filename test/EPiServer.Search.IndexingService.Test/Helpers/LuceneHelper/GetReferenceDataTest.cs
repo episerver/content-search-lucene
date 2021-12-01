@@ -1,12 +1,7 @@
-﻿using EPiServer.Search.IndexingService.Helpers;
+﻿using System;
+using System.Collections.ObjectModel;
 using Lucene.Net.Documents;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
@@ -18,7 +13,7 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
         public void GetReferenceData_WhenNamedIndexReferenceDirectoryIsNull_ShouldReturnEmpty()
         {
             var namedIndexMock = new Mock<NamedIndex>("testindex1");
-            namedIndexMock.SetupGet(x => x.ReferenceDirectory).Returns(()=>null);
+            namedIndexMock.SetupGet(x => x.ReferenceDirectory).Returns(() => null);
 
             var classInstant = SetupMock();
 
@@ -35,15 +30,17 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
             var namedIndexMock = new Mock<NamedIndex>("testindex1");
             namedIndexMock.SetupGet(x => x.ReferenceDirectory).Returns(() => dir);
 
-            
-            int totalHits = 0;
-            var docs = new Collection<ScoreDocument>();
-            docs.Add(new ScoreDocument(new Document
+
+            var totalHits = 0;
+            var docs = new Collection<ScoreDocument>
+            {
+                new ScoreDocument(new Document
             {
                 new TextField(IndexingServiceSettings.TitleFieldName,"Title",Field.Store.YES),
                 new TextField(IndexingServiceSettings.DisplayTextFieldName,"Body",Field.Store.YES),
                 new TextField(IndexingServiceSettings.MetadataFieldName,"Meta",Field.Store.YES)
-            }, 1));
+            }, 1)
+            };
 
             _documentHelperMock.Setup(x => x.SingleIndexSearch(It.IsAny<string>(), It.IsAny<NamedIndex>(), It.IsAny<int>(), out totalHits)).Returns(docs);
 

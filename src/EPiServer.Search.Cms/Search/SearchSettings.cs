@@ -1,11 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-//using EPiServer.Search.Configuration;
 using EPiServer.Search.Filter;
 using EPiServer.Search.Queries.Lucene;
-using System.Globalization;
-using EPiServer.ServiceLocation;
 
 namespace EPiServer.Search
 {
@@ -14,28 +10,18 @@ namespace EPiServer.Search
     /// </summary>
     public static class SearchSettings
     {
-        private static Dictionary<string, SearchResultFilterProvider> _searchResultFilterProviders = new Dictionary<string,SearchResultFilterProvider>();
         private static SearchOptions _options;
 
         public static SearchOptions Options
         {
-            get { return _options ?? new SearchOptions(); }
-            set { _options = value; }
+            get => _options ?? new SearchOptions();
+            set => _options = value;
         }
-
-        //[Obsolete("Add and retrieve indexing service references through the IndexingServiceReferences property on the SearchOptions class.", true)]
-        //public static Dictionary<string, IndexingServiceReference> IndexingServiceReferences => throw new NotSupportedException();
 
         /// <summary>
         /// Gets all configured providers for filtering search results
         /// </summary>
-        public static Dictionary<string, SearchResultFilterProvider> SearchResultFilterProviders
-        {
-            get
-            {
-                return _searchResultFilterProviders;
-            }
-        }
+        public static Dictionary<string, SearchResultFilterProvider> SearchResultFilterProviders { get; } = new Dictionary<string, SearchResultFilterProvider>();
 
         internal static string GetFieldNameForField(Field field)
         {
@@ -70,13 +56,13 @@ namespace EPiServer.Search
         {
             switch (indexAction)
             {
-                case IndexAction.Add :
+                case IndexAction.Add:
                     return "add";
-                case IndexAction.Update :
+                case IndexAction.Update:
                     return "update";
-                case IndexAction.Remove :
+                case IndexAction.Remove:
                     return "remove";
-                default :
+                default:
                     return "";
             }
         }
@@ -85,7 +71,7 @@ namespace EPiServer.Search
         {
             foreach (var factory in options.FilterProviders)
             {
-                _searchResultFilterProviders.Add(factory.Key, factory.Value(serviceProvider));
+                SearchResultFilterProviders.Add(factory.Key, factory.Value(serviceProvider));
             }
         }
 
@@ -94,10 +80,7 @@ namespace EPiServer.Search
         /// </summary>
         public static event EventHandler InitializationCompleted;
 
-        internal static void OnInitializationCompleted()
-        {
-            InitializationCompleted?.Invoke(null, new EventArgs());
-        }
+        internal static void OnInitializationCompleted() => InitializationCompleted?.Invoke(null, new EventArgs());
 
 
         [Obsolete("Use IndexingServiceReferences instead", true)]

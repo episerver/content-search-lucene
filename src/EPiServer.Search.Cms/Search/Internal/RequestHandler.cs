@@ -21,7 +21,7 @@ namespace EPiServer.Search.Internal
     /// </summary>
     public class RequestHandler
     {
-        private static ILogger _log = LogManager.GetLogger();
+        private static readonly ILogger _log = LogManager.GetLogger();
         private readonly SearchOptions _options;
 
         public RequestHandler(IOptions<SearchOptions> options)
@@ -38,10 +38,10 @@ namespace EPiServer.Search.Internal
             {
                 using (var sw = new StreamWriter(stream, new UnicodeEncoding()))
                 {
-                    string jsonData = JsonSerializer.Serialize(feed);
+                    var jsonData = JsonSerializer.Serialize(feed);
                     sw.Write(jsonData);
 
-                    string url = serviceReference.BaseUri + _options.UpdateUriTemplate.Replace("{accessKey}", serviceReference.AccessKey);
+                    var url = serviceReference.BaseUri + _options.UpdateUriTemplate.Replace("{accessKey}", serviceReference.AccessKey);
 
                     try
                     {
@@ -67,12 +67,14 @@ namespace EPiServer.Search.Internal
         {
             var serviceReference = GetNamedIndexingServiceReference(namedIndexingService);
 
-            var parameterMapper = new Dictionary<string, string>();
-            parameterMapper.Add("{namedIndex}", namedIndex);
-            parameterMapper.Add("{accessKey}", serviceReference.AccessKey);
+            var parameterMapper = new Dictionary<string, string>
+            {
+                { "{namedIndex}", namedIndex },
+                { "{accessKey}", serviceReference.AccessKey }
+            };
 
-            string url = _options.ResetUriTemplate;
-            foreach (string key in parameterMapper.Keys)
+            var url = _options.ResetUriTemplate;
+            foreach (var key in parameterMapper.Keys)
             {
                 url = url.Replace(key, WebUtility.UrlEncode(parameterMapper[key]));
             }
@@ -98,11 +100,13 @@ namespace EPiServer.Search.Internal
         {
             var serviceReference = GetNamedIndexingServiceReference(namedIndexingService);
 
-            var parameterMapper = new Dictionary<string, string>();
-            parameterMapper.Add("{accessKey}", serviceReference.AccessKey);
+            var parameterMapper = new Dictionary<string, string>
+            {
+                { "{accessKey}", serviceReference.AccessKey }
+            };
 
-            string url = _options.NamedIndexesUriTemplate;
-            foreach (string key in parameterMapper.Keys)
+            var url = _options.NamedIndexesUriTemplate;
+            foreach (var key in parameterMapper.Keys)
             {
                 url = url.Replace(key, WebUtility.UrlEncode(parameterMapper[key]));
             }
@@ -144,11 +148,14 @@ namespace EPiServer.Search.Internal
 
             var serviceReference = GetNamedIndexingServiceReference(namedIndexingService);
 
-            string indexes = string.Empty;
+            var indexes = string.Empty;
             if (namedIndexes != null && namedIndexes.Count > 0)
             {
-                foreach (string s in namedIndexes)
+                foreach (var s in namedIndexes)
+                {
                     indexes += s + "|";
+                }
+
                 indexes = indexes.Substring(0, indexes.LastIndexOf("|", StringComparison.Ordinal));
             }
 
@@ -159,8 +166,8 @@ namespace EPiServer.Search.Internal
             parameterMapper.Add("{offset}", (_options.UseIndexingServicePaging ? offset.ToString(CultureInfo.InvariantCulture.NumberFormat) : "0"));
             parameterMapper.Add("{limit}", (_options.UseIndexingServicePaging ? limit.ToString(CultureInfo.InvariantCulture.NumberFormat) : _options.MaxHitsFromIndexingService.ToString(CultureInfo.InvariantCulture.NumberFormat)));
 
-            string url = _options.SearchUriTemplate;
-            foreach (string key in parameterMapper.Keys)
+            var url = _options.SearchUriTemplate;
+            foreach (var key in parameterMapper.Keys)
             {
                 url = url.Replace(key, WebUtility.UrlEncode(parameterMapper[key]));
             }
@@ -215,58 +222,54 @@ namespace EPiServer.Search.Internal
 
         private SearchResults PopulateSearchResultsFromFeed(string response, int offset, int limit)
         {
-            FeedModel feeds = JsonSerializer.Deserialize<FeedModel>(response);
+            var feeds = JsonSerializer.Deserialize<FeedModel>(response);
 
             var resultsFiltered = new SearchResults();
-            int totalHits = 0;
 
-            int.TryParse(feeds.AttributeExtensions[_options.SyndicationFeedAttributeNameTotalHits], out totalHits);
-            string version = feeds.AttributeExtensions[_options.SyndicationFeedAttributeNameVersion];
+            int.TryParse(feeds.AttributeExtensions[_options.SyndicationFeedAttributeNameTotalHits], out var totalHits);
+            var version = feeds.AttributeExtensions[_options.SyndicationFeedAttributeNameVersion];
 
-            foreach (FeedItemModel feed in feeds.Items)
+            foreach (var feed in feeds.Items)
             {
                 try
                 {
-                    var item = new IndexResponseItem(feed.Id);
-                    item.Title = feed.Title;
-                    item.DisplayText = feed.DisplayText;
-                    item.Created = feed.Created;
-                    item.Modified = feed.Modified;
-                    item.Uri = feed.Uri;
+                    var item = new IndexResponseItem(feed.Id)
+                    {
+                        Title = feed.Title,
+                        DisplayText = feed.DisplayText,
+                        Created = feed.Created,
+                        Modified = feed.Modified,
+                        Uri = feed.Uri,
 
-                    item.Culture = feed.AttributeExtensions[_options.SyndicationItemAttributeNameCulture];
-                    item.ItemType = feed.AttributeExtensions[_options.SyndicationItemAttributeNameType];
-                    item.NamedIndex = feed.AttributeExtensions[_options.SyndicationItemAttributeNameNamedIndex];
-                    item.Metadata = feed.AttributeExtensions[_options.SyndicationItemElementNameMetadata];
+                        Culture = feed.AttributeExtensions[_options.SyndicationItemAttributeNameCulture],
+                        ItemType = feed.AttributeExtensions[_options.SyndicationItemAttributeNameType],
+                        NamedIndex = feed.AttributeExtensions[_options.SyndicationItemAttributeNameNamedIndex],
+                        Metadata = feed.AttributeExtensions[_options.SyndicationItemElementNameMetadata]
+                    };
 
-                    DateTime publicationEnd;
-                    DateTime.TryParse(feed.AttributeExtensions[_options.SyndicationItemAttributeNamePublicationEnd], CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out publicationEnd);
+                    DateTime.TryParse(feed.AttributeExtensions[_options.SyndicationItemAttributeNamePublicationEnd], CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var publicationEnd);
                     item.PublicationEnd = publicationEnd;
 
-                    DateTime publicationStart;
-                    DateTime.TryParse(feed.AttributeExtensions[_options.SyndicationItemAttributeNamePublicationStart], CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out publicationStart);
+                    DateTime.TryParse(feed.AttributeExtensions[_options.SyndicationItemAttributeNamePublicationStart], CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var publicationStart);
                     item.PublicationStart = publicationStart;
 
                     //Boost factor
-                    float fltBoostFactor = 1;
-                    item.BoostFactor = (float.TryParse(feed.AttributeExtensions[_options.SyndicationItemAttributeNameBoostFactor], out fltBoostFactor)) ? fltBoostFactor : 1;
+                    item.BoostFactor = (float.TryParse(feed.AttributeExtensions[_options.SyndicationItemAttributeNameBoostFactor], out var fltBoostFactor)) ? fltBoostFactor : 1;
 
                     // Data Uri
-                    Uri uri = null;
                     item.DataUri = ((Uri.TryCreate(feed.AttributeExtensions[_options.SyndicationItemAttributeNameDataUri],
-                        UriKind.RelativeOrAbsolute, out uri)) ? uri : null);
+                        UriKind.RelativeOrAbsolute, out var uri)) ? uri : null);
 
                     //Score
-                    float score = 0;
-                    item.Score = (float.TryParse(feed.AttributeExtensions[_options.SyndicationItemAttributeNameScore], out score)) ? score : 0;
+                    item.Score = (float.TryParse(feed.AttributeExtensions[_options.SyndicationItemAttributeNameScore], out var score)) ? score : 0;
 
 
-                    foreach (string author in feed.Authors)
+                    foreach (var author in feed.Authors)
                     {
                         item.Authors.Add(author);
                     }
 
-                    foreach (string category in feed.Categories)
+                    foreach (var category in feed.Categories)
                     {
                         item.Categories.Add(category);
                     }
@@ -301,8 +304,10 @@ namespace EPiServer.Search.Internal
             }
 
             // If we are using client paging we need to page the filtered results
-            var resultsPaged = new SearchResults();
-            resultsPaged.TotalHits = resultsFiltered.IndexResponseItems.Count;
+            var resultsPaged = new SearchResults
+            {
+                TotalHits = resultsFiltered.IndexResponseItems.Count
+            };
             foreach (var item in resultsFiltered.IndexResponseItems.Skip(offset).Take(limit))
             {
                 resultsPaged.IndexResponseItems.Add(item);
@@ -312,7 +317,7 @@ namespace EPiServer.Search.Internal
             return resultsPaged;
         }
 
-        protected async virtual System.Threading.Tasks.Task<string> MakeHttpRequest(string url, string method, IndexingServiceReference indexingServiceReference, string postData = null, Action<Stream> responseStreamHandler = null)
+        protected virtual async System.Threading.Tasks.Task<string> MakeHttpRequest(string url, string method, IndexingServiceReference indexingServiceReference, string postData = null, Action<Stream> responseStreamHandler = null)
         {
             using (var client = new HttpClient())
             {

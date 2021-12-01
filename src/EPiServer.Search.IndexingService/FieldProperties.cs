@@ -1,7 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using Lucene.Net.Documents;
 
 namespace EPiServer.Search.IndexingService
@@ -14,7 +10,9 @@ namespace EPiServer.Search.IndexingService
             set;
         }
 
+#pragma warning disable CS0618 // Type or member is obsolete
         internal Field.Index FieldIndex
+#pragma warning restore CS0618 // Type or member is obsolete
         {
             get;
             set;

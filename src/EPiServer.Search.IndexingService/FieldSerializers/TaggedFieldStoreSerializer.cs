@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿using System.Collections.ObjectModel;
 using System.Text;
-using System.Xml.Linq;
-using System.ServiceModel.Syndication;
-using System.Text.RegularExpressions;
-using System.Collections.ObjectModel;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace EPiServer.Search.IndexingService.FieldSerializers
 {
@@ -27,17 +21,17 @@ namespace EPiServer.Search.IndexingService.FieldSerializers
         // in searches and to get them back in their original shape.
         internal virtual string ToFieldStoreString(string syndicationItemElementExtensionName)
         {
-            string value = base.ToFieldStoreValue();
+            var value = base.ToFieldStoreValue();
 
             if (FeedItem != null)
             {
-                StringBuilder acl = new StringBuilder();
+                var acl = new StringBuilder();
 
                 var element = TryParseCollection(FeedItem.ElementExtensions[syndicationItemElementExtensionName]);
 
                 if (element != null)
                 {
-                    foreach (string e in element)
+                    foreach (var e in element)
                     {
                         acl.Append(IndexingServiceSettings.TagsPrefix);
                         acl.Append(e.Trim());
@@ -47,22 +41,22 @@ namespace EPiServer.Search.IndexingService.FieldSerializers
 
                     value = acl.ToString().Trim();
                 }
-                
+
             }
             return value;
         }
 
         internal void AddFieldStoreValueToSyndicationItem(FeedItemModel feedItem, string syndicationItemElementExtensionName)
         {
-            if (!String.IsNullOrEmpty(FieldStoreValue))
+            if (!string.IsNullOrEmpty(FieldStoreValue))
             {
-                MatchCollection matches = SplitFieldStoreValue();
-                Collection<string> element = new Collection<string>();
+                var matches = SplitFieldStoreValue();
+                var element = new Collection<string>();
                 foreach (Match match in matches)
                 {
                     if (match.Value != null)
                     {
-                        string value = GetOriginalValue(match.Value);
+                        var value = GetOriginalValue(match.Value);
                         element.Add(value);
                     }
                 }
@@ -74,18 +68,12 @@ namespace EPiServer.Search.IndexingService.FieldSerializers
             }
         }
 
-        protected MatchCollection SplitFieldStoreValue()
-        {
-            return Regex.Matches(FieldStoreValue, "\\[\\[.*?\\]\\]");
-        }
+        protected MatchCollection SplitFieldStoreValue() => Regex.Matches(FieldStoreValue, "\\[\\[.*?\\]\\]");
 
-        protected string GetOriginalValue(string storedValue)
-        {
-            return storedValue.Replace(IndexingServiceSettings.TagsPrefix, "").Replace(IndexingServiceSettings.TagsSuffix, "");
-        }
+        protected string GetOriginalValue(string storedValue) => storedValue.Replace(IndexingServiceSettings.TagsPrefix, "").Replace(IndexingServiceSettings.TagsSuffix, "");
         private Collection<string> TryParseCollection(object o)
         {
-            Collection<string> c = new Collection<string>();
+            var c = new Collection<string>();
             if (o is JsonElement)
             {
                 var json = ((JsonElement)o).GetRawText();
