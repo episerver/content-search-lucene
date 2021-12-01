@@ -20,7 +20,7 @@ jobs:
       contents: read
     env:
       REGISTRY: ghcr.io
-      IMAGE_NAME: ${{ github.repository }}
+      IMAGE_NAME: episerver.search.indexingservice
     steps:
       - name: Checkout repository
         uses: actions/checkout@v1
