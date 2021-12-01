@@ -10,7 +10,7 @@
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)' != 'Release' ">
+  <PropertyGroup>
     <WarningsNotAsErrors>CS1591;CS1573;CS0436</WarningsNotAsErrors>
   </PropertyGroup>
 
