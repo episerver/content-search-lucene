@@ -20,7 +20,7 @@ jobs:
       contents: read
     env:
       REGISTRY: ghcr.io
-      IMAGE_NAME: episerver.search.indexingservice
+      IMAGE_NAME:  ${{ github.repository }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v1
@@ -39,9 +39,9 @@ jobs:
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@v1
+        uses: docker/metadata-action@v3
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/episerver/${{ env.IMAGE_NAME }}/episerver.search.indexingservice
       - name: Push to GitHub Packages
         uses: docker/build-push-action@v2
         with:
