@@ -1,18 +1,19 @@
-name: Continuous integration
+name: Nuget client Continuous integration
 
 on:
   push:
     branches:
       - 'main'
       - 'develop'
-    paths:
-      - 'src/EPiServer.Search.Cms/**'
+      - 'netcore'
+    #paths:
+    #  - 'src/EPiServer.Search.Cms/**'
   pull_request:
     branches:
       - '*'
       - '!main'
-    paths:
-      - 'src/EPiServer.Search.Cms/**'
+    #paths:
+    #  - 'src/EPiServer.Search.Cms/**'
 jobs:
   build_test_pack:
     name: Build, test & pack
