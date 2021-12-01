@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -144,7 +144,7 @@ namespace EPiServer.Core
 
             _testSubject.UpdateItem(page);
 
-            Assert.True(_searchHandler.UpdatedIndexItem.Authors.Contains(page.CreatedBy));
+            Assert.Contains(page.CreatedBy, _searchHandler.UpdatedIndexItem.Authors);
         }
 
         [Fact]
@@ -464,7 +464,7 @@ namespace EPiServer.Core
             var result = _testSubject.GetSearchResults<IContent>(string.Empty, 1, 100);
 
             var executedQuery = _searchHandler.ExecutedSearchQuery as GroupQuery;
-            Assert.True(((AccessControlListQuery)executedQuery.QueryExpressions[2]).Items.Contains("U:" + userName));
+            Assert.Contains("U:" + userName, ((AccessControlListQuery)executedQuery.QueryExpressions[2]).Items);
 
         }
 

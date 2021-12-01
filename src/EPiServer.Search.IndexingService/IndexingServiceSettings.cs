@@ -65,15 +65,8 @@ namespace EPiServer.Search.IndexingService
 
         private static string _defaultIndexName;
         private static Analyzer _analyzer;
-        private static readonly Dictionary<string, ClientElement> _clientElements = new Dictionary<string, ClientElement>();
-        private static readonly Dictionary<string, NamedIndexElement> _namedIndexElements = new Dictionary<string, NamedIndexElement>();
-        private static readonly Dictionary<string, Directory> _namedIndexDirectories = new Dictionary<string, Directory>();
-        private static readonly Dictionary<string, Directory> _referenceIndexDirectories = new Dictionary<string, Directory>();
-        private static readonly Dictionary<string, System.IO.DirectoryInfo> _mainDirectoryInfos = new Dictionary<string, System.IO.DirectoryInfo>();
-        private static readonly Dictionary<string, System.IO.DirectoryInfo> _referenceDirectoryInfos = new Dictionary<string, System.IO.DirectoryInfo>();
         private static readonly Dictionary<string, int> _indexWriteCounters = new Dictionary<string, int>();
         private static readonly Dictionary<string, Analyzer> _indexAnalyzers = new Dictionary<string, Analyzer>();
-        private static readonly IList<string> _lowercaseFields = new List<string>() { DefaultFieldName, TitleFieldName, DisplayTextFieldName, AuthorsFieldName };
 
         private readonly IndexingServiceOptions _indexingServiceOpts;
         private readonly IHostEnvironment _hostEnvironment;
@@ -204,32 +197,32 @@ namespace EPiServer.Search.IndexingService
         /// <summary>
         /// Gets named indexes config elements
         /// </summary>
-        public static Dictionary<string, NamedIndexElement> NamedIndexElements => _namedIndexElements;
+        public static Dictionary<string, NamedIndexElement> NamedIndexElements { get; } = new Dictionary<string, NamedIndexElement>();
 
         /// <summary>
         /// Gets named indexes Lucene directories
         /// </summary>
-        public static Dictionary<string, Directory> NamedIndexDirectories => _namedIndexDirectories;
+        public static Dictionary<string, Directory> NamedIndexDirectories { get; } = new Dictionary<string, Directory>();
 
         /// <summary>
         /// Gets named reference indexes Lucene directories
         /// </summary>
-        public static Dictionary<string, Directory> ReferenceIndexDirectories => _referenceIndexDirectories;
+        public static Dictionary<string, Directory> ReferenceIndexDirectories { get; } = new Dictionary<string, Directory>();
 
         /// <summary>
         /// Gets named indexes DirectoryInfos
         /// </summary>
-        public static Dictionary<string, System.IO.DirectoryInfo> MainDirectoryInfos => _mainDirectoryInfos;
+        public static Dictionary<string, System.IO.DirectoryInfo> MainDirectoryInfos { get; } = new Dictionary<string, System.IO.DirectoryInfo>();
 
         /// <summary>
         /// Gets reference indexes DirectoryInfos
         /// </summary>
-        public static Dictionary<string, System.IO.DirectoryInfo> ReferenceDirectoryInfos => _referenceDirectoryInfos;
+        public static Dictionary<string, System.IO.DirectoryInfo> ReferenceDirectoryInfos { get; } = new Dictionary<string, System.IO.DirectoryInfo>();
 
         /// <summary>
         /// Get fields that are made lowercase (case insensitive) in analysis
         /// </summary>
-        internal static IList<string> LowercaseFields => _lowercaseFields;
+        internal static IList<string> LowercaseFields { get; } = new List<string>() { DefaultFieldName, TitleFieldName, DisplayTextFieldName, AuthorsFieldName };
 
         /// <summary>
         /// Gets and sets the default index name
@@ -252,7 +245,7 @@ namespace EPiServer.Search.IndexingService
         /// <summary>
         /// Gets client config elements
         /// </summary>
-        internal static Dictionary<string, ClientElement> ClientElements => _clientElements;
+        internal static Dictionary<string, ClientElement> ClientElements { get; } = new Dictionary<string, ClientElement>();
 
         #endregion
 

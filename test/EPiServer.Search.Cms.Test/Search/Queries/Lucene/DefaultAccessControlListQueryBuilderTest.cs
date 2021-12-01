@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Security.Principal;
 using EPiServer.Search.Queries.Lucene;
 using EPiServer.Search.Queries.Lucene.Internal;
@@ -18,7 +18,7 @@ namespace EPiServer.UnitTests.Search.Queries.Lucene
             var subject = new DefaultAccessControlListQueryBuilder(Mock.Of<IVirtualRoleRepository>());
             subject.AddUser(query, null, null);
 
-            Assert.Equal(0, query.Items.Count);
+            Assert.Empty(query.Items);
         }
 
         [Fact]
@@ -37,7 +37,7 @@ namespace EPiServer.UnitTests.Search.Queries.Lucene
 
             subject.AddUser(query, mockPrincipal.Object, null);
 
-            Assert.True(query.Items.Contains("U:" + userName));
+            Assert.Contains("U:" + userName, query.Items);
         }
 
         [Fact]
@@ -60,7 +60,7 @@ namespace EPiServer.UnitTests.Search.Queries.Lucene
 
             subject.AddUser(query, mockPrincipal.Object, null);
 
-            Assert.True(query.Items.Contains("G:" + roleName));
+            Assert.Contains("G:" + roleName, query.Items);
         }
 
         [Fact]
@@ -83,7 +83,7 @@ namespace EPiServer.UnitTests.Search.Queries.Lucene
 
             subject.AddUser(query, mockPrincipal.Object, null);
 
-            Assert.False(query.Items.Contains("G:" + roleName));
+            Assert.DoesNotContain("G:" + roleName, query.Items);
         }
 
         [Fact]
@@ -101,7 +101,7 @@ namespace EPiServer.UnitTests.Search.Queries.Lucene
 
             subject.AddUser(query, principal, null);
 
-            Assert.True(query.Items.Contains("G:" + roleName));
+            Assert.Contains("G:" + roleName, query.Items);
         }
 
         private class TestRole : VirtualRoleProviderBase

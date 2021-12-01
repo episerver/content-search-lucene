@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -102,7 +102,7 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
         [Fact]
         public void the_version_matching_the_preferred_culture_should_be_returned()
         {
-            Assert.Equal(1, _results.Count());
+            Assert.Single(_results);
             Assert.Equal("en-US", _results.FirstOrDefault().Metadata["LanguageBranch"]);
         }
     }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -156,7 +156,7 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
             {
                 var allowedGroup = GetAllowedGroup(groupQuery);
 
-                Assert.Equal(1, allowedGroup.QueryExpressions.Count);
+                Assert.Single(allowedGroup.QueryExpressions);
 
                 var contentQuery = allowedGroup.QueryExpressions[0] as ContentQuery<IContent>;
                 Assert.NotNull(contentQuery);
@@ -179,7 +179,7 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
             {
                 var allowedGroup = GetAllowedGroup(groupQuery);
 
-                Assert.Equal(1, allowedGroup.QueryExpressions.Count);
+                Assert.Single(allowedGroup.QueryExpressions);
 
                 var contentQuery = allowedGroup.QueryExpressions[0] as ContentQuery<IContent>;
                 Assert.NotNull(contentQuery);
@@ -267,13 +267,13 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
         private void ThereShouldBeAtLeastOneQueryMatchingGivenType(GroupQuery query, Type type)
         {
             var allContentTypesQueries = query.QueryExpressions.OfType<ContentTypeQuery>();
-            Assert.True(allContentTypesQueries.Any(q => q.Type == type));
+            Assert.Contains(allContentTypesQueries, q => q.Type == type);
         }
 
         private void ThereShouldNotBeAnyQueryMatchingGivenType(GroupQuery query, Type type)
         {
             var allContentTypesQueries = query.QueryExpressions.OfType<ContentTypeQuery>();
-            Assert.False(allContentTypesQueries.Any(q => q.Type == type));
+            Assert.DoesNotContain(allContentTypesQueries, q => q.Type == type);
         }
 
         private GroupQuery GetAllowedGroup(GroupQuery groupQuery) => ((GroupQuery)groupQuery.QueryExpressions[1]).QueryExpressions[0] as GroupQuery;

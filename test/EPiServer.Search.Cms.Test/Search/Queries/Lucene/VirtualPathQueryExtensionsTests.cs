@@ -1,4 +1,4 @@
-﻿using EPiServer.Core;
+using EPiServer.Core;
 using EPiServer.Search.Queries.Lucene;
 using Moq;
 using Xunit;
@@ -14,7 +14,7 @@ namespace EPiServer.UnitTests.Search.Queries.Lucene
 
             query.AddContentNodes(null, Mock.Of<ContentSearchHandler>());
 
-            Assert.Equal(0, query.VirtualPathNodes.Count);
+            Assert.Empty(query.VirtualPathNodes);
         }
 
         [Fact]
