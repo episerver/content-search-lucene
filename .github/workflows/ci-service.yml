@@ -39,15 +39,12 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract metadata (tags, labels) for Docker
-        if:  ${{ github.ref == 'refs/heads/main' }}
         id: meta
         uses: docker/metadata-action@v3
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/indexingservice
           tags: |
             type=sha
-          labels: |
-            org.opencontainers.image.version=${{sha}}
       - name: Push to GitHub Packages
         uses: docker/build-push-action@v2
         with:
