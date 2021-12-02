@@ -21,7 +21,6 @@ jobs:
     env:
       REGISTRY: ghcr.io
       IMAGE_NAME:  ${{ github.repository }}
-      versionSuffix: ${{ github.ref == 'refs/heads/main' && '-pre-' ||  '-ci-' }}${{github.RUN_NUMBER }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v1

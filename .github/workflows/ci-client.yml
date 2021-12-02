@@ -20,7 +20,7 @@ jobs:
     runs-on: windows-latest
     env:
       buildConfiguration: release
-      versionSuffix: ${{ github.ref == 'refs/heads/develop' && '-pre-' ||  '-ci-' }}${{github.RUN_NUMBER }}
+      versionSuffix: ${{ github.ref == 'refs/heads/develop' && 'pre-' ||  'ci-' }}${{github.RUN_NUMBER }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v1
