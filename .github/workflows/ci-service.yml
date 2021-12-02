@@ -6,6 +6,8 @@ on:
       - 'main'
       - 'develop'
       - 'netcore'
+    tags:
+      - 'v*'
     #paths:
     #  - 'src/EPiServer.Search.IndexingService/**'
     #  - 'test/EPiServer.Search.IndexingService.Test/**'
