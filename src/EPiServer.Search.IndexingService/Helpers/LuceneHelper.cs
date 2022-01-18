@@ -216,13 +216,14 @@ namespace EPiServer.Search.IndexingService.Helpers
 
         public bool WriteToIndex(string itemId, Document doc, NamedIndex namedIndex)
         {
+            var isOk = true;
             IndexingServiceSettings.IndexingServiceServiceLog.LogDebug(string.Format("Start writing document with id '{0}' to index '{1}' with analyzer '{2}'", itemId, namedIndex.Name, IndexingServiceSettings.Analyzer.ToString()));
 
             // Write to Directory
             if (_documentHelper.DocumentExists(itemId, namedIndex))
             {
                 IndexingServiceSettings.IndexingServiceServiceLog.LogDebug(string.Format("Failed to write to index: '{0}'. Document with id: '{1}' already exists", namedIndex.Name, itemId));
-                return false;
+                isOk = false;
             }
 
             var rwl = new ReaderWriterLockSlim();
@@ -242,8 +243,8 @@ namespace EPiServer.Search.IndexingService.Helpers
             }
             catch (Exception e)
             {
-                _responseExceptionHelper.HandleServiceError(string.Format("Failed to write to index: '{0}'. Message: {1}{2}{3}", namedIndex.Name, e.Message, Environment.NewLine, e.StackTrace));
-                return false;
+                IndexingServiceSettings.IndexingServiceServiceLog.LogError(string.Format("Failed to write to index: '{0}'. Message: {1}{2}{3}", namedIndex.Name, e.Message, Environment.NewLine, e.StackTrace));
+                isOk = false;
             }
             finally
             {
@@ -251,7 +252,7 @@ namespace EPiServer.Search.IndexingService.Helpers
             }
 
             IndexingServiceSettings.IndexingServiceServiceLog.LogDebug(string.Format("End writing to index"));
-            return true;
+            return isOk;
         }
 
         public bool Add(FeedItemModel item, NamedIndex namedIndex)
@@ -403,7 +404,7 @@ namespace EPiServer.Search.IndexingService.Helpers
         public bool DeleteFromIndex(NamedIndex namedIndex, string itemId, bool deleteRef)
         {
             var rwl = new ReaderWriterLockSlim();
-
+            var isOk = true;
             Term term = null;
 
             IndexingServiceSettings.IndexingServiceServiceLog.LogDebug(string.Format("Start deleting Lucene document with id field '{0}' from index '{1}'", itemId, namedIndex.Name));
@@ -432,8 +433,8 @@ namespace EPiServer.Search.IndexingService.Helpers
             }
             catch (Exception e)
             {
-                _responseExceptionHelper.HandleServiceError(string.Format("Failed to delete Document with id: {0}. Message: {1}{2}{3}", itemId.ToString(), e.Message, Environment.NewLine, e.StackTrace));
-                return false;
+                IndexingServiceSettings.IndexingServiceServiceLog.LogError(string.Format("Failed to delete Document with id: {0}. Message: {1}{2}{3}", itemId.ToString(), e.Message, Environment.NewLine, e.StackTrace));
+                isOk = false;
             }
             finally
             {
@@ -443,7 +444,7 @@ namespace EPiServer.Search.IndexingService.Helpers
             if (i == 0) // Document didn't exist
             {
                 IndexingServiceSettings.IndexingServiceServiceLog.LogDebug(string.Format("Failed to delete Document with id: {0}. Document does not exist.", itemId.ToString()));
-                return false;
+                isOk = false;
             }
             else
             {
@@ -469,8 +470,8 @@ namespace EPiServer.Search.IndexingService.Helpers
                     }
                     catch (Exception e)
                     {
-                        _responseExceptionHelper.HandleServiceError(string.Format("Failed to delete referencing Documents for reference id: {0}. Message: {1}{2}{3}", itemId.ToString(), e.Message, Environment.NewLine, e.StackTrace));
-                        return false;
+                        IndexingServiceSettings.IndexingServiceServiceLog.LogError(string.Format("Failed to delete referencing Documents for reference id: {0}. Message: {1}{2}{3}", itemId.ToString(), e.Message, Environment.NewLine, e.StackTrace));
+                        isOk = false;
                     }
                     finally
                     {
@@ -489,8 +490,9 @@ namespace EPiServer.Search.IndexingService.Helpers
                     _documentHelper.OptimizeIndex(namedIndex);
                 }
 
-                return true;
+
             }
+            return isOk;
         }
 
         public void Update(FeedItemModel feedItem, NamedIndex namedIndex)
