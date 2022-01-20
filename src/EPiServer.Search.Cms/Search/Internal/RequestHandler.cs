@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -222,7 +222,11 @@ namespace EPiServer.Search.Internal
 
         private SearchResults PopulateSearchResultsFromFeed(string response, int offset, int limit)
         {
-            var feeds = JsonSerializer.Deserialize<FeedModel>(response);
+            var options = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            };
+            var feeds = JsonSerializer.Deserialize<FeedModel>(response, options);
 
             var resultsFiltered = new SearchResults();
 
@@ -241,27 +245,27 @@ namespace EPiServer.Search.Internal
                         Modified = feed.Modified,
                         Uri = feed.Uri,
 
-                        Culture = feed.AttributeExtensions[_options.SyndicationItemAttributeNameCulture],
-                        ItemType = feed.AttributeExtensions[_options.SyndicationItemAttributeNameType],
-                        NamedIndex = feed.AttributeExtensions[_options.SyndicationItemAttributeNameNamedIndex],
-                        Metadata = feed.AttributeExtensions[_options.SyndicationItemElementNameMetadata]
+                        Culture = GetAttributeValue(feed, _options.SyndicationItemAttributeNameCulture),
+                        ItemType = GetAttributeValue(feed, _options.SyndicationItemAttributeNameType),
+                        NamedIndex = GetAttributeValue(feed, _options.SyndicationItemAttributeNameNamedIndex),
+                        Metadata = GetAttributeValue(feed, _options.SyndicationItemElementNameMetadata)
                     };
 
-                    DateTime.TryParse(feed.AttributeExtensions[_options.SyndicationItemAttributeNamePublicationEnd], CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var publicationEnd);
+                    DateTime.TryParse(GetAttributeValue(feed, _options.SyndicationItemAttributeNamePublicationEnd), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var publicationEnd);
                     item.PublicationEnd = publicationEnd;
 
-                    DateTime.TryParse(feed.AttributeExtensions[_options.SyndicationItemAttributeNamePublicationStart], CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var publicationStart);
+                    DateTime.TryParse(GetAttributeValue(feed, _options.SyndicationItemAttributeNamePublicationStart), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var publicationStart);
                     item.PublicationStart = publicationStart;
 
                     //Boost factor
-                    item.BoostFactor = (float.TryParse(feed.AttributeExtensions[_options.SyndicationItemAttributeNameBoostFactor], out var fltBoostFactor)) ? fltBoostFactor : 1;
+                    item.BoostFactor = (float.TryParse(GetAttributeValue(feed, _options.SyndicationItemAttributeNameBoostFactor), out var fltBoostFactor)) ? fltBoostFactor : 1;
 
                     // Data Uri
-                    item.DataUri = ((Uri.TryCreate(feed.AttributeExtensions[_options.SyndicationItemAttributeNameDataUri],
+                    item.DataUri = ((Uri.TryCreate(GetAttributeValue(feed, _options.SyndicationItemAttributeNameDataUri),
                         UriKind.RelativeOrAbsolute, out var uri)) ? uri : null);
 
                     //Score
-                    item.Score = (float.TryParse(feed.AttributeExtensions[_options.SyndicationItemAttributeNameScore], out var score)) ? score : 0;
+                    item.Score = (float.TryParse(GetAttributeValue(feed, _options.SyndicationItemAttributeNameScore), out var score)) ? score : 0;
 
 
                     foreach (var author in feed.Authors)
@@ -274,14 +278,14 @@ namespace EPiServer.Search.Internal
                         item.Categories.Add(category);
                     }
 
-                    foreach (var acl in (Collection<string>)feed.ElementExtensions[_options.SyndicationItemElementNameAcl])
+                    foreach (var acl in GetElementCollectionValue(feed, _options.SyndicationItemElementNameAcl))
                     {
-                        item.AccessControlList.Add(acl);
+                        item.AccessControlList.Add(acl.ToString());
                     }
 
-                    foreach (var virtualpath in (Collection<string>)feed.ElementExtensions[_options.SyndicationItemElementNameVirtualPath])
+                    foreach (var virtualpath in GetElementCollectionValue(feed, _options.SyndicationItemElementNameVirtualPath))
                     {
-                        item.VirtualPathNodes.Add(virtualpath);
+                        item.VirtualPathNodes.Add(virtualpath.ToString());
                     }
 
                     if (SearchResultFilterHandler.Include(item))
@@ -316,7 +320,38 @@ namespace EPiServer.Search.Internal
             resultsPaged.Version = version;
             return resultsPaged;
         }
+        public string GetElementValue(FeedItemModel item, string elementName)
+        {
+            var value = "";
+            if (item.ElementExtensions.ContainsKey(elementName))
+            {
+                value = item.ElementExtensions[elementName].ToString();
+            }
+            return value;
+        }
+        public List<JsonElement> GetElementCollectionValue(FeedItemModel item, string elementName)
+        {
+            var value = new List<JsonElement>();
+            if (item.ElementExtensions.ContainsKey(elementName))
+            {
+                value = ((JsonElement)item.ElementExtensions[elementName]).EnumerateArray().ToList();
+            }
+            return value;
+        }
+        public string GetAttributeValue(FeedItemModel item, string attributeName)
+        {
+            var value = string.Empty;
+            if (item.AttributeExtensions.ContainsKey(attributeName))
+            {
+                value = item.AttributeExtensions[attributeName];
+            }
 
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                value = string.Empty;
+            }
+            return value;
+        }
         protected virtual async System.Threading.Tasks.Task<string> MakeHttpRequest(string url, string method, IndexingServiceReference indexingServiceReference, string postData = null, Action<Stream> responseStreamHandler = null)
         {
             using (var client = new HttpClient())

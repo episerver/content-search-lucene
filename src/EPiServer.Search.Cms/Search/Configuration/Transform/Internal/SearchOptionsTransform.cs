@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using EPiServer.Search.Filter;
 
@@ -55,7 +55,7 @@ namespace EPiServer.Search.Configuration.Transform.Internal
             _options.UseIndexingServicePaging = _options.UseIndexingServicePaging;
             _options.XmlQualifiedNamespace = _section.XmlQualifiedNamespace;
 
-            _options.SearchResultFilterDefaultInclude = (_section.SearchResultFilter?.SearchResultFilterDefaultInclude).GetValueOrDefault();
+            _options.SearchResultFilterDefaultInclude = (_section.SearchResultFilter?.DefaultInclude).GetValueOrDefault();
             foreach (var filterProvider in _section.SearchResultFilter?.Providers?.OfType<ProviderElement>() ?? Enumerable.Empty<ProviderElement>())
             {
                 _options.FilterProviders.Add(filterProvider.Name, (s) =>

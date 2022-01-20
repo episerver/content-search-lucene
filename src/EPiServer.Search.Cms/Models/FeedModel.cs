@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
@@ -9,8 +9,8 @@ namespace EPiServer.Models
         public string Id { get; set; }
         public DateTimeOffset LastUpdatedTime { get; set; }
         public IEnumerable<FeedItemModel> Items { get; set; }
-        public Dictionary<string, string> AttributeExtensions { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        public Dictionary<string, object> ElementExtensions { get; } = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, string> AttributeExtensions { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, object> ElementExtensions { get; set; } = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
     }
     public class FeedItemModel
     {

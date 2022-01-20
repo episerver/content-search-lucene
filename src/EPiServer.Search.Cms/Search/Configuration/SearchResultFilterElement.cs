@@ -1,4 +1,4 @@
-﻿
+
 using System.Collections.Generic;
 
 namespace EPiServer.Search.Configuration
@@ -8,7 +8,7 @@ namespace EPiServer.Search.Configuration
         /// <summary>
         /// Gets and sets whether the default behaviour for filtering should be to include results when no provider is configured for the type. Default = false.
         /// </summary>
-        public bool SearchResultFilterDefaultInclude { get; set; }
+        public bool DefaultInclude { get; set; }
 
         /// <summary>
         /// Gets and sets list of provider

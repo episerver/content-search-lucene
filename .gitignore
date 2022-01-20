@@ -174,3 +174,9 @@ $RECYCLE.BIN/
 
 InstallerSource
 EPiServer.Search.Cms.zip
+
+## Ignore files generated or required by Episerver sample site
+sample/AlloyMvcTemplate/App_Data/**
+sample/AlloyMvcTemplate/App_Code/**
+/nupkgs
+/modules
