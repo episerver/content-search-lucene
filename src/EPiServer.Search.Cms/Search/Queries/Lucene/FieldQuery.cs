@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text;
 
 namespace EPiServer.Search.Queries.Lucene
@@ -56,7 +56,7 @@ namespace EPiServer.Search.Queries.Lucene
             var sb = new StringBuilder();
             sb.Append(SearchSettings.GetFieldNameForField(Field));
             sb.Append(":(");
-            sb.Append(LuceneHelpers.EscapeParenthesis(Expression));
+            sb.Append(LuceneHelpers.EscapeParenthesis(LuceneHelpers.EscapeForwardSlash(Expression)));
             sb.Append(")");
 
             return sb.ToString();

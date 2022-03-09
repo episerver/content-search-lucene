@@ -1,4 +1,4 @@
-﻿namespace EPiServer.Search.Queries.Lucene
+namespace EPiServer.Search.Queries.Lucene
 {
     /// <summary>
     /// Class with helper methods for constructing Lucene queries
@@ -16,7 +16,7 @@
             {
                 var c = value[i];
                 // These characters are part of the query syntax and must be escaped
-                if (c == '\\' || c == '+' || c == '-' || c == '!' || c == '(' || c == ')' || c == ':' || c == '^' || c == '[' || c == ']' || c == '\"' || c == '{' || c == '}' || c == '~' || c == '*' || c == '?' || c == '|' || c == '&')
+                if (c == '\\' || c == '+' || c == '-' || c == '!' || c == '(' || c == ')' || c == ':' || c == '^' || c == '[' || c == ']' || c == '\"' || c == '{' || c == '}' || c == '~' || c == '*' || c == '?' || c == '|' || c == '&' || c == '/')
                 {
                     sb.Append('\\');
                 }
@@ -36,6 +36,25 @@
                 var c = value[i];
                 // These characters are part of the query syntax and must be escaped
                 if (c == '(' || c == ')')
+                {
+                    sb.Append('\\');
+                }
+                sb.Append(c);
+            }
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Returns a string where forward slash are escaped by a preceding <code>\</code>.
+        /// </summary>
+        public static string EscapeForwardSlash(string value)
+        {
+            var sb = new System.Text.StringBuilder();
+            for (var i = 0; i < value.Length; i++)
+            {
+                var c = value[i];
+                // These characters are part of the query syntax and must be escaped
+                if (c == '/')
                 {
                     sb.Append('\\');
                 }
