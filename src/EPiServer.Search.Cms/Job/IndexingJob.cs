@@ -1,4 +1,4 @@
-﻿using EPiServer.PlugIn;
+using EPiServer.PlugIn;
 using EPiServer.ServiceLocation;
 
 namespace EPiServer.Job
@@ -8,6 +8,7 @@ namespace EPiServer.Job
     /// </summary>
     [ScheduledPlugIn(
         DefaultEnabled = true,
+        DisplayName = "Optimizely Basic Search Content Indexing Job",
         LanguagePath = "/EPiServer/Search.Cms/indexingJob",
         SortIndex = 0)]
     [ServiceConfiguration]
