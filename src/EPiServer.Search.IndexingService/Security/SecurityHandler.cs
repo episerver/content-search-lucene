@@ -43,6 +43,10 @@ namespace EPiServer.Search.IndexingService.Security
 
             //Try to authenticate this request by configured client IP
             var remoteIpAddress = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress;
+            if (remoteIpAddress.IsIPv4MappedToIPv6)
+            {
+                remoteIpAddress = remoteIpAddress.MapToIPv4();
+            }
 
             if ((!string.IsNullOrEmpty(elem.IPAddress) || !string.IsNullOrEmpty(elem.IP6Address)) &&
                 remoteIpAddress != null && !_clientElementHandler.IsIPAddressAllowed(elem, remoteIpAddress))
