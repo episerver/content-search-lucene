@@ -44,8 +44,7 @@ namespace EPiServer.Search.IndexingService.Security
             //Try to authenticate this request by configured client IP
             var remoteIpAddress = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress;
 
-            if ((!string.IsNullOrEmpty(elem.IPAddress) || !string.IsNullOrEmpty(elem.IP6Address)) &&
-                remoteIpAddress != null && !_clientElementHandler.IsIPAddressAllowed(elem, remoteIpAddress))
+            if (!_clientElementHandler.IsIPAddressAllowed(elem, remoteIpAddress))
             {
                 IndexingServiceSettings.IndexingServiceServiceLog.LogError(string.Format("No match for client IP {0}. Access denied for access key {1}.", remoteIpAddress, accessKey));
                 return false;
