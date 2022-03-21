@@ -80,10 +80,10 @@ namespace EPiServer.Job
 
                 try
                 {
-                    var contentSearchHandler = ServiceLocator.Current.GetInstance<ContentSearchHandler>();
+                    var reindexManager = ServiceLocator.Current.GetInstance<IReIndexManager>();
                     var requestQueueRemover = new RequestQueueRemover(_searchHandler);
 
-                    IndexAllOnce(contentSearchHandler, requestQueueRemover);
+                    IndexAllOnce(reindexManager, requestQueueRemover);
 
                     InitContentEvent();
 
@@ -102,7 +102,7 @@ namespace EPiServer.Job
             }
         }
 
-        private void IndexAllOnce(ContentSearchHandler contentSearchHandler, RequestQueueRemover requestQueueRemover)
+        private void IndexAllOnce(IReIndexManager reindexManager, RequestQueueRemover requestQueueRemover)
         {
             lock (JobLock)
             {
@@ -118,8 +118,7 @@ namespace EPiServer.Job
                         DynamicDataStoreFactory.Instance.CreateStore(_options.DynamicDataStoreName, typeof(IndexRequestQueueItem));
                     }
 
-                    requestQueueRemover.TruncateQueue(new IReIndexable[] { contentSearchHandler });
-                    contentSearchHandler.IndexPublishedContent();
+                    reindexManager.ReIndex();
 
                 }
                 catch (Exception e)

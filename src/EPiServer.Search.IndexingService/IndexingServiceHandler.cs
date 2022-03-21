@@ -220,7 +220,7 @@ namespace EPiServer.Search.IndexingService
         public void ResetNamedIndex(string namedIndexName)
         {
             var namedIndex = new NamedIndex(namedIndexName);
-            if (IndexingServiceSettings.NamedIndexElements.ContainsKey(namedIndexName))
+            if (IndexingServiceSettings.NamedIndexElements.ContainsKey(namedIndex.Name))
             {
                 _documentHelper.CreateIndex(namedIndex.Name, namedIndex.DirectoryInfo);
                 _documentHelper.CreateIndex(namedIndex.ReferenceName, namedIndex.ReferenceDirectoryInfo);
