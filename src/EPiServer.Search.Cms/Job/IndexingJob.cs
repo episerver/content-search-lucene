@@ -10,6 +10,7 @@ namespace EPiServer.Job
         DefaultEnabled = true,
         DisplayName = "Optimizely Basic Search Content Indexing Job",
         LanguagePath = "/EPiServer/Search.Cms/indexingJob",
+        HelpFile = "OptimizelySearchNavigationrelatedscheduledjobs",
         SortIndex = 0)]
     [ServiceConfiguration]
     internal class IndexingJob : Scheduler.ScheduledJobBase
