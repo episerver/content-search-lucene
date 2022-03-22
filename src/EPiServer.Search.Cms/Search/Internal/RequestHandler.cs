@@ -358,11 +358,11 @@ namespace EPiServer.Search.Internal
             {
                 if (method == "POST" || method == "DELETE" || method == "PUT")
                 {
-                    var content = new StringContent(
+                    var content = postData != null ? new StringContent(
                         postData,
                         Encoding.UTF8,
                         "application/json"
-                    );
+                    ) : null;
                     var result = await client.PostAsync(url, content);
                     return await result.Content.ReadAsStringAsync();
                 }
