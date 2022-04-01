@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
 using EPiServer.Core;
 using EPiServer.Core.Internal;
+using EPiServer.Data.Dynamic;
 using EPiServer.DataAbstraction;
 using EPiServer.Framework;
 using EPiServer.Framework.Blobs;
@@ -86,6 +88,14 @@ namespace EPiServer.Search.Internal
                 return;
             }
 
+            var store = DynamicDataStoreFactory.Instance.GetStore(_options.IndexingResultDataStoreName) ?? null;
+            store?.DeleteAll();
+            var result = new ContentIndexingResult();
+
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            result.StartTime = DateTime.Now;
+
             var reader = new SlimContentReader(_contentRepository, ContentReference.RootPage, c => { var s = c as ISearchable; return s == null ? true : s.AllowReIndexChildren; });
 
             var requestQueueItems = new List<IndexRequestQueueItem>();
@@ -130,6 +140,15 @@ namespace EPiServer.Search.Internal
                         var feed = _requestQueueHandler.GetUnprocessedFeed(contentRequestToIndex);
 
                         var success = _requestHandler.SendRequest(feed, serviceReference.Name);
+
+                        if (success)
+                        {
+                            result.IndexingCount += 1;
+                        }
+                        else
+                        {
+                            result.NumberOfContentErrors += 1;
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -138,6 +157,11 @@ namespace EPiServer.Search.Internal
                     break;
                 }
             }
+            result.EndTime = DateTime.Now;
+            stopwatch.Stop();
+
+
+            store.Save(result);
         }
 
         /// <summary>

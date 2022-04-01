@@ -13,6 +13,7 @@ namespace EPiServer.Search.Configuration.Transform.Internal
             _options.MaxHitsFromIndexingService = _section.MaxHitsFromIndexingService;
             _options.DequeuePageSize = _section.DequeuePageSize;
             _options.DynamicDataStoreName = _section.DynamicDataStoreName;
+            _options.IndexingResultDataStoreName = _section.IndexingResultDataStoreName;
             _options.HtmlStripDisplayText = _section.HtmlStripDisplayText;
             _options.HtmlStripMetadata = _section.HtmlStripMetadata;
             _options.HtmlStripTitle = _section.HtmlStripTitle;
