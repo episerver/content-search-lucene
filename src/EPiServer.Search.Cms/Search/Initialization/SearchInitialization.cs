@@ -44,6 +44,7 @@ namespace EPiServer.Search.Initialization
                 .AddSingleton<RequestQueueHandler>()
                 .AddSingleton<ReIndexManager>()
                 .Forward<ReIndexManager, IReIndexManager>()
+                .AddEmbeddedLocalization<SearchConfiguration>()
                 .Configure<ProtectedModuleOptions>(o =>
                  {
                      if (!o.Items.Any(x => x.Name.Equals("EPiServer.Search.Cms")))
