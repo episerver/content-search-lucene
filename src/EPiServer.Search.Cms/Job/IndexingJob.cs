@@ -8,7 +8,6 @@ namespace EPiServer.Job
     /// </summary>
     [ScheduledPlugIn(
         DefaultEnabled = true,
-        DisplayName = "Optimizely Basic Search Content Indexing Job",
         LanguagePath = "/EPiServer/Search.Cms/indexingJob",
         HelpFile = "OptimizelySearchNavigationrelatedscheduledjobs",
         SortIndex = 0)]
