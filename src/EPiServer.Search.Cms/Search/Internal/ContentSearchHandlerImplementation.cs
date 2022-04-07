@@ -161,7 +161,7 @@ namespace EPiServer.Search.Internal
             stopwatch.Stop();
 
 
-            store.Save(result);
+            store?.Save(result);
         }
 
         /// <summary>
