@@ -87,7 +87,10 @@ namespace EPiServer.Job
 
                     InitContentEvent();
 
-                    return "Sucess added to queue";
+                    return (DynamicDataStoreFactory.Instance.GetStore(_options.IndexingResultDataStoreName) != null) ?
+                        DynamicDataStoreFactory.Instance.GetStore(_options.IndexingResultDataStoreName).Items<ContentIndexingResult>().First().PrintReport()
+                        : "Site reindex successfully";
+
                 }
                 finally
                 {
@@ -116,6 +119,11 @@ namespace EPiServer.Job
                     if (DynamicDataStoreFactory.Instance.GetStore(_options.DynamicDataStoreName) != null)
                     {
                         DynamicDataStoreFactory.Instance.CreateStore(_options.DynamicDataStoreName, typeof(IndexRequestQueueItem));
+                    }
+
+                    if (DynamicDataStoreFactory.Instance.GetStore(_options.IndexingResultDataStoreName) == null)
+                    {
+                        DynamicDataStoreFactory.Instance.CreateStore(_options.IndexingResultDataStoreName, typeof(ContentIndexingResult));
                     }
 
                     reindexManager.ReIndex();

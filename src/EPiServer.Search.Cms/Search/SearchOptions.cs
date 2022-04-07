@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using EPiServer.Search.Configuration;
 using EPiServer.Search.Filter;
@@ -53,6 +53,12 @@ namespace EPiServer.Search
         /// </summary>
         /// <remarks>Default value is 'IndexRequestQueueDataStore'</remarks>
         public string DynamicDataStoreName { get; set; } = "IndexRequestQueueDataStore";
+
+        /// <summary>
+        /// Gets the name of the Dynamic Data Store used to store result of indexing process
+        /// </summary>
+        /// <remarks>Default value is 'IndexingResultDataStore'</remarks>
+        public string IndexingResultDataStoreName { get; set; } = "IndexingResultDataStore";
 
         /// <summary>
         /// Gets and sets the uri template for update reqeuest to the indexing service
