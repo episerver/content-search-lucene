@@ -5,11 +5,13 @@ using System.Linq;
 using System.Security.Principal;
 using EPiServer.Construction;
 using EPiServer.Construction.Internal;
+using EPiServer.Data.Dynamic;
 using EPiServer.DataAbstraction;
 using EPiServer.DataAbstraction.RuntimeModel;
 using EPiServer.Models;
 using EPiServer.Search;
 using EPiServer.Search.Configuration;
+using EPiServer.Search.Data;
 using EPiServer.Search.Internal;
 using EPiServer.Search.Queries;
 using EPiServer.Search.Queries.Lucene;
@@ -548,6 +550,11 @@ namespace EPiServer.Core
             _contentRepositoryMock.Setup(repository => repository.GetLanguageBranches<IContent>(contentReference)).Returns(childPages);
             _contentRepositoryMock.Setup(repository => repository.GetChildren<IContent>(ContentReference.RootPage, CultureInfo.InvariantCulture)).Returns(childPages);
             _contentRepositoryMock.Setup(repository => repository.Get<IContent>(contentReference)).Returns(childPage);
+
+            var ddsMock = new Mock<DynamicDataStore>(null);
+            var ddsFactoryMock = new Mock<DynamicDataStoreFactory>();
+            ddsFactoryMock.Setup(x => x.GetStore(typeof(ContentIndexingResult))).Returns(ddsMock.Object);
+            DynamicDataStoreFactory.Instance = ddsFactoryMock.Object;
 
             _testSubject.IndexPublishedContent();
 
