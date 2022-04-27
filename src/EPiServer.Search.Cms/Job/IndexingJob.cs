@@ -1,3 +1,4 @@
+using EPiServer.DataAbstraction;
 using EPiServer.PlugIn;
 using EPiServer.ServiceLocation;
 
@@ -10,7 +11,8 @@ namespace EPiServer.Job
         DefaultEnabled = true,
         LanguagePath = "/EPiServer/Search.Cms/indexingJob",
         HelpFile = "OptimizelySearchNavigationrelatedscheduledjobs",
-        SortIndex = 0)]
+        SortIndex = 0,
+        InitialTime = "2:00:0", IntervalLength = 1, IntervalType = ScheduledIntervalType.Days, Restartable = true)]
     [ServiceConfiguration]
     internal class IndexingJob : Scheduler.ScheduledJobBase
     {
