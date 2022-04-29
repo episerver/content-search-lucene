@@ -17,6 +17,7 @@ using EPiServer.Shell;
 using EPiServer.Shell.Search;
 using EPiServer.Web;
 using EPiServer.Web.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
 using Newtonsoft.Json.Linq;
@@ -33,6 +34,7 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
         private readonly ContentSearchHandler _contentSearchHandler;
         private readonly Mock<IContentTypeRepository> _contentTypeRepository;
         private readonly Mock<ISiteDefinitionResolver> _siteDefinitionResolver;
+        private IServiceCollection Services = null;
 
         public EPiServerSearchProviderBaseTest()
         {
@@ -47,6 +49,11 @@ namespace EPiServer.Cms.Shell.UI.Test.Search
 
             _siteDefinitionResolver = new Mock<ISiteDefinitionResolver>();
             _siteDefinitionResolver.Setup(s => s.GetByContent(It.IsAny<ContentReference>(), It.IsAny<bool>())).Returns(new SiteDefinition());
+
+            //create service locator for testing
+            Services = new ServiceCollection();
+            Services.AddSingleton(x => _contentTypeRepository.Object);
+            ServiceLocator.SetScopedServiceProvider(Services.BuildServiceProvider());
 
             _searchProvider = new FakeSearchProvider(
                 LocalizationService.Current,

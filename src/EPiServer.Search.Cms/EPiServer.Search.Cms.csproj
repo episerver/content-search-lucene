@@ -1,4 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+  </PropertyGroup>
   <Import Project="$(BuildDirectory)public.props" />
   <ItemGroup>
     <None Remove="Resources\language.xml" />
@@ -7,7 +10,7 @@
     <EmbeddedResource Include="Resources\language.xml" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="EPiServer.CMS.UI.Core" Version="[12.1.0,13)" />
-    <PackageReference Include="EPiServer.CMS.AspNetCore.Templating" Version="[12.0.3,13)" />
+    <PackageReference Include="EPiServer.CMS.UI.Core" />
+    <PackageReference Include="EPiServer.CMS.AspNetCore.Templating" />
   </ItemGroup>
 </Project>

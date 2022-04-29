@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -11,7 +11,7 @@ using EPiServer.Data.Dynamic;
 using EPiServer.DataAbstraction;
 using EPiServer.Framework;
 using EPiServer.Framework.Blobs;
-using EPiServer.Logging.Compatibility;
+using EPiServer.Logging;
 using EPiServer.Search.Data;
 using EPiServer.Search.Queries.Lucene;
 using EPiServer.Security;
@@ -26,7 +26,7 @@ namespace EPiServer.Search.Internal
     [ServiceConfiguration(ServiceType = typeof(IReIndexable))]
     public class ContentSearchHandlerImplementation : ContentSearchHandler
     {
-        private static readonly ILog _log = LogManager.GetLogger(typeof(ContentSearchHandler));
+        private static readonly ILogger _log = LogManager.GetLogger(typeof(ContentSearchHandler));
         private const string IgnoreItemSearchId = "<IgnoreItemId>";
 
         public const string ItemTypeSeparator = " ";
@@ -392,7 +392,7 @@ namespace EPiServer.Search.Internal
                 }
                 catch (ContentNotFoundException ex)
                 {
-                    _log.Warn(string.Format(CultureInfo.InvariantCulture, "Search index returned an item with GUID {0:B}, that no longer exists in the content repository.", contentGuid), ex);
+                    _log.Log(Level.Warning, string.Format(CultureInfo.InvariantCulture, "Search index returned an item with GUID {0:B}, that no longer exists in the content repository.", contentGuid), ex);
                 }
             }
 

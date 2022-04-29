@@ -1,4 +1,5 @@
 <Project>
+  <Import Project="build\dependencies.props" />
   <Import Project="$(BuildDirectory)license.targets" />
 
   <!-- Workaround for SourceLink issues - https://github.com/dotnet/sourcelink/issues/572 -->
