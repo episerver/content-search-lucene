@@ -1,4 +1,6 @@
-﻿using EPiServer.Search.IndexingService.Helpers;
+using System;
+using System.Threading;
+using EPiServer.Search.IndexingService.Helpers;
 using Moq;
 
 namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
@@ -11,6 +13,10 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
         protected readonly Mock<IDocumentHelper> _documentHelperMock;
         public LuceneHelperTestBase()
         {
+            IndexingServiceSettings.ReaderWriterLocks.TryAdd("testindex1", new ReaderWriterLockSlim());
+            IndexingServiceSettings.ReaderWriterLocks.TryAdd("testindex1" + IndexingServiceSettings.RefIndexSuffix, new ReaderWriterLockSlim());
+            IndexingServiceSettings.ReaderWriterLocks.TryAdd("testindex2", new ReaderWriterLockSlim());
+
             _feedHelperMock = new Mock<IFeedHelper>();
             _commonFuncMock = new Mock<ICommonFunc>();
             _responseExceptionHelperMock = new Mock<IResponseExceptionHelper>();

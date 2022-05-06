@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Threading;
 using EPiServer.Search.IndexingService.Helpers;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -11,6 +12,8 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.DocumentHelper
         protected readonly Mock<IResponseExceptionHelper> _responseExceptionHelperMock;
         public DocumentHelperTestBase()
         {
+            IndexingServiceSettings.ReaderWriterLocks.TryAdd("testindex1", new ReaderWriterLockSlim());
+            IndexingServiceSettings.ReaderWriterLocks.TryAdd("testindex2", new ReaderWriterLockSlim());
             _responseExceptionHelperMock = new Mock<IResponseExceptionHelper>();
 
             var logMock = new Mock<ILogger>();

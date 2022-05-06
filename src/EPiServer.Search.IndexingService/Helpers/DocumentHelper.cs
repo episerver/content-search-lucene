@@ -24,7 +24,7 @@ namespace EPiServer.Search.IndexingService.Helpers
         {
             var scoreDocuments = new Collection<ScoreDocument>();
             totalHits = 0;
-            var rwl = new ReaderWriterLockSlim();
+            var rwl = IndexingServiceSettings.ReaderWriterLocks[namedIndex.Name];
             rwl.EnterReadLock();
 
             try
@@ -58,7 +58,7 @@ namespace EPiServer.Search.IndexingService.Helpers
         }
         public void OptimizeIndex(NamedIndex namedIndex)
         {
-            var rwl = new ReaderWriterLockSlim();
+            var rwl = IndexingServiceSettings.ReaderWriterLocks[namedIndex.Name];
 
             rwl.EnterWriteLock();
 
@@ -103,7 +103,7 @@ namespace EPiServer.Search.IndexingService.Helpers
             var i = 0;
             foreach (var namedIndex in namedIndexes)
             {
-                var rwl = new ReaderWriterLockSlim();
+                var rwl = IndexingServiceSettings.ReaderWriterLocks[namedIndex.Name];
                 locks.Add(rwl);
                 rwl.EnterReadLock();
 
@@ -298,8 +298,7 @@ namespace EPiServer.Search.IndexingService.Helpers
         {
             Lucene.Net.Store.Directory dir = null;
 
-            var rwl = new ReaderWriterLockSlim();
-            rwl.EnterWriteLock();
+            IndexingServiceSettings.ReaderWriterLocks[name].EnterWriteLock();
 
             try
             {
@@ -320,7 +319,7 @@ namespace EPiServer.Search.IndexingService.Helpers
             }
             finally
             {
-                rwl.ExitWriteLock();
+                IndexingServiceSettings.ReaderWriterLocks[name].ExitWriteLock();
             }
 
             IndexingServiceSettings.IndexingServiceServiceLog.LogDebug(string.Format("Created index for path: '{0}'", directoryInfo.FullName));

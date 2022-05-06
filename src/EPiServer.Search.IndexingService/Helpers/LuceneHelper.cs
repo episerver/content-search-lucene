@@ -226,7 +226,7 @@ namespace EPiServer.Search.IndexingService.Helpers
                 isOk = false;
             }
 
-            var rwl = new ReaderWriterLockSlim();
+            var rwl = IndexingServiceSettings.ReaderWriterLocks[namedIndex.Name];
 
             rwl.EnterWriteLock();
 
@@ -403,7 +403,7 @@ namespace EPiServer.Search.IndexingService.Helpers
 
         public bool DeleteFromIndex(NamedIndex namedIndex, string itemId, bool deleteRef)
         {
-            var rwl = new ReaderWriterLockSlim();
+            var rwl = IndexingServiceSettings.ReaderWriterLocks[namedIndex.Name];
             var isOk = true;
             Term term = null;
 
@@ -453,7 +453,7 @@ namespace EPiServer.Search.IndexingService.Helpers
                 {
                     IndexingServiceSettings.IndexingServiceServiceLog.LogDebug(string.Format("Start deleting reference documents for id '{0}'", itemId.ToString()));
 
-                    var rwlRef = new ReaderWriterLockSlim();
+                    var rwlRef = IndexingServiceSettings.ReaderWriterLocks[namedIndex.ReferenceName];
                     rwlRef.EnterWriteLock();
 
                     try
