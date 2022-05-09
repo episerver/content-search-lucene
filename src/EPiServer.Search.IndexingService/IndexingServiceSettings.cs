@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading;
 using EPiServer.Search.IndexingService.Configuration;
 using EPiServer.Search.IndexingService.Controllers;
 using EPiServer.Search.IndexingService.Helpers;
@@ -195,6 +197,11 @@ namespace EPiServer.Search.IndexingService
         }
 
         /// <summary>
+        /// Gets ReaderWriterLocks for named indexes
+        /// </summary>
+        public static ConcurrentDictionary<string, ReaderWriterLockSlim> ReaderWriterLocks { get; } = new ConcurrentDictionary<string, ReaderWriterLockSlim>();
+
+        /// <summary>
         /// Gets named indexes config elements
         /// </summary>
         public static Dictionary<string, NamedIndexElement> NamedIndexElements { get; } = new Dictionary<string, NamedIndexElement>();
@@ -277,6 +284,9 @@ namespace EPiServer.Search.IndexingService
             {
                 var directoryMain = new System.IO.DirectoryInfo(System.IO.Path.Combine(GetDirectoryPath(e.DirectoryPath), "Main"));
                 var directoryRef = new System.IO.DirectoryInfo(System.IO.Path.Combine(GetDirectoryPath(e.DirectoryPath), "Ref"));
+
+                ReaderWriterLocks.TryAdd(e.Name, new ReaderWriterLockSlim());
+                ReaderWriterLocks.TryAdd(e.Name + RefIndexSuffix, new ReaderWriterLockSlim());
 
                 try
                 {
