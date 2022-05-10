@@ -8,36 +8,37 @@ namespace EPiServer.Search.IndexingService.Security
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ClientElementHandler _clientElementHandler;
-
+        private readonly ILogger<SecurityHandler> _logger;
         public SecurityHandler(IHttpContextAccessor httpContextAccessor,
-            ClientElementHandler clientElementHandler)
+            ClientElementHandler clientElementHandler, ILogger<SecurityHandler> logger)
         {
             _httpContextAccessor = httpContextAccessor;
             _clientElementHandler = clientElementHandler;
+            _logger = logger;
         }
 
         public bool IsAuthenticated(string accessKey, AccessLevel accessLevel)
         {
-            IndexingServiceSettings.IndexingServiceServiceLog.LogDebug(string.Format("Request for authorization for access key '{0}'", accessKey));
+            _logger.LogDebug("Request for authorization for access key '{AccessKey}'", accessKey);
 
             //Always fail if no client access key is found in the request
             if (string.IsNullOrEmpty(accessKey))
             {
-                IndexingServiceSettings.IndexingServiceServiceLog.LogError("No access key found. Access denied.");
+                _logger.LogError("No access key found. Access denied.");
                 return false;
             }
 
             //Check if the access key exists and get the client element
             if (!IndexingServiceSettings.ClientElements.TryGetValue(accessKey, out var elem))
             {
-                IndexingServiceSettings.IndexingServiceServiceLog.LogError(string.Format("The access key: '{0}' was not found for configured clients. Access denied.", accessKey));
+                _logger.LogError(string.Format("The access key: '{0}' was not found for configured clients. Access denied.", accessKey));
                 return false;
             }
 
             //Check level.
             if (elem.ReadOnly && accessLevel == AccessLevel.Modify)
             {
-                IndexingServiceSettings.IndexingServiceServiceLog.LogError(string.Format("Modify request for access key '{0}' failed. Only read access", accessKey));
+                _logger.LogError(string.Format("Modify request for access key '{0}' failed. Only read access", accessKey));
                 return false;
             }
 
@@ -50,11 +51,11 @@ namespace EPiServer.Search.IndexingService.Security
 
             if (!_clientElementHandler.IsIPAddressAllowed(elem, remoteIpAddress))
             {
-                IndexingServiceSettings.IndexingServiceServiceLog.LogError(string.Format("No match for client IP {0}. Access denied for access key {1}.", remoteIpAddress, accessKey));
+                _logger.LogError(string.Format("No match for client IP {0}. Access denied for access key {1}.", remoteIpAddress, accessKey));
                 return false;
             }
 
-            IndexingServiceSettings.IndexingServiceServiceLog.LogDebug(string.Format("Request for authorization for access key '{0}' succeded", accessKey));
+            _logger.LogDebug(string.Format("Request for authorization for access key '{0}' succeded", accessKey));
 
             return true;
         }
