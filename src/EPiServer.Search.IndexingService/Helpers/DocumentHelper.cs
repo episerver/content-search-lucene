@@ -16,9 +16,11 @@ namespace EPiServer.Search.IndexingService.Helpers
     public class DocumentHelper : IDocumentHelper
     {
         private readonly IResponseExceptionHelper _responseExceptionHelper;
-        public DocumentHelper(IResponseExceptionHelper responseExceptionHelper)
+        private readonly ILogger<DocumentHelper> _logger;
+        public DocumentHelper(IResponseExceptionHelper responseExceptionHelper, ILogger<DocumentHelper> logger)
         {
             _responseExceptionHelper = responseExceptionHelper;
+            _logger = logger;
         }
         public Collection<ScoreDocument> SingleIndexSearch(string q, NamedIndex namedIndex, int maxHits, out int totalHits)
         {
@@ -29,7 +31,7 @@ namespace EPiServer.Search.IndexingService.Helpers
 
             try
             {
-                IndexingServiceSettings.IndexingServiceServiceLog.LogDebug(string.Format("Creating Lucene QueryParser for index '{0}' with expression '{1}' with analyzer '{2}'", namedIndex.Name, q, IndexingServiceSettings.Analyzer.ToString()));
+                _logger.LogDebug(string.Format("Creating Lucene QueryParser for index '{0}' with expression '{1}' with analyzer '{2}'", namedIndex.Name, q, IndexingServiceSettings.Analyzer.ToString()));
                 QueryParser parser = new PerFieldQueryParserWrapper(IndexingServiceSettings.LuceneVersion, IndexingServiceSettings.DefaultFieldName, IndexingServiceSettings.Analyzer, IndexingServiceSettings.LowercaseFields);
                 var baseQuery = parser.Parse(q);
                 using (IndexReader reader = DirectoryReader.Open(namedIndex.Directory))
@@ -64,7 +66,7 @@ namespace EPiServer.Search.IndexingService.Helpers
 
             try
             {
-                IndexingServiceSettings.IndexingServiceServiceLog.LogDebug(string.Format("Start optimizing index"));
+                _logger.LogDebug(string.Format("Start optimizing index"));
 
                 var iwc = new IndexWriterConfig(IndexingServiceSettings.LuceneVersion, IndexingServiceSettings.Analyzer)
                 {
@@ -75,12 +77,12 @@ namespace EPiServer.Search.IndexingService.Helpers
                     iWriter.ForceMerge(1);
                 }
 
-                IndexingServiceSettings.IndexingServiceServiceLog.LogDebug(string.Format("End optimizing index"));
+                _logger.LogDebug(string.Format("End optimizing index"));
 
             }
             catch (Exception e)
             {
-                IndexingServiceSettings.IndexingServiceServiceLog.LogError(string.Format("Failed to optimize index: '{0}'. Message: {1}{2}{3}", namedIndex.Name, e.Message, Environment.NewLine, e.StackTrace));
+                _logger.LogError(string.Format("Failed to optimize index: '{0}'. Message: {1}{2}{3}", namedIndex.Name, e.Message, Environment.NewLine, e.StackTrace));
             }
             finally
             {
@@ -90,7 +92,7 @@ namespace EPiServer.Search.IndexingService.Helpers
             //Fire event
             IndexingController.OnIndexedOptimized(this, new OptimizedEventArgs(namedIndex.Name));
 
-            IndexingServiceSettings.IndexingServiceServiceLog.LogDebug(string.Format("Optimized index: '{0}'", namedIndex.Name));
+            _logger.LogDebug(string.Format("Optimized index: '{0}'", namedIndex.Name));
         }
         public Collection<ScoreDocument> MultiIndexSearch(string q, Collection<NamedIndex> namedIndexes, int maxHits, out int totalHits)
         {
@@ -109,7 +111,7 @@ namespace EPiServer.Search.IndexingService.Helpers
 
                 try
                 {
-                    IndexingServiceSettings.IndexingServiceServiceLog.LogDebug(string.Format("Creating Lucene QueryParser for index '{0}' with expression '{1}' with analyzer '{2}'", namedIndex.Name, q, IndexingServiceSettings.Analyzer.ToString()));
+                    _logger.LogDebug(string.Format("Creating Lucene QueryParser for index '{0}' with expression '{1}' with analyzer '{2}'", namedIndex.Name, q, IndexingServiceSettings.Analyzer.ToString()));
                     readers[i] = DirectoryReader.Open(namedIndex.Directory);
                 }
                 catch (Exception e)
@@ -315,14 +317,14 @@ namespace EPiServer.Search.IndexingService.Helpers
             }
             catch (Exception e)
             {
-                IndexingServiceSettings.IndexingServiceServiceLog.LogError(string.Format("Failed to create index for path: '{0}'. Message: {1}{2}'", directoryInfo.FullName, e.Message, e.StackTrace));
+                _logger.LogError(string.Format("Failed to create index for path: '{0}'. Message: {1}{2}'", directoryInfo.FullName, e.Message, e.StackTrace));
             }
             finally
             {
                 IndexingServiceSettings.ReaderWriterLocks[name].ExitWriteLock();
             }
 
-            IndexingServiceSettings.IndexingServiceServiceLog.LogDebug(string.Format("Created index for path: '{0}'", directoryInfo.FullName));
+            _logger.LogDebug(string.Format("Created index for path: '{0}'", directoryInfo.FullName));
 
             return dir;
         }

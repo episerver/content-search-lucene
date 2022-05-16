@@ -1,21 +1,17 @@
 using System;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
 namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
 {
-    [Trait(nameof(EPiServer.Search.IndexingService.Helpers.LuceneHelper), nameof(EPiServer.Search.IndexingService.Helpers.LuceneHelper.DeleteFromIndex))]
+    [Trait(nameof(IndexingService.Helpers.LuceneHelper), nameof(IndexingService.Helpers.LuceneHelper.DeleteFromIndex))]
     public class DeleteFromIndexTest : LuceneHelperTestBase
     {
         [Fact]
         public void DeleteFromIndex_WhenHaveFileToDelete_ShouldReturnTrue()
         {
-            var logMock = new Mock<ILogger>();
-            IndexingServiceSettings.IndexingServiceServiceLog = logMock.Object;
-
             var folderId = Guid.NewGuid().ToString();
 
             var dir1 = Lucene.Net.Store.FSDirectory.Open(new System.IO.DirectoryInfo(string.Format(@"c:\fake\App_Data\{0}\Main", folderId)));
@@ -44,9 +40,6 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
         [Fact]
         public void DeleteFromIndex_WhenHaveNoFile_ShouldReturnFalse()
         {
-            var logMock = new Mock<ILogger>();
-            IndexingServiceSettings.IndexingServiceServiceLog = logMock.Object;
-
             var folderId = Guid.NewGuid().ToString();
 
             var dir1 = Lucene.Net.Store.FSDirectory.Open(new System.IO.DirectoryInfo(string.Format(@"c:\fake\App_Data\{0}\Main", folderId)));

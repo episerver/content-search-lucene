@@ -1,4 +1,4 @@
-﻿using EPiServer.Search.IndexingService.Helpers;
+using EPiServer.Search.IndexingService.Helpers;
 using Microsoft.Extensions.Logging;
 using Moq;
 
@@ -11,6 +11,8 @@ namespace EPiServer.Search.IndexingService.Test.IndexingServiceHandler
         protected Mock<ICommonFunc> _commonFuncMock;
         protected Mock<IResponseExceptionHelper> _responseExceptionHelperMock;
         protected Mock<IDocumentHelper> _documentHelperMock;
+        protected readonly Mock<ILogger<IndexingService.IndexingServiceHandler>> _loggerMock;
+        protected readonly Mock<ILoggerFactory> _loggerFactoryMock;
 
         public IndexingServiceHandlerTestBase()
         {
@@ -19,19 +21,20 @@ namespace EPiServer.Search.IndexingService.Test.IndexingServiceHandler
             _commonFuncMock = new Mock<ICommonFunc>();
             _responseExceptionHelperMock = new Mock<IResponseExceptionHelper>();
             _documentHelperMock = new Mock<IDocumentHelper>();
-
-            var logMock = new Mock<ILogger>();
-            IndexingServiceSettings.IndexingServiceServiceLog = logMock.Object;
+            _loggerMock = new Mock<ILogger<IndexingService.IndexingServiceHandler>>();
+            _loggerFactoryMock = new Mock<ILoggerFactory>();
         }
 
-        public EPiServer.Search.IndexingService.IndexingServiceHandler SetupMock()
+        public IndexingService.IndexingServiceHandler SetupMock()
         {
             return new IndexingService.IndexingServiceHandler(
                 _feedHelperMock.Object,
                 _luceneHelperMock.Object,
                 _commonFuncMock.Object,
                 _responseExceptionHelperMock.Object,
-                _documentHelperMock.Object);
+                _documentHelperMock.Object,
+                _loggerMock.Object,
+                _loggerFactoryMock.Object);
         }
     }
 }

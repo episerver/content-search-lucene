@@ -1,4 +1,4 @@
-﻿using EPiServer.Search.IndexingService.Helpers;
+using EPiServer.Search.IndexingService.Helpers;
 using EPiServer.Search.IndexingService.Security;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -11,6 +11,7 @@ namespace EPiServer.Search.IndexingService.Test.Controllers
         protected readonly Mock<IIndexingServiceSettings> _indexingServiceSettingsMock;
         protected readonly Mock<IIndexingServiceHandler> _indexingServiceHandlerMock;
         protected readonly Mock<ISecurityHandler> _securityHandlerMock;
+        protected readonly Mock<ILogger<IndexingService.Controllers.IndexingController>> _loggerMock;
         public IndexingControllerTestBase()
         {
             _responseExceptionHelperMock = new Mock<IResponseExceptionHelper>();
@@ -18,17 +19,17 @@ namespace EPiServer.Search.IndexingService.Test.Controllers
             _indexingServiceHandlerMock = new Mock<IIndexingServiceHandler>();
             _securityHandlerMock = new Mock<ISecurityHandler>();
 
-            var logMock = new Mock<ILogger>();
-            IndexingServiceSettings.IndexingServiceServiceLog = logMock.Object;
+            _loggerMock = new Mock<ILogger<IndexingService.Controllers.IndexingController>>();
         }
 
-        public EPiServer.Search.IndexingService.Controllers.IndexingController SetupMock()
+        public IndexingService.Controllers.IndexingController SetupMock()
         {
-            return new EPiServer.Search.IndexingService.Controllers.IndexingController(
+            return new IndexingService.Controllers.IndexingController(
                 _securityHandlerMock.Object,
                 _indexingServiceHandlerMock.Object,
                 _indexingServiceSettingsMock.Object,
-                _responseExceptionHelperMock.Object);
+                _responseExceptionHelperMock.Object,
+                _loggerMock.Object);
         }
     }
 }

@@ -14,6 +14,7 @@ namespace EPiServer.Search.IndexingService
         private readonly double _timerInterval;
         private readonly TimeSpan _minQueueItemAge;
         private readonly string _queueName;
+        private readonly ILogger<TaskQueue> _logger;
 
         /// <summary>
         /// Constructs a TaskQueue
@@ -21,7 +22,7 @@ namespace EPiServer.Search.IndexingService
         /// <param name="queueName">Queue identifier used for logging purposes</param>
         /// <param name="timerInterval">Interval in milliseconds telling when the queue should be processed</param>
         /// <param name="minQueueItemAge">The minimum age of a queue item in order for it to be dequeued</param>
-        public TaskQueue(string queueName, double timerInterval, TimeSpan minQueueItemAge)
+        public TaskQueue(string queueName, double timerInterval, TimeSpan minQueueItemAge, ILogger<TaskQueue> logger)
         {
             _queueName = queueName;
             _timerInterval = timerInterval;
@@ -31,6 +32,7 @@ namespace EPiServer.Search.IndexingService
                 AutoReset = false
             };
             _queueFlushTimer.Elapsed += Timer_Elapsed;
+            _logger = logger;
         }
 
         /// <summary>
@@ -58,7 +60,7 @@ namespace EPiServer.Search.IndexingService
                     }
                     catch (Exception ex)
                     {
-                        IndexingServiceSettings.IndexingServiceServiceLog.LogError(
+                        _logger.LogError(
                             string.Format("An exception was thrown when task was invoked by TaskQueue: '{0}'. The message was: {1}. Stacktrace was: {2}", _queueName, ex.Message, ex.StackTrace));
                     }
                 }
@@ -66,7 +68,7 @@ namespace EPiServer.Search.IndexingService
             }
             catch (Exception ex)
             {
-                IndexingServiceSettings.IndexingServiceServiceLog.LogError(
+                _logger.LogError(
                         string.Format("An exception was thrown while processing TaskQueue: '{0}'. The message was: {1}. Stacktrace was: {2}", _queueName, ex.Message, ex.StackTrace));
             }
             finally

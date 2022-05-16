@@ -1,12 +1,11 @@
 using System;
 using System.Collections.ObjectModel;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
 namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
 {
-    [Trait(nameof(EPiServer.Search.IndexingService.Helpers.LuceneHelper), nameof(EPiServer.Search.IndexingService.Helpers.LuceneHelper.Add))]
+    [Trait(nameof(IndexingService.Helpers.LuceneHelper), nameof(IndexingService.Helpers.LuceneHelper.Add))]
     public class AddTest : LuceneHelperTestBase
     {
         [Fact]
@@ -21,8 +20,6 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
         [Fact]
         public void Add_WhenItemIdIsEmpty_ShouldReturnFalse()
         {
-            var logMock = new Mock<ILogger>();
-            IndexingServiceSettings.IndexingServiceServiceLog = logMock.Object;
             var item = new FeedItemModel
             {
                 Id = ""
@@ -38,8 +35,6 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
         [Fact]
         public void Add_WhenDocumentExists_ShouldReturnFalse()
         {
-            var logMock = new Mock<ILogger>();
-            IndexingServiceSettings.IndexingServiceServiceLog = logMock.Object;
             var item = new FeedItemModel
             {
                 Id = "1"
@@ -56,8 +51,6 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
         [Fact]
         public void Add_WhenEverythingIsValid_ShouldReturnTrue()
         {
-            var logMock = new Mock<ILogger>();
-            IndexingServiceSettings.IndexingServiceServiceLog = logMock.Object;
             var feed = new FeedItemModel()
             {
                 Id = Guid.NewGuid().ToString(),

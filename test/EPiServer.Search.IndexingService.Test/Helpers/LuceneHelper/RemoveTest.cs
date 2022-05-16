@@ -1,19 +1,16 @@
 using System;
 using System.Collections.ObjectModel;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
 namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
 {
-    [Trait(nameof(EPiServer.Search.IndexingService.Helpers.LuceneHelper), nameof(EPiServer.Search.IndexingService.Helpers.LuceneHelper.Remove))]
+    [Trait(nameof(IndexingService.Helpers.LuceneHelper), nameof(IndexingService.Helpers.LuceneHelper.Remove))]
     public class RemoveTest : LuceneHelperTestBase
     {
         [Fact]
         public void RemoveFeedItemModelNamedIndex_WhenFeedItemIdNotEqualIgnoreItemId_ShouldRunRemove()
         {
-            var logMock = new Mock<ILogger>();
-            IndexingServiceSettings.IndexingServiceServiceLog = logMock.Object;
             var namedIndexMock = new Mock<NamedIndex>("testindex1");
             var dir1 = Lucene.Net.Store.FSDirectory.Open(new System.IO.DirectoryInfo(string.Format(@"c:\fake\App_Data\{0}\Main", Guid.NewGuid())));
             namedIndexMock.SetupGet(x => x.Directory).Returns(() => dir1);
@@ -25,8 +22,6 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
         [Fact]
         public void RemoveFeedItemModelNamedIndex_WhenFeedItemIdNotEqualIgnoreItemId_ShouldRunGetAutoUpdateVirtualPathValue()
         {
-            var logMock = new Mock<ILogger>();
-            IndexingServiceSettings.IndexingServiceServiceLog = logMock.Object;
             var namedIndexMock = new Mock<NamedIndex>("testindex1");
             var dir1 = Lucene.Net.Store.FSDirectory.Open(new System.IO.DirectoryInfo(string.Format(@"c:\fake\App_Data\{0}\Main", Guid.NewGuid())));
             namedIndexMock.SetupGet(x => x.Directory).Returns(() => dir1);
@@ -43,9 +38,6 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
         [Fact]
         public void RemoveStringNamedIndexBool_ShouldWork()
         {
-            var logMock = new Mock<ILogger>();
-            IndexingServiceSettings.IndexingServiceServiceLog = logMock.Object;
-
             var namedIndexMock = new Mock<NamedIndex>("testindex1");
             var dir1 = Lucene.Net.Store.FSDirectory.Open(new System.IO.DirectoryInfo(string.Format(@"c:\fake\App_Data\{0}\Main", Guid.NewGuid())));
             namedIndexMock.SetupGet(x => x.Directory).Returns(() => dir1);
