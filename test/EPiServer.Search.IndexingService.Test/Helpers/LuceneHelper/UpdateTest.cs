@@ -1,20 +1,17 @@
 using System;
 using System.Collections.ObjectModel;
 using Lucene.Net.Documents;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
 namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
 {
-    [Trait(nameof(EPiServer.Search.IndexingService.Helpers.LuceneHelper), nameof(EPiServer.Search.IndexingService.Helpers.LuceneHelper.Update))]
+    [Trait(nameof(IndexingService.Helpers.LuceneHelper), nameof(IndexingService.Helpers.LuceneHelper.Update))]
     public class UpdateTest : LuceneHelperTestBase
     {
         [Fact]
         public void Update_ShouldWork()
         {
-            var logMock = new Mock<ILogger>();
-            IndexingServiceSettings.IndexingServiceServiceLog = logMock.Object;
             var feed = new FeedItemModel()
             {
                 Id = "Id",

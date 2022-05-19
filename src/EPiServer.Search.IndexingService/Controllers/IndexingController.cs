@@ -15,16 +15,19 @@ namespace EPiServer.Search.IndexingService.Controllers
         private readonly IIndexingServiceHandler _indexingServiceHandler;
         private readonly IIndexingServiceSettings _indexingServiceSettings;
         private readonly IResponseExceptionHelper _responseExceptionHelper;
+        private readonly ILogger<IndexingController> _logger;
 
         public IndexingController(ISecurityHandler securityHandler,
             IIndexingServiceHandler indexingServiceHandler,
             IIndexingServiceSettings indexingServiceSettings,
-            IResponseExceptionHelper responseExceptionHelper)
+            IResponseExceptionHelper responseExceptionHelper,
+            ILogger<IndexingController> logger)
         {
             _securityHandler = securityHandler;
             _indexingServiceHandler = indexingServiceHandler;
             _indexingServiceSettings = indexingServiceSettings;
             _responseExceptionHelper = responseExceptionHelper;
+            _logger = logger;
         }
 
         //POST: reset?namedIndex={namedIndex}&accessKey={accessKey}
@@ -32,7 +35,7 @@ namespace EPiServer.Search.IndexingService.Controllers
         [Route("reset")]
         public IActionResult ResetIndex(string namedIndex, string accessKey)
         {
-            IndexingServiceSettings.IndexingServiceServiceLog.LogDebug(string.Format("Reset of index: {0} requested", namedIndex));
+            _logger.LogDebug(string.Format("Reset of index: {0} requested", namedIndex));
 
             if (!_securityHandler.IsAuthenticated(accessKey, AccessLevel.Modify))
             {

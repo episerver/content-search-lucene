@@ -1,13 +1,18 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace EPiServer.Search.IndexingService.Helpers
 {
     public class ResponseExceptionHelper : IResponseExceptionHelper
     {
+        private readonly ILogger<ResponseExceptionHelper> _logger;
+        public ResponseExceptionHelper(ILogger<ResponseExceptionHelper> logger)
+        {
+            _logger = logger;
+        }
         public void HandleServiceError(string errorMessage)
         {
             //Log, fire event and respond with status code 500
-            IndexingServiceSettings.IndexingServiceServiceLog.LogError(errorMessage);
+            _logger.LogError(errorMessage);
             throw new HttpResponseException()
             {
                 Value = new { error = errorMessage },
@@ -18,7 +23,7 @@ namespace EPiServer.Search.IndexingService.Helpers
         public void HandleServiceUnauthorized(string errorMessage)
         {
             //Log, fire event and respond with status code 500
-            IndexingServiceSettings.IndexingServiceServiceLog.LogError(errorMessage);
+            _logger.LogError(errorMessage);
             throw new HttpResponseException()
             {
                 Value = new { error = errorMessage },

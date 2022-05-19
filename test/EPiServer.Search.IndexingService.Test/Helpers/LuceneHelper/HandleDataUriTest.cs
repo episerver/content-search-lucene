@@ -1,21 +1,17 @@
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
 namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
 {
-    [Trait(nameof(EPiServer.Search.IndexingService.Helpers.LuceneHelper), nameof(EPiServer.Search.IndexingService.Helpers.LuceneHelper.HandleDataUri))]
+    [Trait(nameof(IndexingService.Helpers.LuceneHelper), nameof(IndexingService.Helpers.LuceneHelper.HandleDataUri))]
     public class HandleDataUriTest : LuceneHelperTestBase
     {
         [Fact]
         public void HandleDataUri_WhenUriStringIsNotUri_ShouldReturnFalse()
         {
-            var logMock = new Mock<ILogger>();
-            IndexingServiceSettings.IndexingServiceServiceLog = logMock.Object;
-
             var feed = new FeedItemModel();
 
             _feedHelperMock.Setup(x => x.GetAttributeValue(It.IsAny<FeedItemModel>(), It.Is<string>(s => s == IndexingServiceSettings.SyndicationItemAttributeNameDataUri))).Returns((string)null);
@@ -28,9 +24,6 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
         [Fact]
         public void HandleDataUri_WhenFileNotExist_ShouldReturnFalse()
         {
-            var logMock = new Mock<ILogger>();
-            IndexingServiceSettings.IndexingServiceServiceLog = logMock.Object;
-
             var feed = new FeedItemModel();
 
             _feedHelperMock.Setup(x => x.GetAttributeValue(It.IsAny<FeedItemModel>(), It.Is<string>(s => s == IndexingServiceSettings.SyndicationItemAttributeNameDataUri))).Returns(@"c:\fake\App_Data\Index\file.txt");
@@ -44,9 +37,6 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
         public void HandleDataUri_WhenUriIsFileAndRunAdd_ShouldReturnTrue()
         {
             CreateFileForTest();
-
-            var logMock = new Mock<ILogger>();
-            IndexingServiceSettings.IndexingServiceServiceLog = logMock.Object;
 
             var feed = new FeedItemModel()
             {
@@ -97,9 +87,6 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
         public void HandleDataUri_WhenUriIsFileAndRunUpdate_ShouldReturnTrue()
         {
             CreateFileForTest();
-
-            var logMock = new Mock<ILogger>();
-            IndexingServiceSettings.IndexingServiceServiceLog = logMock.Object;
 
             var feed = new FeedItemModel()
             {

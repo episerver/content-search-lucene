@@ -143,11 +143,11 @@ namespace EPiServer.Search.Internal
 
                         if (success)
                         {
-                            result.IndexingCount += 1;
+                            result.IndexingCount += contentRequestToIndex.Count();
                         }
                         else
                         {
-                            result.NumberOfContentErrors += 1;
+                            result.NumberOfContentErrors += contentRequestToIndex.Count();
                         }
                     }
                 }

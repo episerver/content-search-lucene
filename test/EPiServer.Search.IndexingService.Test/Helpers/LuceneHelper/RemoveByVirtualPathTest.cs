@@ -1,13 +1,12 @@
 using System;
 using System.Collections.ObjectModel;
 using Lucene.Net.Documents;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
 namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
 {
-    [Trait(nameof(EPiServer.Search.IndexingService.Helpers.LuceneHelper), nameof(EPiServer.Search.IndexingService.Helpers.LuceneHelper.RemoveByVirtualPath))]
+    [Trait(nameof(IndexingService.Helpers.LuceneHelper), nameof(IndexingService.Helpers.LuceneHelper.RemoveByVirtualPath))]
     public class RemoveByVirtualPathTest : LuceneHelperTestBase
     {
         [Fact]
@@ -22,8 +21,6 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
         [Fact]
         public void RemoveByVirtualPath_WhenVirtualPathIsNotEmpty_ShouldReturnTrue()
         {
-            var logMock = new Mock<ILogger>();
-            IndexingServiceSettings.IndexingServiceServiceLog = logMock.Object;
             var folderId = Guid.NewGuid();
             var namedIndexMock = new Mock<NamedIndex>("testindex2");
             var dir1 = new System.IO.DirectoryInfo(string.Format(@"c:\fake\App_Data\{0}\Main", folderId));

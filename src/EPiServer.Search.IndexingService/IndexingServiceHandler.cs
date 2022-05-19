@@ -20,6 +20,7 @@ namespace EPiServer.Search.IndexingService
         private readonly ICommonFunc _commonFunc;
         private readonly IResponseExceptionHelper _responseExceptionHelper;
         private readonly IDocumentHelper _documentHelper;
+        private readonly ILogger<IndexingServiceHandler> _logger;
         #endregion
 
         #region Constructors
@@ -27,11 +28,13 @@ namespace EPiServer.Search.IndexingService
             ILuceneHelper luceneHelper,
             ICommonFunc commonFunc,
             IResponseExceptionHelper responseExceptionHelper,
-            IDocumentHelper documentHelper)
+            IDocumentHelper documentHelper,
+            ILogger<IndexingServiceHandler> logger, ILoggerFactory loggerFactory)
         {
             if (_taskQueue == null)
             {
-                _taskQueue = new TaskQueue("indexing service data uri callback", 1000, TimeSpan.FromSeconds(0));
+                var loggerTaskQueue = loggerFactory.CreateLogger<TaskQueue>();
+                _taskQueue = new TaskQueue("indexing service data uri callback", 1000, TimeSpan.FromSeconds(0), loggerTaskQueue);
             }
 
             _feedHelper = feedHelper;
@@ -39,6 +42,7 @@ namespace EPiServer.Search.IndexingService
             _commonFunc = commonFunc;
             _responseExceptionHelper = responseExceptionHelper;
             _documentHelper = documentHelper;
+            _logger = logger;
         }
 
         #endregion
@@ -50,7 +54,7 @@ namespace EPiServer.Search.IndexingService
         /// <param name="feed">The feed to process</param>
         public void UpdateIndex(FeedModel feed)
         {
-            IndexingServiceSettings.IndexingServiceServiceLog.LogDebug(string.Format("Start processing feed '{0}'", feed.Id));
+            _logger.LogDebug(string.Format("Start processing feed '{0}'", feed.Id));
 
             foreach (var item in feed.Items)
             {
@@ -78,7 +82,7 @@ namespace EPiServer.Search.IndexingService
                         }
                     }
 
-                    IndexingServiceSettings.IndexingServiceServiceLog.LogDebug(string.Format("Start processing feed item '{0}' for '{1}'", item.Id, indexAction));
+                    _logger.LogDebug(string.Format("Start processing feed item '{0}' for '{1}'", item.Id, indexAction));
 
                     // If there is a callback uri defined, we run the callback in async mode
                     if (!string.IsNullOrEmpty(dataUri))
@@ -86,7 +90,7 @@ namespace EPiServer.Search.IndexingService
                         var callback = new Action(new DataUriQueueItem(item, namedIndex, _luceneHelper).Do);
                         _taskQueue.Enqueue(callback);
 
-                        IndexingServiceSettings.IndexingServiceServiceLog.LogDebug(string.Format("Callback for data uri '{0}' enqueued", dataUri));
+                        _logger.LogDebug(string.Format("Callback for data uri '{0}' enqueued", dataUri));
                     }
                     else
                     {
@@ -113,15 +117,15 @@ namespace EPiServer.Search.IndexingService
                                 item.Id,
                                 new NamedIndex(namedIndexName)); // Always main index
 
-                            IndexingServiceSettings.IndexingServiceServiceLog.LogDebug(string.Format("Updated reference with reference id '{0}' ", referenceId));
+                            _logger.LogDebug(string.Format("Updated reference with reference id '{0}' ", referenceId));
                         }
                     }
                 }
 
-                IndexingServiceSettings.IndexingServiceServiceLog.LogDebug(string.Format("End processing feed item '{0}'", item.Id));
+                _logger.LogDebug(string.Format("End processing feed item '{0}'", item.Id));
             }
 
-            IndexingServiceSettings.IndexingServiceServiceLog.LogDebug(string.Format("End processing feed '{0}'", feed.Id));
+            _logger.LogDebug(string.Format("End processing feed '{0}'", feed.Id));
         }
 
         /// <summary>
@@ -134,7 +138,7 @@ namespace EPiServer.Search.IndexingService
         /// <returns><see cref="SearchResults"/></return>s
         public FeedModel GetSearchResults(string q, string[] namedIndexNames, int offset, int limit)
         {
-            IndexingServiceSettings.IndexingServiceServiceLog.LogDebug(string.Format("Start search with expression: '{0}'", q));
+            _logger.LogDebug(string.Format("Start search with expression: '{0}'", q));
 
             var feed = new FeedModel();
             var feedItems = new Collection<FeedItemModel>();
@@ -184,7 +188,7 @@ namespace EPiServer.Search.IndexingService
                version.Build.ToString(CultureInfo.InvariantCulture), version.Revision.ToString(CultureInfo.InvariantCulture));
             feed.AttributeExtensions.Add(IndexingServiceSettings.SyndicationFeedAttributeNameVersion, versionString);
 
-            IndexingServiceSettings.IndexingServiceServiceLog.LogDebug(string.Format("End search with expression '{0}'. Returned {1} hits of total {2} with offset {3} and limit {4}",
+            _logger.LogDebug(string.Format("End search with expression '{0}'. Returned {1} hits of total {2} with offset {3} and limit {4}",
                 q, returnedHits.ToString(CultureInfo.InvariantCulture), totalHits.ToString(CultureInfo.InvariantCulture),
                 offset.ToString(CultureInfo.InvariantCulture), limit.ToString(CultureInfo.InvariantCulture)));
 
@@ -233,7 +237,7 @@ namespace EPiServer.Search.IndexingService
 
         public FeedModel GetSearchResults(string q, string namedIndexes, int offset, int limit)
         {
-            IndexingServiceSettings.IndexingServiceServiceLog.LogDebug(string.Format("Request for search with query parser with expression: {0} in named indexes: {1}", q, namedIndexes));
+            _logger.LogDebug(string.Format("Request for search with query parser with expression: {0} in named indexes: {1}", q, namedIndexes));
 
             //Parse named indexes string from request
             string[] namedIndexesArr = null;

@@ -10,21 +10,19 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.DocumentHelper
     public class DocumentHelperTestBase
     {
         protected readonly Mock<IResponseExceptionHelper> _responseExceptionHelperMock;
+        protected readonly Mock<ILogger<IndexingService.Helpers.DocumentHelper>> _loggerMock;
         public DocumentHelperTestBase()
         {
             IndexingServiceSettings.ReaderWriterLocks.TryAdd("testindex1", new ReaderWriterLockSlim());
             IndexingServiceSettings.ReaderWriterLocks.TryAdd("testindex2", new ReaderWriterLockSlim());
             _responseExceptionHelperMock = new Mock<IResponseExceptionHelper>();
-
-            var logMock = new Mock<ILogger>();
-            IndexingServiceSettings.IndexingServiceServiceLog = logMock.Object;
-
+            _loggerMock = new Mock<ILogger<IndexingService.Helpers.DocumentHelper>>();
         }
 
-        public EPiServer.Search.IndexingService.Helpers.DocumentHelper SetupMock()
+        public IndexingService.Helpers.DocumentHelper SetupMock()
         {
             return new EPiServer.Search.IndexingService.Helpers.DocumentHelper(
-                _responseExceptionHelperMock.Object);
+                _responseExceptionHelperMock.Object, _loggerMock.Object);
         }
 
         public void AddDocumentForTest(NamedIndex namedIndex, string itemId)
@@ -33,12 +31,14 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.DocumentHelper
             var _commonFuncMock = new Mock<ICommonFunc>();
             var _responseExceptionHelperMock = new Mock<IResponseExceptionHelper>();
             var _documentHelperMock = new Mock<IDocumentHelper>();
+            var _loggerMock1 = new Mock<ILogger<IndexingService.Helpers.LuceneHelper>>();
 
-            var _luceneHelper = new EPiServer.Search.IndexingService.Helpers.LuceneHelper(
+            var _luceneHelper = new IndexingService.Helpers.LuceneHelper(
                 _feedHelperMock.Object,
                 _responseExceptionHelperMock.Object,
                 _commonFuncMock.Object,
-                _documentHelperMock.Object);
+                _documentHelperMock.Object,
+                _loggerMock1.Object);
 
             var feed = new FeedItemModel()
             {
@@ -77,12 +77,14 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.DocumentHelper
             var _commonFuncMock = new Mock<ICommonFunc>();
             var _responseExceptionHelperMock = new Mock<IResponseExceptionHelper>();
             var _documentHelperMock = new Mock<IDocumentHelper>();
+            var _loggerMock1 = new Mock<ILogger<IndexingService.Helpers.LuceneHelper>>();
 
-            var _luceneHelper = new EPiServer.Search.IndexingService.Helpers.LuceneHelper(
+            var _luceneHelper = new IndexingService.Helpers.LuceneHelper(
                 _feedHelperMock.Object,
                 _responseExceptionHelperMock.Object,
                 _commonFuncMock.Object,
-                _documentHelperMock.Object);
+                _documentHelperMock.Object,
+                _loggerMock1.Object);
 
             var result = _luceneHelper.DeleteFromIndex(namedIndex, itemId, false);
         }
