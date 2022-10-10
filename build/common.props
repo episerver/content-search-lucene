@@ -1,0 +1,14 @@
+<Project>
+    <PropertyGroup>
+        <Product Condition=" '$(Product)' == '' ">EPiServer.Search.Cms</Product>
+        <Company>Optimizely</Company>
+        <Authors>Optimizely</Authors>
+        <Copyright>© 2003-2019 by Optimizely. All rights reserved</Copyright>
+        <PackageTags>EPiServer.Search.Cms</PackageTags>
+        <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+        <NoWarn>NU5125;CS1591</NoWarn>
+        <WarningsAsErrors>$(WarningsAsErrors);RS0016;RS0017;RS0022;RS0024;RS0025;RS0026;RS0027</WarningsAsErrors>
+        <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+        <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+    </PropertyGroup>
+</Project>
