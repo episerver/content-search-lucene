@@ -9,7 +9,7 @@
     <EmbeddedResource Include="Resources\language.xml" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="EPiServer.CMS.UI.Core" Version="12.9.3" />
-    <PackageReference Include="EPiServer.CMS.AspNetCore.Templating" Version="12.13.2"  />
+    <PackageReference Include="EPiServer.CMS.UI.Core" />
+    <PackageReference Include="EPiServer.CMS.AspNetCore.Templating" />
   </ItemGroup>
 </Project>
