@@ -180,3 +180,4 @@ sample/AlloyMvcTemplate/App_Data/**
 sample/AlloyMvcTemplate/App_Code/**
 /nupkgs
 /modules
+.idea

@@ -2,7 +2,6 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
-  <Import Project="$(BuildDirectory)public.props" />
   <ItemGroup>
     <None Remove="Resources\language.xml" />
   </ItemGroup>

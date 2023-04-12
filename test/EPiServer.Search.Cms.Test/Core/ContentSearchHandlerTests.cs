@@ -100,7 +100,7 @@ namespace EPiServer.Core
         public void UpdateItem_WhenContentIsProvided_ShouldUseContentGuidAndLanguageAsId()
         {
             var sharedBlockCreator = new SharedBlockFactory(null, new ConstructorParameterResolver(),
-                new ServiceLocation.ServiceAccessor<ContentDataInterceptor>(() => new ContentDataInterceptor(new ContentDataInterceptorHandler(new ConstructorParameterResolver()))));
+                new ServiceLocation.ServiceAccessor<ContentDataInterceptor>(() => new ContentDataInterceptor(new ContentDataInterceptorHandler(new ConstructorParameterResolver()))), _contentTypeRepositoryMock.Object);
             _testSubject.ServiceActive = true;
 
             var block = sharedBlockCreator.CreateSharedBlock(typeof(BlockData));
@@ -119,7 +119,7 @@ namespace EPiServer.Core
         public void UpdateItem_WhenContentIsProvided_ShouldUseNameAsTitle()
         {
             var sharedBlockCreator = new SharedBlockFactory(null, new ConstructorParameterResolver(),
-                new ServiceLocation.ServiceAccessor<ContentDataInterceptor>(() => new ContentDataInterceptor(new ContentDataInterceptorHandler(new ConstructorParameterResolver()))));
+                new ServiceLocation.ServiceAccessor<ContentDataInterceptor>(() => new ContentDataInterceptor(new ContentDataInterceptorHandler(new ConstructorParameterResolver()))), _contentTypeRepositoryMock.Object);
             _testSubject.ServiceActive = true;
 
             var block = sharedBlockCreator.CreateSharedBlock(typeof(BlockData));
@@ -427,7 +427,7 @@ namespace EPiServer.Core
         public void GetSearchResult_WhenQueryIsExecuted_ContentQueryShouldBeAdded()
         {
             var sharedBlockCreator = new SharedBlockFactory(null, new ConstructorParameterResolver(),
-                new ServiceLocation.ServiceAccessor<ContentDataInterceptor>(() => new ContentDataInterceptor(new ContentDataInterceptorHandler(new ConstructorParameterResolver()))));
+                new ServiceLocation.ServiceAccessor<ContentDataInterceptor>(() => new ContentDataInterceptor(new ContentDataInterceptorHandler(new ConstructorParameterResolver()))), _contentTypeRepositoryMock.Object);
             var content = sharedBlockCreator.CreateSharedBlock(typeof(BlockData));
             content.ContentLink = new ContentReference(1);
             _contentRepositoryMock.Setup(r => r.Get<IContent>(It.IsAny<ContentReference>())).Returns(content);
@@ -456,7 +456,7 @@ namespace EPiServer.Core
                 .Callback<AccessControlListQuery, IPrincipal, object>((q, p, o) => { q.AddUser(p.Identity.Name); });
 
             var sharedBlockCreator = new SharedBlockFactory(null, new ConstructorParameterResolver(),
-                new ServiceLocation.ServiceAccessor<ContentDataInterceptor>(() => new ContentDataInterceptor(new ContentDataInterceptorHandler(new ConstructorParameterResolver()))));
+                new ServiceLocation.ServiceAccessor<ContentDataInterceptor>(() => new ContentDataInterceptor(new ContentDataInterceptorHandler(new ConstructorParameterResolver()))), _contentTypeRepositoryMock.Object);
             var content = sharedBlockCreator.CreateSharedBlock(typeof(BlockData));
             content.ContentLink = new ContentReference(1);
             _contentRepositoryMock.Setup(r => r.Get<IContent>(It.IsAny<ContentReference>())).Returns(content);

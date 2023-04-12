@@ -1,3 +1,5 @@
+using System;
+using EPiServer.Core;
 using EPiServer.DataAbstraction;
 using EPiServer.PlugIn;
 using EPiServer.ServiceLocation;
@@ -31,7 +33,11 @@ namespace EPiServer.Job
         /// <summary>
         /// Executes the specified context.
         /// </summary>
-        public override string Execute() => _indexingJobService.Start(OnStatusChanged);
+        public override string Execute()
+        {
+            using var contentCacheScope = new ContentCacheScope { SlidingExpiration = TimeSpan.Zero };
+            return _indexingJobService.Start(OnStatusChanged);
+        }
 
         /// <summary>
         /// Stops the indexing job.

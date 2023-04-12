@@ -23,19 +23,20 @@ jobs:
       versionSuffix: ${{ github.ref == 'refs/heads/develop' && 'pre-' ||  'ci-' }}${{github.RUN_NUMBER }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v1
-      - name: Setup .NET Core @ Latest
-        uses: actions/setup-dotnet@v1
+        uses: actions/checkout@v3
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
         with:
+          dotnet-version: '7.0.x'
           source-url: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
         env:
           NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
-      
+
       - name: Restore
         run: dotnet restore
       - name: Build (Release version)
         if:  ${{ github.ref == 'refs/heads/main' }}
-        run: dotnet build --no-restore --configuration $env:buildConfiguration 
+        run: dotnet build --no-restore --configuration $env:buildConfiguration
       - name: Build (Pre-Release version)
         if:  ${{ github.ref != 'refs/heads/main' }}
         run: dotnet build --no-restore --configuration $env:buildConfiguration --version-suffix $env:versionSuffix

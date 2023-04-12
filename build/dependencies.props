@@ -1,14 +1,15 @@
 <Project>
   <PropertyGroup>
-    <CmsVersion>12.5.0</CmsVersion>
-    <CmsUiCoreVersion>[12.5.0,13)</CmsUiCoreVersion>
+    <CmsVersion>[12.17.1,13)</CmsVersion>
+    <CmsCoreVersion>[12.13.1,13)</CmsCoreVersion>
+    <CmsUiCoreVersion>[12.17.1,13)</CmsUiCoreVersion>
     <Lucene>4.8.0-beta00015</Lucene>
   </PropertyGroup>
   <ItemGroup Condition = "'$(TargetFramework)' != 'net461'">
     <PackageReference Update="EPiServer.CMS" Version="$(CmsVersion)" />
-    <PackageReference Update="EPiServer.Hosting" Version="$(CmsUiCoreVersion)" />
+    <PackageReference Update="EPiServer.Hosting" Version="$(CmsCoreVersion)" />
     <PackageReference Update="EPiServer.CMS.UI.Core" Version="$(CmsUiCoreVersion)" />
-    <PackageReference Update="EPiServer.CMS.AspNetCore.Templating" Version="$(CmsUiCoreVersion)" />
-    <PackageReference Update="EPiServer.CMS.AspNetCore.HtmlHelpers" Version="$(CmsUiCoreVersion)" />
+    <PackageReference Update="EPiServer.CMS.AspNetCore.Templating" Version="$(CmsCoreVersion)" />
+    <PackageReference Update="EPiServer.CMS.AspNetCore.HtmlHelpers" Version="$(CmsCoreVersion)" />
   </ItemGroup>
 </Project>
