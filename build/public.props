@@ -8,7 +8,7 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <PackageOutputPath>$(ArtifactsDirectory)packages\</PackageOutputPath>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
-    <PackageTags>EPiServer MassTransit Events</PackageTags>
+    <PackageTags>EPiServer Lucene Search</PackageTags>
     <Copyright>Copyright Optimizely $([System.DateTime]::Now.ToString(yyyy))</Copyright>
     <Authors>Optimizely</Authors>
     <PackageIcon>icon.png</PackageIcon>
@@ -17,9 +17,7 @@
     <RepositoryUrl>https://github.com/episerver/content-search-lucene.git</RepositoryUrl>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <PackageLicenseFile>license.txt</PackageLicenseFile>
-    <LicenseFiles>$(BuildDirectory)licenses\NO-THIRD-PARTY-LICENSES.txt</LicenseFiles>
-    <LicenseTemplate>$(BuildDirectory)licenses\LICENSE.txt.template</LicenseTemplate>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
