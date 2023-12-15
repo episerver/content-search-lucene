@@ -18,7 +18,12 @@ namespace AlloyMvcTemplates.Controllers
 
         public ViewResult Index(SearchPage currentPage, string q)
         {
-            var providers = _searchProvidersManager.GetEnabledProvidersByPriority("CMS/pages", true);
+            //enable to search page
+            var pageProviders = _searchProvidersManager.GetEnabledProvidersByPriority("CMS/pages", true);
+            //enable to search file
+            var fileProviders = _searchProvidersManager.GetEnabledProvidersByPriority("CMS/files", true);
+            //merge all providers to search file and page
+            var providers = pageProviders.Concat(fileProviders);
 
             var hits = providers.SelectMany(p => p.Search(new Query(q))).ToList();
 
