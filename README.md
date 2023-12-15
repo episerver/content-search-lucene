@@ -78,5 +78,5 @@ $ docker pull ghcr.io/episerver/content-search-lucene/indexingservice:sha-ec860a
 <ul>
 <li>On properties of Solution, select Multiple startup projects.</li>
 <li>Choose 'Start' option for AlloyTemplates and IndexingService</li>
-<li>Note: Index files will generate in folder ./src/EPiServer.Search.IndexingService/App_Data/Index</li>
+<li>Note: Index files will be generated in the folder ./src/EPiServer.Search.IndexingService/App_Data/Index</li>
 </ul>
