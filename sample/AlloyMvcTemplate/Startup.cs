@@ -39,7 +39,7 @@ namespace EPiServer.Templates.Alloy.Mvc
 
             services.Configure<SchedulerOptions>(o =>
             {
-                o.Enabled = false;
+                o.Enabled = true;
             });
 
             services.Configure<DataAccessOptions>(o =>

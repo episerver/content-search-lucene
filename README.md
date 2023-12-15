@@ -74,3 +74,9 @@ $ docker pull ghcr.io/episerver/content-search-lucene/indexingservice:sha-ec860a
 <h3>Deployment</h3>
 <p>When you deploy the site to production, update the baseUri to the production search service. When you deploy the Search service to production, you might need to update the allowed IP addresses if that configuration is used.</p>
 
+<h3>Local debug</h3>
+<ul>
+<li>On properties of Solution, select Multiple startup projects.</li>
+<li>Choose 'Start' option for AlloyTemplates and IndexingService</li>
+<li>Note: Index files will generate in folder ./src/EPiServer.Search.IndexingService/App_Data/Index</li>
+</ul>
