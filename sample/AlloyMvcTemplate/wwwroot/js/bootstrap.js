@@ -1689,7 +1689,8 @@
         .on('keypress', $.proxy(this.keypress, this))
         .on('keyup',    $.proxy(this.keyup, this))
 
-      if ($.browser.webkit || $.browser.msie) {
+      // $.browser was removed in jQuery 1.9; detect WebKit/IE from the user agent instead
+      if (/webkit|msie|trident/i.test(navigator.userAgent)) {
         this.$element.on('keydown', $.proxy(this.keypress, this))
       }
 

@@ -27,7 +27,11 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '7.0.x'
+          # net6.0 (EPiServer.Search.Cms, EPiServer.Search.Cms.Test) and net7.0 (IndexingService) are both built and tested;
+          # the hosted runners no longer ship the .NET 6 runtime, so install it explicitly.
+          dotnet-version: |
+            6.0.x
+            7.0.x
       - name: Restore
         run: dotnet restore
       - name: Test

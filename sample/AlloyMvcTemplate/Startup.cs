@@ -35,7 +35,7 @@ namespace EPiServer.Templates.Alloy.Mvc
         public void ConfigureServices(IServiceCollection services)
         {
             var dbPath = Path.Combine(_webHostingEnvironment.ContentRootPath, "App_Data\\Alloy.mdf");
-            var connectionstring = _configuration.GetConnectionString("EPiServerDB") ?? $"Data Source=(LocalDb)\\MSSQLLocalDB;AttachDbFilename={dbPath};Initial Catalog=alloy_mvc_netcore;Integrated Security=True;Connect Timeout=30;MultipleActiveResultSets=True";
+            var connectionstring = _configuration.GetConnectionString("EPiServerDB") ?? $"Data Source=(LocalDb)\\MSSQLLocalDB;AttachDbFilename={dbPath};Initial Catalog=content_search_lucene_alloy;Integrated Security=True;Connect Timeout=30;MultipleActiveResultSets=True";
 
             services.Configure<SchedulerOptions>(o =>
             {
@@ -45,6 +45,8 @@ namespace EPiServer.Templates.Alloy.Mvc
             services.Configure<DataAccessOptions>(o =>
             {
                 o.SetConnectionString(connectionstring);
+                o.CreateDatabaseSchema = true;
+                o.UpdateDatabaseSchema = true;
             });
 
             services.AddCmsAspNetIdentity<ApplicationUser>();
