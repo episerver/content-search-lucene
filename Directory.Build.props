@@ -1,5 +1,6 @@
 <Project>
   <Import Project="build\version.props" />
+  <Import Project="build\public.props" />
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
