@@ -7,8 +7,30 @@ using Xunit;
 namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
 {
     [Trait(nameof(IndexingService.Helpers.LuceneHelper), nameof(IndexingService.Helpers.LuceneHelper.HandleDataUri))]
-    public class HandleDataUriTest : LuceneHelperTestBase
+    public class HandleDataUriTest : LuceneHelperTestBase, IDisposable
     {
+        // Use a unique temp folder per test so the tests work on any OS/agent (no hard-coded c:\ paths).
+        private readonly string _testRoot = Path.Combine(Path.GetTempPath(), nameof(HandleDataUriTest), Guid.NewGuid().ToString("N"));
+        private Lucene.Net.Store.FSDirectory _indexDirectory;
+
+        public HandleDataUriTest()
+        {
+            Directory.CreateDirectory(_testRoot);
+        }
+
+        public void Dispose()
+        {
+            _indexDirectory?.Dispose();
+            try
+            {
+                Directory.Delete(_testRoot, true);
+            }
+            catch (IOException)
+            {
+                // Best effort cleanup; the folder lives under the temp path.
+            }
+        }
+
         [Fact]
         public void HandleDataUri_WhenUriStringIsNotUri_ShouldReturnFalse()
         {
@@ -26,7 +48,7 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
         {
             var feed = new FeedItemModel();
 
-            _feedHelperMock.Setup(x => x.GetAttributeValue(It.IsAny<FeedItemModel>(), It.Is<string>(s => s == IndexingServiceSettings.SyndicationItemAttributeNameDataUri))).Returns(@"c:\fake\App_Data\Index\file.txt");
+            _feedHelperMock.Setup(x => x.GetAttributeValue(It.IsAny<FeedItemModel>(), It.Is<string>(s => s == IndexingServiceSettings.SyndicationItemAttributeNameDataUri))).Returns(ToFileUri(Path.Combine(_testRoot, "Index", "file.txt")));
 
             var classInstant = SetupMock();
             var result = classInstant.HandleDataUri(feed, new NamedIndex("testindex1"));
@@ -36,7 +58,7 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
         [Fact]
         public void HandleDataUri_WhenUriIsFileAndRunAdd_ShouldReturnTrue()
         {
-            CreateFileForTest();
+            var dataFilePath = CreateFileForTest();
 
             var feed = new FeedItemModel()
             {
@@ -66,14 +88,14 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
 
             _commonFuncMock.Setup(x => x.GetFileUriContent(It.IsAny<Uri>())).Returns("sometext");
 
-            var dir = Lucene.Net.Store.FSDirectory.Open(new System.IO.DirectoryInfo(string.Format(@"c:\fake\App_Data\{0}\Main", Guid.NewGuid())));
+            _indexDirectory = Lucene.Net.Store.FSDirectory.Open(new DirectoryInfo(Path.Combine(_testRoot, Guid.NewGuid().ToString("N"), "Main")));
 
             var namedIndexMock = new Mock<NamedIndex>("testindex1");
-            namedIndexMock.SetupGet(x => x.Directory).Returns(() => dir);
+            namedIndexMock.SetupGet(x => x.Directory).Returns(() => _indexDirectory);
 
             _feedHelperMock.Setup(x => x.PrepareAuthors(It.IsAny<FeedItemModel>())).Returns("someone");
             _feedHelperMock.Setup(x => x.GetAttributeValue(It.IsAny<FeedItemModel>(), It.IsAny<string>())).Returns("something");
-            _feedHelperMock.Setup(x => x.GetAttributeValue(It.IsAny<FeedItemModel>(), It.Is<string>(s => s == IndexingServiceSettings.SyndicationItemAttributeNameDataUri))).Returns(@"c:\fake\App_Data\test.txt");
+            _feedHelperMock.Setup(x => x.GetAttributeValue(It.IsAny<FeedItemModel>(), It.Is<string>(s => s == IndexingServiceSettings.SyndicationItemAttributeNameDataUri))).Returns(dataFilePath);
             _feedHelperMock.Setup(x => x.GetAttributeValue(It.IsAny<FeedItemModel>(), It.Is<string>(s => s == IndexingServiceSettings.SyndicationItemAttributeNameIndexAction))).Returns("add");
             _feedHelperMock.Setup(x => x.GetAttributeValue(It.IsAny<FeedItemModel>(), It.Is<string>(s => s == IndexingServiceSettings.SyndicationItemAttributeNameReferenceId))).Returns("testindex1_ref");
 
@@ -86,7 +108,7 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
         [Fact]
         public void HandleDataUri_WhenUriIsFileAndRunUpdate_ShouldReturnTrue()
         {
-            CreateFileForTest();
+            var dataFilePath = CreateFileForTest();
 
             var feed = new FeedItemModel()
             {
@@ -116,14 +138,14 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
 
             _commonFuncMock.Setup(x => x.GetFileUriContent(It.IsAny<Uri>())).Returns("sometext");
 
-            var dir = Lucene.Net.Store.FSDirectory.Open(new System.IO.DirectoryInfo(string.Format(@"c:\fake\App_Data\{0}\Main", Guid.NewGuid())));
+            _indexDirectory = Lucene.Net.Store.FSDirectory.Open(new DirectoryInfo(Path.Combine(_testRoot, Guid.NewGuid().ToString("N"), "Main")));
 
             var namedIndexMock = new Mock<NamedIndex>("testindex1");
-            namedIndexMock.SetupGet(x => x.Directory).Returns(() => dir);
+            namedIndexMock.SetupGet(x => x.Directory).Returns(() => _indexDirectory);
 
             _feedHelperMock.Setup(x => x.PrepareAuthors(It.IsAny<FeedItemModel>())).Returns("someone");
             _feedHelperMock.Setup(x => x.GetAttributeValue(It.IsAny<FeedItemModel>(), It.IsAny<string>())).Returns("something");
-            _feedHelperMock.Setup(x => x.GetAttributeValue(It.IsAny<FeedItemModel>(), It.Is<string>(s => s == IndexingServiceSettings.SyndicationItemAttributeNameDataUri))).Returns(@"c:\fake\App_Data\test.txt");
+            _feedHelperMock.Setup(x => x.GetAttributeValue(It.IsAny<FeedItemModel>(), It.Is<string>(s => s == IndexingServiceSettings.SyndicationItemAttributeNameDataUri))).Returns(dataFilePath);
             _feedHelperMock.Setup(x => x.GetAttributeValue(It.IsAny<FeedItemModel>(), It.Is<string>(s => s == IndexingServiceSettings.SyndicationItemAttributeNameIndexAction))).Returns("update");
             _feedHelperMock.Setup(x => x.GetAttributeValue(It.IsAny<FeedItemModel>(), It.Is<string>(s => s == IndexingServiceSettings.SyndicationItemAttributeNameReferenceId))).Returns("testindex1_ref");
 
@@ -133,19 +155,15 @@ namespace EPiServer.Search.IndexingService.Test.Helpers.LuceneHelper
             Assert.True(result);
         }
 
-        private void CreateFileForTest()
+        private string CreateFileForTest()
         {
-            var path = @"c:\fake\App_Data\test.txt";
-            if (!File.Exists(path))
-            {
-                // Create a file to write to.
-                using (var sw = File.CreateText(path))
-                {
-                    sw.WriteLine("Hello");
-                    sw.WriteLine("And");
-                    sw.WriteLine("Welcome");
-                }
-            }
+            var path = Path.Combine(_testRoot, "test.txt");
+            File.WriteAllLines(path, new[] { "Hello", "And", "Welcome" });
+            return ToFileUri(path);
         }
+
+        // HandleDataUri parses the value with UriKind.RelativeOrAbsolute. On Unix a rooted path such as "/tmp/x"
+        // is then treated as a relative URI (and Uri.IsFile throws), so pass an absolute file:// URI instead.
+        private static string ToFileUri(string path) => new Uri(path, UriKind.Absolute).AbsoluteUri;
     }
 }
